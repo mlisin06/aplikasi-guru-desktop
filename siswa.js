@@ -1,4 +1,4 @@
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbx5nkmrvsJusyiJ0qIYNxXroiWMQDHyWbKbTpM6X6VbQ1eyxZ-9EDNANAN.../exec";
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
 
 document.addEventListener("DOMContentLoaded", function () {
     loadSiswa();
