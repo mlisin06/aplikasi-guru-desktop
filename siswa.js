@@ -1,4 +1,4 @@
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzVYR3xNpqCltFw-u9irw8tWsjtuBAdOUZgJ-NnRAt8zS9RU2f018J3cG6sbJQ_KsQoCQ/exec";
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwIot2daVG_SfuSsA8pg-hyxzEEoTAMs2vklrbLB_xsqFeFZALCg33pTkHk4rDIvUPHhQ/exec";
 
 // Variable Global
 let dataSoalList = [];
