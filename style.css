@@ -1,3 +1,11 @@
+/* Sembunyikan semua section secara default */
+.section {
+  display: none !important;
+}
+
+.section.active {
+  display: block !important;
+}
 * {
   box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
