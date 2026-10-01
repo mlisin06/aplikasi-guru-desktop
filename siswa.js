@@ -1,11 +1,9 @@
-// Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda yang berakhiran /exec
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbx5nkmrvsJusyiJ0qIYNxXroiWMQDHyWbKbTpM6X6VbQ1eyxZ-9EDNANAN.../exec";
 
 document.addEventListener("DOMContentLoaded", function () {
     loadSiswa();
     loadSoal();
     
-    // Mendukung berbagai macam ID form ujian
     const formUjian = document.getElementById("form-ujian") || document.getElementById("formUjian") || document.querySelector("form");
     if (formUjian) {
         formUjian.addEventListener("submit", function (e) {
@@ -17,7 +15,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 let dataSoalList = [];
 
-// Fungsi untuk memuat daftar nama siswa dari Google Sheets
 async function loadSiswa() {
     try {
         let response = await fetch(`${URL_WEB_APP}?action=getSiswa`);
@@ -38,7 +35,6 @@ async function loadSiswa() {
     }
 }
 
-// Fungsi untuk memuat daftar soal dan pilihan ganda dari Google Sheets
 async function loadSoal() {
     try {
         let response = await fetch(`${URL_WEB_APP}?action=getSoal`);
@@ -65,7 +61,6 @@ async function loadSoal() {
     }
 }
 
-// Fungsi untuk menghitung nilai otomatis dan mengirim jawaban ke Google Sheets
 async function kirimJawaban() {
     const selectSiswa = document.getElementById("select-siswa") || document.getElementById("namaSiswa");
     const namaSiswa = selectSiswa ? selectSiswa.value : "";
@@ -84,7 +79,6 @@ async function kirimJawaban() {
     let jawabanBenar = 0;
     let hasilJawaban = {};
 
-    // Proses pencocokan jawaban siswa dengan kunci jawaban dari server
     dataSoalList.forEach((soal, index) => {
         const inputRadio = document.querySelector(`input[name="jawaban_${index}"]:checked`);
         let val = inputRadio ? inputRadio.value.trim() : "Tidak Diisi";
@@ -97,7 +91,6 @@ async function kirimJawaban() {
         }
     });
 
-    // Hitung nilai akhir berskala 0 sampai 100
     let nilaiAkhir = Math.round((jawabanBenar / totalSoal) * 100);
 
     const payload = {
