@@ -1,5 +1,5 @@
 
-// Ganti URL di bawah ini dengan URL Web App Apps Script Anda yang berakhiran /exec
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
 const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
 
 document.addEventListener("DOMContentLoaded", function () {
