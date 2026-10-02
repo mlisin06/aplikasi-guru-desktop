@@ -1,4 +1,4 @@
-const URL_WEB_APP = "MASUKKAN_URL_WEB_APP_ANDA_DISINI/exec";
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwYecpmtzM0zXVe8CxXQDON3BL0bVCgupAYVj8Zhd69O27TQqvmZjh2M-DpR077Xbw/exec";
 
 let dataSiswaGlobal = [];
 let dataSoalGlobal = [];
