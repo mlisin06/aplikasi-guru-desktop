@@ -1,60 +1,79 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduAdmin Pro - Panel Siswa</title>
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    h2 { color: #1e293b; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-    .form-group { margin-bottom: 15px; }
-    label { font-weight: 600; display: block; margin-bottom: 6px; color: #334155; }
-    select, textarea, input[type="text"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; box-sizing: border-box; }
-    .btn-kirim { background-color: #0d9488; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
-    .btn-kirim:hover { background-color: #0f766e; }
-    
-    /* Layout khusus mencocokkan */
-    .match-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .match-item { flex: 1; text-align: center; }
-    .match-item img { max-width: 100%; max-height: 120px; border-radius: 6px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Ujian Ceria - EduAdmin Pro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .header-box { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card-soal { border-radius: 12px; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .btn-kirim { font-size: 1.2rem; font-weight: bold; border-radius: 50px; padding: 12px 30px; background: #28a745; border: none; }
+        .btn-kirim:hover { background: #218838; }
+    </style>
 </head>
 <body>
+    <div class="container mt-4 mb-5">
+        <!-- Header Ceria -->
+        <div class="header-box text-center">
+            <h3>🌟 Ruang Ujian & Tugas Siswa 🌟</h3>
+            <p class="mb-1">Silakan pilih kelas, nama, dan mata pelajaran dengan teliti sebelum mengerjakan!</p>
+            <small>Pencipta Aplikasi: <b>muhlisin06</b></small>
+        </div>
 
-  <div class="container">
-    <h2>EduAdmin Pro - Panel Ujian Siswa</h2>
+        <!-- Form Identitas Siswa -->
+        <div class="card p-4 shadow-sm mb-4 border-0 rounded-lg">
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label><b>Pilih Kelas:</b></label>
+                    <select id="select-kelas" class="form-control" onchange="filterNamaSiswa()">
+                        <option value="">-- Pilih Kelas --</option>
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label><b>Pilih Nama Siswa:</b></label>
+                    <select id="select-siswa" class="form-control">
+                        <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label><b>Pilih Mata Pelajaran:</b></label>
+                    <select id="select-mapel" class="form-control">
+                        <option value="">-- Pilih Mata Pelajaran --</option>
+                        <option value="PAIBP">PAIBP</option>
+                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="IPAS">IPAS</option>
+                        <option value="PJOK">PJOK</option>
+                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                        <option value="Bahasa Jawa">Bahasa Jawa</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-info btn-block mt-2" onclick="muatSoalUjian()">📂 Muat Soal / Tugas</button>
+        </div>
 
-    <!-- Identitas Siswa -->
-    <div class="form-group">
-      <label for="select-siswa">Pilih Nama Siswa:</label>
-      <select id="select-siswa">
-        <option value="">-- Memuat Data Siswa... --</option>
-      </select>
+        <!-- Area Soal -->
+        <div id="soal-container">
+            <div class="text-center text-muted p-5">
+                <h5>Silakan lengkapi pilihan Kelas, Nama, dan Mapel di atas, lalu klik "Muat Soal".</h5>
+            </div>
+        </div>
+
+        <!-- Tombol Kirim -->
+        <div id="submit-container" class="text-center mt-4" style="display: none;">
+            <button class="btn btn-success btn-kirim shadow" onclick="kirimJawabanSiswa()">🚀 Selesai & Kirim Jawaban</button>
+        </div>
     </div>
 
-    <!-- Pilihan Jenis Kuis Interaktif -->
-    <div class="form-group">
-      <label for="select-jenis">Pilih Jenis Kuis / Modul:</label>
-      <select id="select-jenis" onchange="muatDataSoal()">
-        <option value="pg">1. Soal PG & Essay</option>
-        <option value="gambar">2. Mencocokkan Gambar</option>
-        <option value="kata">3. Mencocokkan Kata</option>
-        <option value="rangkum">4. Merangkum Materi</option>
-      </select>
-    </div>
-
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;">
-
-    <!-- Dynamic Container Tempat Soal Tampil Sesuai Mode -->
-    <div id="wadah-soal">
-      <p style="text-align: center; color: #64748b;">Memuat kuis...</p>
-    </div>
-
-    <!-- Tombol Kirim -->
-    <button class="btn-kirim" onclick="kirimJawaban()">Selesai & Kirim Jawaban</button>
-  </div>
-
-  <script src="siswa.js"></script>
+    <script src="siswa.js"></script>
 </body>
 </html>
