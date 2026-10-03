@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Soal & Tugas - EduAdmin Pro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .header-box { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card-form { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4 mb-5">
+        <!-- Tombol Kembali ke Panel Guru -->
+        <a href="guru.html" class="btn btn-secondary btn-sm mb-3 font-weight-bold">← Kembali ke Dashboard Guru</a>
+
+        <!-- Header Ceria -->
+        <div class="header-box">
+            <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px;">
+                <img src="assets/images/tutwuri.png" alt="Logo" style="height: 50px; background-color: white; padding: 3px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                <h3 style="margin: 0; font-size: 20px;">Pengelolaan Soal & Tugas Siswa</h3>
+            </div>
+            <p class="mb-1 mt-3">Input dan sinkronkan soal berdasarkan jenis kuis agar otomatis tampil di halaman siswa.</p>
+            <small>Pencipta Aplikasi: <b>muhlisin06</b></small>
+        </div>
+
+        <!-- Form Pengaturan & Sinkronisasi -->
+        <div class="card card-form p-4">
+            <h5 class="text-primary font-weight-bold mb-3">⚙️ Konfigurasi Target Soal</h5>
+            
+            <div class="form-row">
+                <!-- Pilih Kelas -->
+                <div class="form-group col-md-4">
+                    <label><b>Pilih Kelas:</b></label>
+                    <select id="kelola-kelas" class="form-control">
+                        <option value="">-- Pilih Kelas --</option>
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                </div>
+
+                <!-- Pilih Mata Pelajaran -->
+                <div class="form-group col-md-4">
+                    <label><b>Pilih Mata Pelajaran:</b></label>
+                    <select id="kelola-mapel" class="form-control">
+                        <option value="">-- Pilih Mata Pelajaran --</option>
+                        <option value="PAIBP">PAIBP</option>
+                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="IPAS">IPAS</option>
+                        <option value="PJOK">PJOK</option>
+                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                        <option value="Bahasa Jawa">Bahasa Jawa</option>
+                    </select>
+                </div>
+
+                <!-- Pilih Jenis Kuis -->
+                <div class="form-group col-md-4">
+                    <label><b>Pilih Jenis Kuis:</b></label>
+                    <select id="kelola-jenis-kuis" class="form-control">
+                        <option value="">-- Pilih Jenis Kuis --</option>
+                        <option value="pg-essay">Menjawab Soal PG, Essay, Uraian</option>
+                        <option value="mencocokkan">Mencocokkan Kata</option>
+                        <option value="puzzle">Puzzle</option>
+                        <option value="ringkasan">Membuat Tugas Ringkasan Materi</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Link Web App Google Apps Script -->
+            <div class="form-group">
+                <label><b>URL Web App Google Apps Script (Sinkronisasi Database):</b></label>
+                <input type="text" id="script-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+                <small class="text-muted">Masukkan link *deployment* Google Apps Script Anda agar data tersambung ke Google Sheets.</small>
+            </div>
+
+            <button class="btn btn-success font-weight-bold py-2 mt-2" onclick="simpanDanSinkronkanSoal()">🚀 Simpan & Sinkronkan ke Google Sheets</button>
+        </div>
+
+        <!-- Area Pratinjau / Daftar Soal yang Telah Diinput -->
+        <div class="card card-form p-4">
+            <h5 class="text-info font-weight-bold mb-3">📋 Daftar Soal Terdaftar di Sistem</h5>
+            <div id="preview-soal-container">
+                <div class="alert alert-secondary text-center mb-0">
+                    Silakan pilih Kelas, Mata Pelajaran, dan Jenis Kuis di atas untuk memuat data soal dari Google Sheets.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Pendukung Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function simpanDanSinkronkanSoal() {
+            const kelas = document.getElementById('kelola-kelas').value;
+            const mapel = document.getElementById('kelola-mapel').value;
+            const jenis = document.getElementById('kelola-jenis-kuis').value;
+            const url = document.getElementById('script-url').value;
+
+            if (!kelas || !mapel || !jenis || !url) {
+                alert('Mohon lengkapi semua pilihan (Kelas, Mapel, Jenis Kuis) serta URL Google Apps Script!');
+                return;
+            }
+
+            // Simpan konfigurasi ke localStorage sementara atau kirim ke Google Apps Script
+            localStorage.setItem('gs_script_url', url);
+            alert('Konfigurasi berhasil disimpan! Sistem siap melakukan sinkronisasi dengan Google Sheets.');
+        }
+    </script>
+</body>
+</html>
