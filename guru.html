@@ -1,25 +1,53 @@
-<!-- Di dalam file guru.html -->
-<div class="card p-4 shadow-sm mb-4">
-    <h4 class="text-primary mb-3">Dashboard Panel Guru</h4>
-    <p class="text-muted">Silakan pilih menu pengelolaan di bawah ini:</p>
-    
-    <div class="row">
-        <!-- Tombol Menu 1: Pengelolaan Soal & Tugas Siswa -->
-        <div class="col-md-6 mb-3">
-            <div class="card border-info p-3 text-center h-100 shadow-sm">
-                <h5 class="text-info font-weight-bold">📝 Pengelolaan Soal & Tugas</h5>
-                <p class="text-muted small">Input soal PG, Essay, Mencocokkan, Puzzle, dan Ringkasan Materi untuk siswa.</p>
-                <a href="#kelola-soal" class="btn btn-info mt-auto">Buka Pengelolaan Soal</a>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Pengelolaan Guru - EduAdmin Pro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .header-box { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .menu-card { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s ease; height: 100%; }
+        .menu-card:hover { transform: translateY(-3px); }
+    </style>
+</head>
+<body>
+    <div class="container mt-4 mb-5">
+        <!-- Header Ceria Guru -->
+        <div class="header-box">
+            <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px;">
+                <img src="assets/images/tutwuri.png" alt="Logo" style="height: 50px; background-color: white; padding: 3px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                <h3 style="margin: 0; font-size: 20px;">Dashboard Panel Guru</h3>
             </div>
+            <p class="mb-1 mt-3">Silakan pilih menu pengelolaan di bawah ini sesuai kebutuhan Anda:</p>
+            <small>Pencipta Aplikasi: <b>muhlisin06</b></small>
         </div>
 
-        <!-- Tombol Menu 2: Administrasi Guru -->
-        <div class="col-md-6 mb-3">
-            <div class="card border-success p-3 text-center h-100 shadow-sm">
-                <h5 class="text-success font-weight-bold">📂 Administrasi Guru</h5>
-                <p class="text-muted small">Kelola data guru, dokumen perangkat pembelajaran, absensi, dan administrasi sekolah.</p>
-                <a href="#administrasi" class="btn btn-success mt-auto">Buka Administrasi</a>
+        <!-- Pilihan Menu Utama Guru -->
+        <div class="row">
+            <!-- Menu 1: Pengelolaan Soal & Tugas -->
+            <div class="col-md-6 mb-4">
+                <div class="card menu-card p-4 border-info">
+                    <h5 class="text-info font-weight-bold mb-3">📝 Pengelolaan Soal & Tugas</h5>
+                    <p class="text-muted small">Input soal PG, Essay, Mencocokkan, Puzzle, dan Ringkasan Materi untuk siswa.</p>
+                    <a href="kelola-soal.html" class="btn btn-info btn-block mt-auto text-white font-weight-bold py-2">Buka Pengelolaan Soal</a>
+                </div>
+            </div>
+
+            <!-- Menu 2: Administrasi Guru -->
+            <div class="col-md-6 mb-4">
+                <div class="card menu-card p-4 border-success">
+                    <h5 class="text-success font-weight-bold mb-3">📂 Administrasi Guru</h5>
+                    <p class="text-muted small">Kelola data guru, dokumen perangkat pembelajaran, absensi, dan administrasi sekolah.</p>
+                    <a href="administrasi.html" class="btn btn-success btn-block mt-auto font-weight-bold py-2">Buka Administrasi</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Script Pendukung Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
