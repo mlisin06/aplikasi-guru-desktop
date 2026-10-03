@@ -9,40 +9,56 @@
 <body class="bg-light">
     <div class="container mt-5 mb-5">
         <div class="card shadow p-4">
-            <h3 class="text-info mb-3">📝 Input & Kelola Soal Ujian</h3>
-            <p class="text-muted">Pilih mata pelajaran dan jenis kuis, lalu masukkan soal pilihan ganda di bawah ini.</p>
+            <h3 class="text-info mb-3">📝 Input & Kelola Soal & Tugas</h3>
+            <p class="text-muted">Lengkapi data kelas, mata pelajaran, jenis tugas/kuis, pertanyaan, pilihan opsi, dan kunci jawaban di bawah ini.</p>
             
             <div id="form-tambah-soal" class="mb-4">
                 <div class="form-row">
-                    <!-- Mata Pelajaran diubah menjadi Dropdown -->
-                    <div class="form-group col-md-6">
+                    <!-- Dropdown Kelas 1 - 6 -->
+                    <div class="form-group col-md-4">
+                        <label>Kelas</label>
+                        <select id="input-kelas" class="form-control">
+                            <option value="">-- Pilih Kelas --</option>
+                            <option value="Kelas 1">Kelas 1</option>
+                            <option value="Kelas 2">Kelas 2</option>
+                            <option value="Kelas 3">Kelas 3</option>
+                            <option value="Kelas 4">Kelas 4</option>
+                            <option value="Kelas 5">Kelas 5</option>
+                            <option value="Kelas 6">Kelas 6</option>
+                        </select>
+                    </div>
+                    <!-- Dropdown Mata Pelajaran -->
+                    <div class="form-group col-md-4">
                         <label>Mata Pelajaran</label>
                         <select id="input-mapel" class="form-control">
                             <option value="">-- Pilih Mata Pelajaran --</option>
-                            <option value="Matematika">Matematika</option>
+                            <option value="PAIBP">PAIBP</option>
+                            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
                             <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                            <option value="Matematika">Matematika</option>
+                            <option value="IPAS">IPAS</option>
+                            <option value="PJOK">PJOK</option>
                             <option value="Bahasa Inggris">Bahasa Inggris</option>
-                            <option value="IPA">IPA</option>
-                            <option value="IPS">IPS</option>
-                            <option value="PPKn">PPKn</option>
+                            <option value="Bahasa Jawa">Bahasa Jawa</option>
                         </select>
                     </div>
-                    <!-- Jenis Kuis diubah menjadi Dropdown -->
-                    <div class="form-group col-md-6">
-                        <label>Jenis Kuis</label>
+                    <!-- Dropdown Jenis Kuis / Tugas -->
+                    <div class="form-group col-md-4">
+                        <label>Jenis Kuis / Tugas</label>
                         <select id="input-jenis" class="form-control">
-                            <option value="">-- Pilih Jenis Kuis --</option>
-                            <option value="Ujian Harian">Ujian Harian</option>
-                            <option value="Ujian Tengah Semester (UTS)">Ujian Tengah Semester (UTS)</option>
-                            <option value="Ujian Akhir Semester (UAS)">Ujian Akhir Semester (UAS)</option>
-                            <option value="Tugas / PR">Tugas / PR</option>
+                            <option value="">-- Pilih Jenis --</option>
+                            <option value="Pilihan Ganda">Pilihan Ganda</option>
+                            <option value="Essay">Essay</option>
+                            <option value="Mencocokkan Kata">Mencocokkan Kata</option>
+                            <option value="Puzzle">Puzzle</option>
+                            <option value="Menulis Ringkasan Materi">Menulis Ringkasan Materi</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Pertanyaan Soal</label>
-                    <textarea id="input-pertanyaan" class="form-control" rows="3" placeholder="Tulis teks pertanyaan di sini..."></textarea>
+                    <label>Pertanyaan / Instruksi Soal</label>
+                    <textarea id="input-pertanyaan" class="form-control" rows="3" placeholder="Tulis teks pertanyaan atau instruksi tugas di sini..."></textarea>
                 </div>
 
                 <div class="form-row">
@@ -67,19 +83,32 @@
                     </div>
                 </div>
 
-                <button type="button" onclick="simpanSoalBaru()" class="btn btn-info btn-block font-weight-bold text-white">Simpan Soal</button>
+                <!-- Kunci Jawaban -->
+                <div class="form-group col-md-4 px-0">
+                    <label>Kunci Jawaban</label>
+                    <select id="input-kunci" class="form-control border-info font-weight-bold text-info">
+                        <option value="">-- Pilih Kunci Jawaban --</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="Essay / Bebas">Essay / Jawaban Bebas</option>
+                    </select>
+                </div>
+
+                <button type="button" onclick="simpanSoalBaru()" class="btn btn-info btn-block font-weight-bold text-white mt-3">Simpan Soal</button>
             </div>
 
             <hr>
 
-            <h5 class="mt-4">Daftar Soal yang Tersimpan</h5>
+            <h5 class="mt-4">Daftar Soal & Tugas yang Tersimpan</h5>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped mt-2">
                     <thead class="thead-dark">
                         <tr>
                             <th>No</th>
-                            <th>Mapel / Jenis</th>
-                            <th>Pertanyaan</th>
+                            <th>Kelas / Mapel / Jenis</th>
+                            <th>Pertanyaan & Kunci</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -101,6 +130,7 @@
         });
 
         function simpanSoalBaru() {
+            let kelas = document.getElementById("input-kelas").value;
             let mapel = document.getElementById("input-mapel").value;
             let jenis = document.getElementById("input-jenis").value;
             let pertanyaan = document.getElementById("input-pertanyaan").value.trim();
@@ -108,20 +138,22 @@
             let opsiB = document.getElementById("input-opsiB").value.trim();
             let opsiC = document.getElementById("input-opsiC").value.trim();
             let opsiD = document.getElementById("input-opsiD").value.trim();
+            let kunci = document.getElementById("input-kunci").value;
 
-            if (!mapel || !jenis || !pertanyaan || !opsiA || !opsiB) {
-                alert("Harap pilih Mata Pelajaran, Jenis Kuis, serta isi Pertanyaan dan Pilihan A & B!");
+            if (!kelas || !mapel || !jenis || !pertanyaan || !kunci) {
+                alert("Harap lengkapi Kelas, Mata Pelajaran, Jenis Kuis/Tugas, Pertanyaan, serta Kunci Jawaban!");
                 return;
             }
 
             let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
             
-            dataSoal.push({ mapel, jenis, pertanyaan, opsiA, opsiB, opsiC, opsiD });
+            dataSoal.push({ kelas, mapel, jenis, pertanyaan, opsiA, opsiB, opsiC, opsiD, kunci });
             localStorage.setItem("dataSoal", JSON.stringify(dataSoal));
 
-            alert("Soal berhasil disimpan ke memori lokal!");
+            alert("Soal / Tugas berhasil disimpan!");
             
-            // Kosongkan form
+            // Reset form
+            document.getElementById("input-kelas").selectedIndex = 0;
             document.getElementById("input-mapel").selectedIndex = 0;
             document.getElementById("input-jenis").selectedIndex = 0;
             document.getElementById("input-pertanyaan").value = "";
@@ -129,6 +161,7 @@
             document.getElementById("input-opsiB").value = "";
             document.getElementById("input-opsiC").value = "";
             document.getElementById("input-opsiD").value = "";
+            document.getElementById("input-kunci").selectedIndex = 0;
 
             tampilkanTabelSoal();
         }
@@ -141,7 +174,7 @@
             tbody.innerHTML = "";
 
             if (dataSoal.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada soal tersedia.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada soal atau tugas tersedia.</td></tr>`;
                 return;
             }
 
@@ -149,8 +182,8 @@
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td>${index + 1}</td>
-                    <td><b>${soal.mapel}</b><br><small class="text-muted">${soal.jenis}</small></td>
-                    <td>${soal.pertanyaan}</td>
+                    <td><b>${soal.kelas}</b><br>${soal.mapel}<br><small class="text-muted">${soal.jenis}</small></td>
+                    <td>${soal.pertanyaan}<br><span class="badge badge-success mt-1">Kunci: ${soal.kunci}</span></td>
                     <td><button class="btn btn-danger btn-sm" onclick="hapusSoal(${index})">Hapus</button></td>
                 `;
                 tbody.appendChild(tr);
@@ -158,7 +191,7 @@
         }
 
         function hapusSoal(index) {
-            if (confirm("Yakin ingin menghapus soal ini?")) {
+            if (confirm("Yakin ingin menghapus soal/tugas ini?")) {
                 let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
                 dataSoal.splice(index, 1);
                 localStorage.setItem("dataSoal", JSON.stringify(dataSoal));
