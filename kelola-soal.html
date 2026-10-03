@@ -3,144 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerjakan Kuis & Tugas - Portal Siswa</title>
+    <title>Kelola Soal & Tugas - Panel Guru</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .quiz-card { border-left: 5px solid #17a2b8; }
-        .puzzle-box, .match-box { border: 2px dashed #6c757d; background: #f8f9fa; min-height: 120px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-    </style>
 </head>
 <body class="bg-light">
     <div class="container mt-5 mb-5">
         <div class="card shadow p-4">
-            <h3 class="text-info mb-3">🎓 Kerjakan Kuis & Tugas</h3>
-            <p class="text-muted">Pilih kelas dan mata pelajaran Anda untuk mulai mengerjakan tugas dari guru.</p>
+            <h3 class="text-info mb-3">📝 Input & Kelola Soal & Tugas</h3>
+            <p class="text-muted">Formulir di bawah akan menyesuaikan secara otomatis berdasarkan Jenis Kuis/Tugas yang Anda pilih.</p>
             
-            <!-- Filter Pemilihan Soal -->
-            <div class="form-row mb-4">
-                <div class="form-group col-md-5">
-                    <label>Pilih Kelas</label>
-                    <select id="pilih-kelas" class="form-control" onchange="muatDaftarSoal()">
-                        <option value="">-- Pilih Kelas --</option>
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6">Kelas 6</option>
+            <div id="form-tambah-soal" class="mb-4">
+                <div class="form-row">
+                    <!-- Dropdown Kelas 1 - 6 -->
+                    <div class="form-group col-md-4">
+                        <label>Kelas</label>
+                        <select id="input-kelas" class="form-control">
+                            <option value="">-- Pilih Kelas --</option>
+                            <option value="Kelas 1">Kelas 1</option>
+                            <option value="Kelas 2">Kelas 2</option>
+                            <option value="Kelas 3">Kelas 3</option>
+                            <option value="Kelas 4">Kelas 4</option>
+                            <option value="Kelas 5">Kelas 5</option>
+                            <option value="Kelas 6">Kelas 6</option>
+                        </select>
+                    </div>
+                    <!-- Dropdown Mata Pelajaran -->
+                    <div class="form-group col-md-4">
+                        <label>Mata Pelajaran</label>
+                        <select id="input-mapel" class="form-control">
+                            <option value="">-- Pilih Mata Pelajaran --</option>
+                            <option value="PAIBP">PAIBP</option>
+                            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                            <option value="Matematika">Matematika</option>
+                            <option value="IPAS">IPAS</option>
+                            <option value="PJOK">PJOK</option>
+                            <option value="Bahasa Inggris">Bahasa Inggris</option>
+                            <option value="Bahasa Jawa">Bahasa Jawa</option>
+                        </select>
+                    </div>
+                    <!-- Dropdown Jenis Kuis / Tugas -->
+                    <div class="form-group col-md-4">
+                        <label>Jenis Kuis / Tugas</label>
+                        <select id="input-jenis" class="form-control" onchange="ubahFormatForm()">
+                            <option value="">-- Pilih Jenis --</option>
+                            <option value="Pilihan Ganda">Pilihan Ganda</option>
+                            <option value="Essay">Essay</option>
+                            <option value="Mencocokkan Gambar">Mencocokkan Gambar</option>
+                            <option value="Puzzle">Puzzle</option>
+                            <option value="Menulis Ringkasan Materi">Menulis Ringkasan Materi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="label-pertanyaan">Pertanyaan / Instruksi Soal</label>
+                    <textarea id="input-pertanyaan" class="form-control" rows="3" placeholder="Tulis teks pertanyaan atau instruksi tugas di sini..."></textarea>
+                </div>
+
+                <!-- Bagian Khusus Pilihan Ganda -->
+                <div id="area-pg">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Opsi A</label>
+                            <input type="text" id="input-opsiA" class="form-control" placeholder="Pilihan A">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Opsi B</label>
+                            <input type="text" id="input-opsiB" class="form-control" placeholder="Pilihan B">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Opsi C</label>
+                            <input type="text" id="input-opsiC" class="form-control" placeholder="Pilihan C">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Opsi D</label>
+                            <input type="text" id="input-opsiD" class="form-control" placeholder="Pilihan D">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian Khusus Mencocokkan Gambar / Puzzle -->
+                <div id="area-gambar" style="display: none;">
+                    <div class="form-group">
+                        <label>Link / URL Gambar Pendukung</label>
+                        <input type="text" id="input-gambar" class="form-control" placeholder="Masukkan link gambar (contoh: https://...)">
+                    </div>
+                </div>
+
+                <!-- Kunci Jawaban / Petunjuk Penilaian -->
+                <div class="form-group col-md-6 px-0" id="area-kunci">
+                    <label id="label-kunci">Kunci Jawaban</label>
+                    <select id="input-kunci" class="form-control border-info font-weight-bold text-info">
+                        <option value="">-- Pilih Kunci Jawaban --</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
                     </select>
                 </div>
-                <div class="form-group col-md-5">
-                    <label>Pilih Mata Pelajaran</label>
-                    <select id="pilih-mapel" class="form-control" onchange="muatDaftarSoal()">
-                        <option value="">-- Pilih Mata Pelajaran --</option>
-                        <option value="PAIBP">PAIBP</option>
-                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                        <option value="Matematika">Matematika</option>
-                        <option value="IPAS">IPAS</option>
-                        <option value="PJOK">PJOK</option>
-                        <option value="Bahasa Inggris">Bahasa Inggris</option>
-                        <option value="Bahasa Jawa">Bahasa Jawa</option>
-                    </select>
-                </div>
-                <div class="form-group col-md-2 d-flex align-items-end">
-                    <button class="btn btn-info btn-block font-weight-bold" onclick="muatDaftarSoal()">Cari</button>
-                </div>
+
+                <button type="button" onclick="simpanSoalBaru()" class="btn btn-info btn-block font-weight-bold text-white mt-3">Simpan Soal / Tugas</button>
             </div>
 
             <hr>
 
-            <!-- Area Tampil Soal -->
-            <div id="kontainer-soal">
-                <div class="alert alert-warning text-center">Silakan pilih Kelas dan Mata Pelajaran di atas untuk menampilkan soal atau tugas.</div>
+            <h5 class="mt-4">Daftar Soal & Tugas yang Tersimpan</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped mt-2">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>Kelas / Mapel / Jenis</th>
+                            <th>Detail Pertanyaan & Kunci</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-soal-body">
+                        <!-- Data soal akan dimuat otomatis lewat JavaScript -->
+                    </tbody>
+                </table>
             </div>
 
-            <div class="mt-4">
-                <a href="siswa.html" class="btn btn-secondary">&larr; Kembali ke Dashboard Siswa</a>
+            <!-- Tombol Navigasi Kembali -->
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="kelola-soal.html" class="btn btn-outline-info">&larr; Refresh / Kelola Soal</a>
+                <a href="guru.html" class="btn btn-secondary">&larr; Kembali ke Dashboard Guru</a>
             </div>
         </div>
     </div>
 
     <script>
-        function muatDaftarSoal() {
-            let kelas = document.getElementById("pilih-kelas").value;
-            let mapel = document.getElementById("pilih-mapel").value;
-            let kontainer = document.getElementById("kontainer-soal");
+        document.addEventListener("DOMContentLoaded", function() {
+            tampilkanTabelSoal();
+            ubahFormatForm();
+        });
 
-            if (!kelas || !mapel) {
-                kontainer.innerHTML = `<div class="alert alert-warning text-center">Silakan pilih Kelas dan Mata Pelajaran terlebih dahulu.</div>`;
+        // Fungsi untuk mengubah tampilan form berdasarkan jenis kuis
+        function ubahFormatForm() {
+            let jenis = document.getElementById("input-jenis").value;
+            let areaPg = document.getElementById("area-pg");
+            let areaGambar = document.getElementById("area-gambar");
+            let areaKunci = document.getElementById("area-kunci");
+            let labelPertanyaan = document.getElementById("label-pertanyaan");
+            let labelKunci = document.getElementById("label-kunci");
+            let selectKunci = document.getElementById("input-kunci");
+
+            areaPg.style.display = "none";
+            areaGambar.style.display = "none";
+            areaKunci.style.display = "block";
+
+            if (jenis === "Pilihan Ganda") {
+                areaPg.style.display = "block";
+                labelPertanyaan.innerText = "Pertanyaan Soal";
+                labelKunci.innerText = "Kunci Jawaban";
+                selectKunci.innerHTML = `
+                    <option value="">-- Pilih Kunci Jawaban --</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                `;
+            } else if (jenis === "Mencocokkan Gambar" || jenis === "Puzzle") {
+                areaGambar.style.display = "block";
+                labelPertanyaan.innerText = "Instruksi / Pertanyaan Game";
+                labelKunci.innerText = "Kunci / Jawaban Cocok";
+                selectKunci.innerHTML = `
+                    <option value="Sesuai Sistem Gambar">Otomatis / Sesuai Pasangan Gambar</option>
+                `;
+            } else if (jenis === "Essay") {
+                labelPertanyaan.innerText = "Pertanyaan Essay";
+                labelKunci.innerText = "Catatan Jawaban / Pedoman Guru";
+                selectKunci.innerHTML = `
+                    <option value="Koreksi Manual Guru">Koreksi Manual oleh Guru</option>
+                `;
+            } else if (jenis === "Menulis Ringkasan Materi") {
+                labelPertanyaan.innerText = "Judul / Instruksi Ringkasan Materi";
+                labelKunci.innerText = "Penilaian Guru";
+                selectKunci.innerHTML = `
+                    <option value="Penilaian Kreativitas Siswa">Dinilai Berdasarkan Isi Ringkasan Siswa</option>
+                `;
+            } else {
+                areaPg.style.display = "block";
+            }
+        }
+
+        function simpanSoalBaru() {
+            let kelas = document.getElementById("input-kelas").value;
+            let mapel = document.getElementById("input-mapel").value;
+            let jenis = document.getElementById("input-jenis").value;
+            let pertanyaan = document.getElementById("input-pertanyaan").value.trim();
+            let opsiA = document.getElementById("input-opsiA").value.trim();
+            let opsiB = document.getElementById("input-opsiB").value.trim();
+            let opsiC = document.getElementById("input-opsiC").value.trim();
+            let opsiD = document.getElementById("input-opsiD").value.trim();
+            let gambar = document.getElementById("input-gambar").value.trim();
+            let kunci = document.getElementById("input-kunci").value;
+
+            if (!kelas || !mapel || !jenis || !pertanyaan) {
+                alert("Harap lengkapi Kelas, Mata Pelajaran, Jenis Kuis/Tugas, dan Pertanyaan/Instruksi!");
                 return;
             }
 
             let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
-            // Filter berdasarkan kelas dan mapel yang dipilih
-            let soalFilter = dataSoal.filter(s => s.kelas === kelas && s.mapel === mapel);
+            
+            dataSoal.push({ kelas, mapel, jenis, pertanyaan, opsiA, opsiB, opsiC, opsiD, gambar, kunci });
+            localStorage.setItem("dataSoal", JSON.stringify(dataSoal));
 
-            if (soalFilter.length === 0) {
-                kontainer.innerHTML = `<div class="alert alert-info text-center">Belum ada soal atau tugas untuk <b>${kelas} - ${mapel}</b> ini.</div>`;
+            alert("Soal / Tugas berhasil disimpan!");
+            
+            // Reset form
+            document.getElementById("input-kelas").selectedIndex = 0;
+            document.getElementById("input-mapel").selectedIndex = 0;
+            document.getElementById("input-jenis").selectedIndex = 0;
+            document.getElementById("input-pertanyaan").value = "";
+            document.getElementById("input-opsiA").value = "";
+            document.getElementById("input-opsiB").value = "";
+            document.getElementById("input-opsiC").value = "";
+            document.getElementById("input-opsiD").value = "";
+            document.getElementById("input-gambar").value = "";
+            ubahFormatForm();
+
+            tampilkanTabelSoal();
+        }
+
+        function tampilkanTabelSoal() {
+            let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
+            let tbody = document.getElementById("tabel-soal-body");
+            if (!tbody) return;
+
+            tbody.innerHTML = "";
+
+            if (dataSoal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada soal atau tugas tersedia.</td></tr>`;
                 return;
             }
 
-            let htmlContent = "";
-            soalFilter.forEach((soal, index) => {
-                htmlContent += `<div class="card quiz-card mb-4 p-3 shadow-sm">
-                    <div class="d-flex justify-content-between">
-                        <h5 class="text-primary">Soal No. ${index + 1} <small class="badge badge-secondary">${soal.jenis}</small></h5>
-                    </div>
-                    <p class="font-weight-bold mt-2">${soal.pertanyaan}</p>`;
-
-                // 1. Tampilan Pilihan Ganda
-                if (soal.jenis === "Pilihan Ganda") {
-                    htmlContent += `
-                        <div class="form-check"><input class="form-check-input" type="radio" name="jawaban_${index}" value="A"><label class="form-check-label">A. ${soal.opsiA}</label></div>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="jawaban_${index}" value="B"><label class="form-check-label">B. ${soal.opsiB}</label></div>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="jawaban_${index}" value="C"><label class="form-check-label">C. ${soal.opsiC}</label></div>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="jawaban_${index}" value="D"><label class="form-check-label">D. ${soal.opsiD}</label></div>
-                    `;
-                } 
-                // 2. Tampilan Essay
-                else if (soal.jenis === "Essay") {
-                    htmlContent += `
-                        <div class="form-group">
-                            <textarea class="form-control" rows="3" placeholder="Tulis jawaban essay Anda di sini..."></textarea>
-                        </div>
-                    `;
+            dataSoal.forEach((soal, index) => {
+                let detailInfo = soal.pertanyaan;
+                if(soal.gambar) {
+                    detailInfo += `<br><small class="text-primary">Gambar: ${soal.gambar}</small>`;
                 }
-                // 3. Tampilan Mencocokkan Gambar
-                else if (soal.jenis === "Mencocokkan Gambar") {
-                    htmlContent += `
-                        <div class="mb-3 text-center">
-                            ${soal.gambar ? `<img src="${soal.gambar}" class="img-fluid rounded border mb-2" style="max-height: 200px;" alt="Gambar Soal">` : ''}
-                            <p class="text-muted"><small>Seret atau pilih pasangan gambar yang cocok dengan instruksi di atas.</small></p>
-                        </div>
-                        <div class="match-box text-muted">Area Pasangan Gambar & Jawaban Siswa</div>
-                    `;
-                }
-                // 4. Tampilan Puzzle
-                else if (soal.jenis === "Puzzle") {
-                    htmlContent += `
-                        <div class="mb-3 text-center">
-                            ${soal.gambar ? `<img src="${soal.gambar}" class="img-fluid rounded border mb-2" style="max-height: 200px;" alt="Gambar Puzzle">` : ''}
-                            <p class="text-muted"><small>Susun potongan bagian puzzle/gambar agar membentuk gambar utuh.</small></p>
-                        </div>
-                        <div class="puzzle-box text-muted">Area Permainan Puzzle Interaktif</div>
-                    `;
-                }
-                // 5. Tampilan Menulis Ringkasan Materi
-                else if (soal.jenis === "Menulis Ringkasan Materi") {
-                    htmlContent += `
-                        <div class="form-group">
-                            <textarea class="form-control" rows="5" placeholder="Tuliskan ringkasan materi atau rangkuman Anda di sini..."></textarea>
-                        </div>
-                    `;
-                }
-
-                htmlContent += `</div>`;
+                
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><b>${soal.kelas}</b><br>${soal.mapel}<br><small class="text-muted">${soal.jenis}</small></td>
+                    <td>${detailInfo}<br><span class="badge badge-success mt-1">Kunci/Info: ${soal.kunci}</span></td>
+                    <td><button class="btn btn-danger btn-sm" onclick="hapusSoal(${index})">Hapus</button></td>
+                `;
+                tbody.appendChild(tr);
             });
+        }
 
-            htmlContent += `<button type="button" class="btn btn-success btn-lg btn-block font-weight-bold mt-3" onclick="alert('Jawaban Anda berhasil dikirim ke guru!')">Kirim Jawaban</button>`;
-            kontainer.innerHTML = htmlContent;
+        function hapusSoal(index) {
+            if (confirm("Yakin ingin menghapus soal/tugas ini?")) {
+                let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
+                dataSoal.splice(index, 1);
+                localStorage.setItem("dataSoal", JSON.stringify(dataSoal));
+                tampilkanTabelSoal();
+            }
         }
     </script>
 </body>
