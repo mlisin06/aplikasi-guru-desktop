@@ -1,3 +1,37 @@
+// Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda yang berakhiran /exec
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
+
+let dataSiswaGlobal = [];
+let dataSoalGlobal = [];
+
+document.addEventListener("DOMContentLoaded", function () {
+    muatDataSiswa();
+
+    // Event listener saat kelas dipilih
+    document.getElementById("select-kelas").addEventListener("change", filterNamaSiswa);
+    
+    // Event listener tombol muat soal
+    document.getElementById("btn-muat-soal").addEventListener("click", muatSoalUjian);
+});
+
+// 1. Mengambil data siswa dari Google Sheets
+async function muatDataSiswa() {
+    try {
+        let response = await fetch(`${SCRIPT_URL}?action=getSiswa`);
+        let result = await response.json();
+        
+        if (Array.isArray(result)) {
+            dataSiswaGlobal = result;
+            console.log("Data siswa berhasil dimuat:", dataSiswaGlobal);
+        } else {
+            console.error("Gagal memuat data siswa:", result);
+        }
+    } catch (error) {
+        console.error("Terjadi kesalahan saat mengambil data siswa:", error);
+    }
+}
+
+// 2. Filter nama siswa berdasarkan kelas yang dipilih
 function filterNamaSiswa() {
     let kelasDipilih = document.getElementById("select-kelas").value.trim().toLowerCase();
     let selectSiswa = document.getElementById("select-siswa");
@@ -6,18 +40,14 @@ function filterNamaSiswa() {
     
     if (!kelasDipilih) return;
 
-    // Filter yang fleksibel (mengambil angka dari kelas, misal "Kelas 5" jadi "5")
     let angkaFilter = kelasDipilih.replace(/[^0-9]/g, '');
 
     let filtered = dataSiswaGlobal.filter(s => {
         let kelasSiswa = String(s.kelas || "").trim().toLowerCase();
         let angkaSiswa = kelasSiswa.replace(/[^0-9]/g, '');
         
-        // Cocokkan secara fleksibel (persis sama, atau sama angkanya)
         return kelasSiswa === kelasDipilih || (angkaFilter && angkaSiswa === angkaFilter);
     });
-    
-    console.log(`Siswa untuk ${kelasDipilih}:`, filtered);
 
     if (filtered.length === 0) {
         let opt = document.createElement("option");
@@ -30,8 +60,63 @@ function filterNamaSiswa() {
     filtered.forEach(s => {
         let opt = document.createElement("option");
         opt.value = s.nama;
-        // Menampilkan NIS jika ada, jika tidak langsung Nama
+        // Menampilkan NIS di depan nama secara rapi (jika ada NIS, tampilkan "NIS - Nama")
         opt.textContent = `${s.nis ? s.nis + ' - ' : ''}${s.nama}`;
         selectSiswa.appendChild(opt);
+    });
+}
+
+// 3. Memuat soal ujian berdasarkan Mapel dan Jenis Kuis
+async function muatSoalUjian() {
+    let kelas = document.getElementById("select-kelas").value;
+    let namaSiswa = document.getElementById("select-siswa").value;
+    let mapel = document.getElementById("select-mapel").value;
+    let jenis = document.getElementById("select-jenis").value;
+
+    if (!kelas || !namaSiswa || !mapel || !jenis) {
+        alert("Mohon lengkapi pilihan Kelas, Nama Siswa, Mata Pelajaran, dan Jenis Kuis terlebih dahulu!");
+        return;
+    }
+
+    try {
+        let url = `${SCRIPT_URL}?action=getSoal&mapel=${encodeURIComponent(mapel)}&jenis=${encodeURIComponent(jenis)}`;
+        let response = await fetch(url);
+        let result = await response.json();
+
+        if (Array.isArray(result)) {
+            dataSoalGlobal = result;
+            tampilkanSoal(dataSoalGlobal);
+        } else {
+            alert("Soal tidak ditemukan untuk kriteria tersebut.");
+        }
+    } catch (error) {
+        console.error("Gagal memuat soal:", error);
+        alert("Terjadi kesalahan saat memuat soal dari server.");
+    }
+}
+
+// 4. Menampilkan soal ke halaman web
+function tampilkanSoal(soalList) {
+    let container = document.getElementById("soal-container"); // Pastikan id container soal di HTML Anda sesuai
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (soalList.length === 0) {
+        container.innerHTML = "<p>Tidak ada soal tersedia.</p>";
+        return;
+    }
+
+    soalList.forEach((soal, index) => {
+        let soalDiv = document.createElement("div");
+        soalDiv.className = "soal-item mb-4 p-3 border rounded";
+        soalDiv.innerHTML = `
+            <p><strong>Soal ${index + 1}.</strong> ${soal.pertanyaan}</p>
+            <div class="form-check"><input type="radio" name="jawaban_${index}" value="A" class="form-check-input"> A. ${soal.opsiA}</div>
+            <div class="form-check"><input type="radio" name="jawaban_${index}" value="B" class="form-check-input"> B. ${soal.opsiB}</div>
+            <div class="form-check"><input type="radio" name="jawaban_${index}" value="C" class="form-check-input"> C. ${soal.opsiC}</div>
+            <div class="form-check"><input type="radio" name="jawaban_${index}" value="D" class="form-check-input"> D. ${soal.opsiD}</div>
+        `;
+        container.appendChild(soalDiv);
     });
 }
