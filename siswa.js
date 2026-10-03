@@ -1,4 +1,4 @@
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwYecpmtzM0zXVe8CxXQDON3BL0bVCgupAYVj8Zhd69O27TQqvmZjh2M-DpR077Xbw/exec";
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
 
 let dataSiswaGlobal = [];
 let dataSoalGlobal = [];
