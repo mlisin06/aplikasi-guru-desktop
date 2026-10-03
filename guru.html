@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Pengelolaan Guru - EduAdmin Pro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .header-box { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card-menu { border-radius: 12px; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4 mb-5">
+        <!-- Header Guru -->
+        <div class="header-box">
+            <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px;">
+                <img src="assets/images/tutwuri.png" alt="Logo" style="height: 50px; background-color: white; padding: 3px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                <h3 style="margin: 0; font-size: 20px;">Panel Pengelolaan Guru & Admin</h3>
+            </div>
+            <p class="mb-1 mt-3">Kelola data siswa, input soal berdasarkan jenis kuis, dan pantau hasil ujian di sini.</p>
+            <small>Pencipta Aplikasi: <b>muhlisin06</b></small>
+        </div>
+
+        <!-- Menu Tab / Navigasi Panel Guru -->
+        <ul class="nav nav-tabs mb-4" id="guruTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="tab-soal" data-toggle="tab" href="#content-soal" role="tab">📝 Kelola Soal & Kuis</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-siswa" data-toggle="tab" href="#content-siswa" role="tab">👥 Data Siswa</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-rekap" data-toggle="tab" href="#content-rekap" role="tab">📊 Rekap Nilai / Jawaban</a>
+            </li>
+        </ul>
+
+        <!-- Konten Panel -->
+        <div class="tab-content" id="guruTabContent">
+            
+            <!-- 1. Kelola Soal & Jenis Kuis -->
+            <div class="tab-pane fade show active" id="content-soal" role="tabpanel">
+                <div class="card card-menu p-4">
+                    <h5 class="mb-3 text-primary">Input & Pengaturan Soal Berdasarkan Jenis Kuis</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label><b>Pilih Kelas:</b></label>
+                            <select id="admin-kelas" class="form-control">
+                                <option value="">-- Pilih Kelas --</option>
+                                <option value="Kelas 1">Kelas 1</option>
+                                <option value="Kelas 2">Kelas 2</option>
+                                <option value="Kelas 3">Kelas 3</option>
+                                <option value="Kelas 4">Kelas 4</option>
+                                <option value="Kelas 5">Kelas 5</option>
+                                <option value="Kelas 6">Kelas 6</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label><b>Pilih Mata Pelajaran:</b></label>
+                            <select id="admin-mapel" class="form-control">
+                                <option value="">-- Pilih Mapel --</option>
+                                <option value="PAIBP">PAIBP</option>
+                                <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                                <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                                <option value="Matematika">Matematika</option>
+                                <option value="IPAS">IPAS</option>
+                                <option value="PJOK">PJOK</option>
+                                <option value="Bahasa Inggris">Bahasa Inggris</option>
+                                <option value="Bahasa Jawa">Bahasa Jawa</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label><b>Pilih Jenis Kuis:</b></label>
+                            <select id="admin-jenis-kuis" class="form-control">
+                                <option value="">-- Pilih Jenis Kuis --</option>
+                                <option value="pg-essay">Menjawab Soal PG, Essay, Uraian</option>
+                                <option value="mencocokkan">Mencocokkan Kata</option>
+                                <option value="puzzle">Puzzle</option>
+                                <option value="ringkasan">Membuat Tugas Ringkasan Materi</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><b>Link / Integrasi Google Sheets (Tab Soal):</b></label>
+                        <input type="text" id="script-url" class="form-control" placeholder="Masukkan URL Web App Google Apps Script di sini...">
+                    </div>
+                    <button class="btn btn-primary" onclick="simpanPengaturanSoal()">💾 Simpan & Sinkronkan Soal</button>
+                </div>
+            </div>
+
+            <!-- 2. Data Siswa -->
+            <div class="tab-pane fade" id="content-siswa" role="tabpanel">
+                <div class="card card-menu p-4">
+                    <h5 class="mb-3 text-primary">Daftar Siswa Terdaftar</h5>
+                    <p class="text-muted">Data siswa ini yang nantinya akan muncul secara otomatis saat siswa memilih kelas di halaman `siswa.html`.</p>
+                    <div id="tabel-siswa-container">
+                        <!-- Tabel data siswa akan dimuat di sini -->
+                        <div class="alert alert-secondary">Belum ada data siswa yang dimuat dari Google Sheets.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Rekap Nilai -->
+            <div class="tab-pane fade" id="content-rekap" role="tabpanel">
+                <div class="card card-menu p-4">
+                    <h5 class="mb-3 text-primary">Rekap Hasil Jawaban Siswa</h5>
+                    <p class="text-muted">Pantau hasil kerja siswa (baik PG/Essay, Mencocokkan, Puzzle, maupun Ringkasan Materi) secara *real-time*.</p>
+                    <div id="tabel-rekap-container">
+                        <div class="alert alert-secondary">Memuat data rekap dari tab Jawaban Google Sheets...</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script Bootstrap Pendukung -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="guru.js"></script>
+</body>
+</html>
