@@ -1,102 +1,42 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruang Ujian & Tugas Siswa - EduAdmin Pro</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body { background-color: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .header-box { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .card-soal { border-radius: 12px; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .btn-kirim { font-size: 1.2rem; font-weight: bold; border-radius: 50px; padding: 12px 30px; background: #28a745; border: none; }
-        .btn-kirim:hover { background: #218838; }
-    </style>
-</head>
-<body>
-    <div class="container mt-4 mb-5">
-        <!-- Header Ceria -->
-        <div class="header-box">
-            <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px;">
-                <img src="assets/images/tutwuri.png" alt="Logo" style="height: 50px; background-color: white; padding: 3px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
-                <h3 style="margin: 0; font-size: 20px;">Ruang Ujian & Tugas Siswa</h3>
-            </div>
-            <p class="mb-1 mt-3">Silakan pilih kelas, nama, mata pelajaran, dan jenis kuis dengan teliti sebelum mengerjakan!</p>
-            <small>Pencipta Aplikasi: <b>muhlisin06</b></small>
-        </div>
-
-        <!-- Form Identitas Siswa & Pilihan Kuis yang Terhubung ke Google Sheets -->
-        <div class="card p-4 shadow-sm mb-4 border-0 rounded-lg">
-            <div class="form-row">
-                <!-- Pilih Kelas -->
-                <div class="form-group col-md-3">
-                    <label><b>Pilih Kelas:</b></label>
-                    <select id="select-kelas" class="form-control" onchange="filterNamaSiswa()">
-                        <option value="">-- Pilih Kelas --</option>
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6">Kelas 6</option>
-                    </select>
-                </div>
-
-                <!-- Pilih Nama Siswa (Sinkron dari Tab Siswa GS) -->
-                <div class="form-group col-md-3">
-                    <label><b>Pilih Nama Siswa:</b></label>
-                    <select id="select-siswa" class="form-control">
-                        <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
-                    </select>
-                </div>
-
-                <!-- Pilih Mata Pelajaran -->
-                <div class="form-group col-md-3">
-                    <label><b>Pilih Mata Pelajaran:</b></label>
-                    <select id="select-mapel" class="form-control">
-                        <option value="">-- Pilih Mata Pelajaran --</option>
-                        <option value="PAIBP">PAIBP</option>
-                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                        <option value="Matematika">Matematika</option>
-                        <option value="IPAS">IPAS</option>
-                        <option value="PJOK">PJOK</option>
-                        <option value="Bahasa Inggris">Bahasa Inggris</option>
-                        <option value="Bahasa Jawa">Bahasa Jawa</option>
-                    </select>
-                </div>
-
-                <!-- Pilih Jenis Kuis (Filter Tab Soal GS) -->
-                <div class="form-group col-md-3">
-                    <label><b>Pilih Jenis Kuis:</b></label>
-                    <select id="select-jenis-kuis" class="form-control">
-                        <option value="">-- Pilih Jenis Kuis --</option>
-                        <option value="pg-essay">Menjawab Soal PG, Essay, Uraian</option>
-                        <option value="mencocokkan">Mencocokkan Kata</option>
-                        <option value="puzzle">Puzzle</option>
-                        <option value="ringkasan">Membuat Tugas Ringkasan Materi</option>
-                    </select>
-                </div>
-            </div>
-            <button class="btn btn-info btn-block mt-2 font-weight-bold py-2" onclick="muatSoalUjian()">📂 Muat Soal / Tugas</button>
-        </div>
-
-        <!-- Area Soal Dinamis -->
-        <div id="soal-container">
-            <div class="text-center text-muted p-5">
-                <h5>Silakan lengkapi pilihan di atas, lalu klik "Muat Soal / Tugas".</h5>
-            </div>
-        </div>
-
-        <!-- Tombol Kirim Jawaban -->
-        <div id="submit-container" class="text-center mt-4" style="display: none;">
-            <button class="btn btn-success btn-kirim shadow" onclick="kirimJawabanSiswa()">🚀 Selesai & Kirim Jawaban</button>
-        </div>
+<!-- Ganti bagian baris filter di siswa.html dengan kode ini -->
+<div class="form-row mb-4">
+    <div class="form-group col-md-4">
+        <label>Pilih Kelas:</label>
+        <select id="pilih-kelas" class="form-control">
+            <option value="">-- Pilih Kelas --</option>
+            <option value="Kelas 1">Kelas 1</option>
+            <option value="Kelas 2">Kelas 2</option>
+            <option value="Kelas 3">Kelas 3</option>
+            <option value="Kelas 4">Kelas 4</option>
+            <option value="Kelas 5">Kelas 5</option>
+            <option value="Kelas 6">Kelas 6</option>
+        </select>
+    </div>
+    
+    <div class="form-group col-md-4">
+        <label>Pilih Mata Pelajaran:</label>
+        <select id="pilih-mapel" class="form-control">
+            <option value="">-- Pilih Mata Pelajaran --</option>
+            <option value="PAIBP">PAIBP</option>
+            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+            <option value="Matematika">Matematika</option>
+            <option value="IPAS">IPAS</option>
+            <option value="PJOK">PJOK</option>
+            <option value="Bahasa Inggris">Bahasa Inggris</option>
+            <option value="Bahasa Jawa">Bahasa Jawa</option>
+        </select>
     </div>
 
-    <!-- Script Pendukung -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="siswa.js"></script>
-</body>
-</html>
+    <div class="form-group col-md-4">
+        <label>Pilih Jenis Kuis:</label>
+        <select id="pilih-jenis" class="form-control">
+            <option value="">-- Pilih Jenis Kuis --</option>
+            <option value="Pilihan Ganda">Pilihan Ganda</option>
+            <option value="Essay">Essay</option>
+            <option value="Mencocokkan Gambar">Mencocokkan Gambar</option>
+            <option value="Puzzle">Puzzle</option>
+            <option value="Menulis Ringkasan Materi">Menulis Ringkasan Materi</option>
+        </select>
+    </div>
+</div>
