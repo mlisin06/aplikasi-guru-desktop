@@ -8,33 +8,51 @@ document.addEventListener("DOMContentLoaded", function () {
     muatDataSiswa();
 
     // Event listener saat kelas dipilih
-    document.getElementById("select-kelas").addEventListener("change", filterNamaSiswa);
+    let selectKelas = document.getElementById("select-kelas");
+    if (selectKelas) {
+        selectKelas.addEventListener("change", filterNamaSiswa);
+    }
     
     // Event listener tombol muat soal
-    document.getElementById("btn-muat-soal").addEventListener("click", muatSoalUjian);
+    let btnMuatSoal = document.getElementById("btn-muat-soal");
+    if (btnMuatSoal) {
+        btnMuatSoal.addEventListener("click", muatSoalUjian);
+    }
 });
 
-// 1. Mengambil data siswa dari Google Sheets
+// 1. Mengambil data siswa dari Google Sheets (Aman & Otomatis Filter)
 async function muatDataSiswa() {
     try {
         let response = await fetch(`${SCRIPT_URL}?action=getSiswa`);
         let result = await response.json();
         
+        console.log("Respon server dari Google Sheets:", result);
+        
         if (Array.isArray(result)) {
             dataSiswaGlobal = result;
             console.log("Data siswa berhasil dimuat:", dataSiswaGlobal);
+            
+            // Jika dropdown kelas sudah terlanjur dipilih sebelum data selesai ditarik, jalankan filter otomatis
+            let selectKelas = document.getElementById("select-kelas");
+            if (selectKelas && selectKelas.value) {
+                filterNamaSiswa();
+            }
         } else {
-            console.error("Gagal memuat data siswa:", result);
+            console.error("Format data dari server bukan array:", result);
         }
     } catch (error) {
         console.error("Terjadi kesalahan saat mengambil data siswa:", error);
     }
 }
 
-// 2. Filter nama siswa berdasarkan kelas yang dipilih
+// 2. Filter nama siswa berdasarkan kelas yang dipilih (Fleksibel & Aman dari error)
 function filterNamaSiswa() {
-    let kelasDipilih = document.getElementById("select-kelas").value.trim().toLowerCase();
+    let selectKelas = document.getElementById("select-kelas");
     let selectSiswa = document.getElementById("select-siswa");
+    
+    if (!selectKelas || !selectSiswa) return;
+
+    let kelasDipilih = selectKelas.value.trim().toLowerCase();
     
     selectSiswa.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
     
@@ -46,7 +64,10 @@ function filterNamaSiswa() {
         let kelasSiswa = String(s.kelas || "").trim().toLowerCase();
         let angkaSiswa = kelasSiswa.replace(/[^0-9]/g, '');
         
-        return kelasSiswa === kelasDipilih || (angkaFilter && angkaSiswa === angkaFilter);
+        return kelasSiswa === kelasDipilih || 
+               kelasSiswa.includes(kelasDipilih) || 
+               kelasDipilih.includes(kelasSiswa) ||
+               (angkaFilter && angkaSiswa === angkaFilter);
     });
 
     if (filtered.length === 0) {
@@ -60,7 +81,7 @@ function filterNamaSiswa() {
     filtered.forEach(s => {
         let opt = document.createElement("option");
         opt.value = s.nama;
-        // Menampilkan NIS di depan nama secara rapi (jika ada NIS, tampilkan "NIS - Nama")
+        // Menampilkan NIS di depan nama secara rapi (contoh: "0126 - shane")
         opt.textContent = `${s.nis ? s.nis + ' - ' : ''}${s.nama}`;
         selectSiswa.appendChild(opt);
     });
@@ -68,10 +89,10 @@ function filterNamaSiswa() {
 
 // 3. Memuat soal ujian berdasarkan Mapel dan Jenis Kuis
 async function muatSoalUjian() {
-    let kelas = document.getElementById("select-kelas").value;
-    let namaSiswa = document.getElementById("select-siswa").value;
-    let mapel = document.getElementById("select-mapel").value;
-    let jenis = document.getElementById("select-jenis").value;
+    let kelas = document.getElementById("select-kelas")?.value;
+    let namaSiswa = document.getElementById("select-siswa")?.value;
+    let mapel = document.getElementById("select-mapel")?.value;
+    let jenis = document.getElementById("select-jenis")?.value;
 
     if (!kelas || !namaSiswa || !mapel || !jenis) {
         alert("Mohon lengkapi pilihan Kelas, Nama Siswa, Mata Pelajaran, dan Jenis Kuis terlebih dahulu!");
@@ -97,7 +118,7 @@ async function muatSoalUjian() {
 
 // 4. Menampilkan soal ke halaman web
 function tampilkanSoal(soalList) {
-    let container = document.getElementById("soal-container"); // Pastikan id container soal di HTML Anda sesuai
+    let container = document.getElementById("soal-container");
     if (!container) return;
 
     container.innerHTML = "";
