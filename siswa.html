@@ -16,17 +16,19 @@
 <body>
     <div class="container mt-4 mb-5">
         <!-- Header Ceria -->
-      <img src="assets/images/tutwuri.png" alt="Logo" style="height: 50px; background-color: white; padding: 3px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    <h3> Ruang Ujian & Tugas Siswa </h3>
-</div>
-            <p class="mb-1">Silakan pilih kelas, nama, dan mata pelajaran dengan teliti sebelum mengerjakan!</p>
+        <div class="header-box">
+            <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px;">
+                <img src="assets/images/tutwuri.png" alt="Logo" style="height: 50px; background-color: white; padding: 3px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                <h3 style="margin: 0; font-size: 20px;">Ruang Ujian & Tugas Siswa</h3>
+            </div>
+            <p class="mb-1 mt-3">Silakan pilih kelas, nama, mata pelajaran, dan jenis kuis dengan teliti sebelum mengerjakan!</p>
             <small>Pencipta Aplikasi: <b>muhlisin06</b></small>
         </div>
 
         <!-- Form Identitas Siswa -->
         <div class="card p-4 shadow-sm mb-4 border-0 rounded-lg">
             <div class="form-row">
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-3">
                     <label><b>Pilih Kelas:</b></label>
                     <select id="select-kelas" class="form-control" onchange="filterNamaSiswa()">
                         <option value="">-- Pilih Kelas --</option>
@@ -38,13 +40,13 @@
                         <option value="Kelas 6">Kelas 6</option>
                     </select>
                 </div>
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-3">
                     <label><b>Pilih Nama Siswa:</b></label>
                     <select id="select-siswa" class="form-control">
                         <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
                     </select>
                 </div>
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-3">
                     <label><b>Pilih Mata Pelajaran:</b></label>
                     <select id="select-mapel" class="form-control">
                         <option value="">-- Pilih Mata Pelajaran --</option>
@@ -58,6 +60,17 @@
                         <option value="Bahasa Jawa">Bahasa Jawa</option>
                     </select>
                 </div>
+                <!-- Pilih Jenis Kuis (Disisipkan di sini agar sejajar di kolom Bootstrap) -->
+                <div class="form-group col-md-3">
+                    <label><b>Pilih Jenis Kuis:</b></label>
+                    <select id="select-jenis-kuis" class="form-control">
+                        <option value="">-- Pilih Jenis Kuis --</option>
+                        <option value="pg-essay">Menjawab Soal PG, Essay, Uraian</option>
+                        <option value="mencocokkan">Mencocokkan Kata</option>
+                        <option value="puzzle">Puzzle</option>
+                        <option value="ringkasan">Membuat Tugas Ringkasan Materi</option>
+                    </select>
+                </div>
             </div>
             <button class="btn btn-info btn-block mt-2" onclick="muatSoalUjian()">📂 Muat Soal / Tugas</button>
         </div>
@@ -65,7 +78,7 @@
         <!-- Area Soal -->
         <div id="soal-container">
             <div class="text-center text-muted p-5">
-                <h5>Silakan lengkapi pilihan Kelas, Nama, dan Mapel di atas, lalu klik "Muat Soal".</h5>
+                <h5>Silakan lengkapi pilihan di atas, lalu klik "Muat Soal / Tugas".</h5>
             </div>
         </div>
 
