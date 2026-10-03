@@ -10,18 +10,33 @@
     <div class="container mt-5 mb-5">
         <div class="card shadow p-4">
             <h3 class="text-info mb-3">📝 Input & Kelola Soal Ujian</h3>
-            <p class="text-muted">Masukkan soal pilihan ganda beserta mata pelajaran dan jenis kuisnya di sini.</p>
+            <p class="text-muted">Pilih mata pelajaran dan jenis kuis, lalu masukkan soal pilihan ganda di bawah ini.</p>
             
-            <!-- Diubah menggunakan div biasa agar tidak bergantung pada form submit -->
             <div id="form-tambah-soal" class="mb-4">
                 <div class="form-row">
+                    <!-- Mata Pelajaran diubah menjadi Dropdown -->
                     <div class="form-group col-md-6">
                         <label>Mata Pelajaran</label>
-                        <input type="text" id="input-mapel" class="form-control" placeholder="Contoh: Matematika">
+                        <select id="input-mapel" class="form-control">
+                            <option value="">-- Pilih Mata Pelajaran --</option>
+                            <option value="Matematika">Matematika</option>
+                            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                            <option value="Bahasa Inggris">Bahasa Inggris</option>
+                            <option value="IPA">IPA</option>
+                            <option value="IPS">IPS</option>
+                            <option value="PPKn">PPKn</option>
+                        </select>
                     </div>
+                    <!-- Jenis Kuis diubah menjadi Dropdown -->
                     <div class="form-group col-md-6">
                         <label>Jenis Kuis</label>
-                        <input type="text" id="input-jenis" class="form-control" placeholder="Contoh: Ujian Harian">
+                        <select id="input-jenis" class="form-control">
+                            <option value="">-- Pilih Jenis Kuis --</option>
+                            <option value="Ujian Harian">Ujian Harian</option>
+                            <option value="Ujian Tengah Semester (UTS)">Ujian Tengah Semester (UTS)</option>
+                            <option value="Ujian Akhir Semester (UAS)">Ujian Akhir Semester (UAS)</option>
+                            <option value="Tugas / PR">Tugas / PR</option>
+                        </select>
                     </div>
                 </div>
 
@@ -52,7 +67,6 @@
                     </div>
                 </div>
 
-                <!-- Tombol menggunakan onclick langsung untuk menghindari error form -->
                 <button type="button" onclick="simpanSoalBaru()" class="btn btn-info btn-block font-weight-bold text-white">Simpan Soal</button>
             </div>
 
@@ -82,14 +96,13 @@
     </div>
 
     <script>
-        // Jalankan saat halaman siap
         document.addEventListener("DOMContentLoaded", function() {
             tampilkanTabelSoal();
         });
 
         function simpanSoalBaru() {
-            let mapel = document.getElementById("input-mapel").value.trim();
-            let jenis = document.getElementById("input-jenis").value.trim();
+            let mapel = document.getElementById("input-mapel").value;
+            let jenis = document.getElementById("input-jenis").value;
             let pertanyaan = document.getElementById("input-pertanyaan").value.trim();
             let opsiA = document.getElementById("input-opsiA").value.trim();
             let opsiB = document.getElementById("input-opsiB").value.trim();
@@ -97,7 +110,7 @@
             let opsiD = document.getElementById("input-opsiD").value.trim();
 
             if (!mapel || !jenis || !pertanyaan || !opsiA || !opsiB) {
-                alert("Harap isi minimal Mata Pelajaran, Jenis Kuis, Pertanyaan, dan Pilihan A & B!");
+                alert("Harap pilih Mata Pelajaran, Jenis Kuis, serta isi Pertanyaan dan Pilihan A & B!");
                 return;
             }
 
@@ -109,8 +122,8 @@
             alert("Soal berhasil disimpan ke memori lokal!");
             
             // Kosongkan form
-            document.getElementById("input-mapel").value = "";
-            document.getElementById("input-jenis").value = "";
+            document.getElementById("input-mapel").selectedIndex = 0;
+            document.getElementById("input-jenis").selectedIndex = 0;
             document.getElementById("input-pertanyaan").value = "";
             document.getElementById("input-opsiA").value = "";
             document.getElementById("input-opsiB").value = "";
