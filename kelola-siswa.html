@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Data Siswa - Panel Guru</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5 mb-5">
+        <div class="card shadow p-4">
+            <h3 class="text-primary mb-3">🎓 Input & Kelola Data Siswa</h3>
+            <p class="text-muted">Masukkan data siswa di bawah ini agar mereka bisa memilih nama saat login ujian.</p>
+            
+            <form id="form-tambah-siswa" class="mb-4">
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label>Nama Siswa</label>
+                        <input type="text" id="input-nama" class="form-control" placeholder="Contoh: Shane" required>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label>NIS</label>
+                        <input type="text" id="input-nis" class="form-control" placeholder="Contoh: 0126" required>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label>Kelas</label>
+                        <input type="text" id="input-kelas" class="form-control" placeholder="Contoh: Kelas 5" required>
+                    </div>
+                    <div class="form-group col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success btn-block font-weight-bold">Simpan</button>
+                    </div>
+                </div>
+            </form>
+
+            <hr>
+
+            <h5 class="mt-4">Daftar Siswa yang Tersimpan</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped mt-2">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Siswa</th>
+                            <th>NIS</th>
+                            <th>Kelas</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-siswa-body">
+                        <!-- Data akan dimuat otomatis lewat JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                <a href="guru.html" class="btn btn-secondary">&larr; Kembali ke Dashboard Guru</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", tampilkanTabelSiswa);
+
+        document.getElementById("form-tambah-siswa").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            let nama = document.getElementById("input-nama").value.trim();
+            let nis = document.getElementById("input-nis").value.trim();
+            let kelas = document.getElementById("input-kelas").value.trim();
+
+            let dataSiswa = JSON.parse(localStorage.getItem("dataSiswa")) || [];
+            
+            dataSiswa.push({ nama, nis, kelas });
+            localStorage.setItem("dataSiswa", JSON.stringify(dataSiswa));
+
+            alert("Data siswa berhasil ditambahkan!");
+            document.getElementById("form-tambah-siswa").reset();
+            tampilkanTabelSiswa();
+        });
+
+        function tampilkanTabelSiswa() {
+            let dataSiswa = JSON.parse(localStorage.getItem("dataSiswa")) || [];
+            let tbody = document.getElementById("tabel-siswa-body");
+            tbody.innerHTML = "";
+
+            if (dataSiswa.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Belum ada data siswa.</td></tr>`;
+                return;
+            }
+
+            dataSiswa.forEach((siswa, index) => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${siswa.nama}</td>
+                    <td>${siswa.nis || '-'}</td>
+                    <td>${siswa.kelas}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="hapusSiswa(${index})">Hapus</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.hapusSiswa = function(index) {
+            if (confirm("Yakin ingin menghapus siswa ini?")) {
+                let dataSiswa = JSON.parse(localStorage.getItem("dataSiswa")) || [];
+                dataSiswa.splice(index, 1);
+                localStorage.setItem("dataSiswa", JSON.stringify(dataSiswa));
+                tampilkanTabelSiswa();
+            }
+        }
+    </script>
+</body>
+</html>
