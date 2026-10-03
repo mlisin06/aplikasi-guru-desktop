@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Nilai Siswa - Panel Guru</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
+        .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .table th, .table td { vertical-align: middle !important; text-align: center; }
+        .table th:nth-child(3), .table td:nth-child(3) { text-align: left; } /* Nama rata kiri */
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4 mb-5 px-4">
+        <div class="card card-custom p-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                <div>
+                    <h3 class="text-success font-weight-bold mb-1">📊 Rekap Nilai & Tugas Siswa</h3>
+                    <p class="text-muted small mb-0">Rekap nilai per siswa berdasarkan mata pelajaran dengan perhitungan rata-rata dari kuis yang dikerjakan.</p>
+                </div>
+                <div class="mt-2 mt-md-0">
+                    <button class="btn btn-outline-danger btn-sm font-weight-bold" onclick="hapusSemuaNilai()">🗑️ Hapus Semua Nilai</button>
+                </div>
+            </div>
+
+            <!-- Filter Mata Pelajaran & Kelas -->
+            <div class="form-row mb-4 bg-light p-3 rounded">
+                <div class="form-group col-md-4 mb-2">
+                    <label class="small font-weight-bold">Filter Kelas:</label>
+                    <select id="filter-kelas" class="form-control form-control-sm" onchange="tampilkanRekapNilai()">
+                        <option value="">-- Semua Kelas --</option>
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-4 mb-2">
+                    <label class="small font-weight-bold">Filter Mata Pelajaran:</label>
+                    <select id="filter-mapel" class="form-control form-control-sm" onchange="tampilkanRekapNilai()">
+                        <option value="">-- Semua Mata Pelajaran --</option>
+                        <option value="PAIBP">PAIBP</option>
+                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="IPAS">IPAS</option>
+                        <option value="PJOK">PJOK</option>
+                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                        <option value="Bahasa Jawa">Bahasa Jawa</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>Kelas</th>
+                            <th>Nama Siswa</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Pilihan Ganda</th>
+                            <th>Essay</th>
+                            <th>Mencocokkan Gambar</th>
+                            <th>Puzzle</th>
+                            <th>Ringkasan Materi</th>
+                            <th>Nilai Akhir (Rata-rata)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-nilai-body">
+                        <!-- Data dirender otomatis via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <a href="guru.html" class="btn btn-secondary">&larr; Kembali ke Dashboard Guru</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            tampilkanRekapNilai();
+        });
+
+        function tampilkanRekapNilai() {
+            let dataNilai = JSON.parse(localStorage.getItem("dataNilai")) || [];
+            let filterKelas = document.getElementById("filter-kelas").value;
+            let filterMapel = document.getElementById("filter-mapel").value;
+            let tbody = document.getElementById("tabel-nilai-body");
+            tbody.innerHTML = "";
+
+            // Filter data berdasarkan pilihan dropdown guru
+            let dataFiltered = dataNilai.filter(item => {
+                let matchKelas = filterKelas ? item.kelas === filterKelas : true;
+                let matchMapel = filterMapel ? item.mapel === filterMapel : true;
+                return matchKelas && matchMapel;
+            });
+
+            if (dataFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">Belum ada data rekap nilai yang sesuai.</td></tr>`;
+                return;
+            }
+
+            // Kelompokkan data berdasarkan kombinasi: Kelas + Nama + Mapel
+            let rekapMap = {};
+            dataFiltered.forEach(item => {
+                let key = `${item.kelas}_${item.nama}_${item.mapel}`;
+                if (!rekapMap[key]) {
+                    rekapMap[key] = {
+                        kelas: item.kelas,
+                        nama: item.nama,
+                        mapel: item.mapel,
+                        "Pilihan Ganda": null,
+                        "Essay": null,
+                        "Mencocokkan Gambar": null,
+                        "Puzzle": null,
+                        "Menulis Ringkasan Materi": null
+                    };
+                }
+                // Masukkan nilai ke jenis kuis yang sesuai
+                rekapMap[key][item.jenis] = item.nilai;
+            });
+
+            let index = 1;
+            for (let key in rekapMap) {
+                let row = rekapMap[key];
+                
+                // Hitung rata-rata hanya dari kuis yang dikerjakan (tidak null)
+                let totalNilai = 0;
+                let jumlahDikerjakan = 0;
+
+                let jenisKuisList = ["Pilihan Ganda", "Essay", "Mencocokkan Gambar", "Puzzle", "Menulis Ringkasan Materi"];
+                jenisKuisList.forEach(jenis => {
+                    if (row[jenis] !== null) {
+                        totalNilai += row[jenis];
+                        jumlahDikerjakan++;
+                    }
+                });
+
+                let nilaiAkhir = jumlahDikerjakan > 0 ? Math.round(totalNilai / jumlahDikerjakan) : 0;
+                let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
+
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${index++}</td>
+                    <td><b>${row.kelas}</b></td>
+                    <td class="font-weight-bold text-left">${row.nama}</td>
+                    <td><span class="badge badge-secondary">${row.mapel}</span></td>
+                    <td>${row["Pilihan Ganda"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Pilihan Ganda"]}</span>` : '<span class="text-muted">-</span>'}</td>
+                    <td>${row["Essay"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Essay"]}</span>` : '<span class="text-muted">-</span>'}</td>
+                    <td>${row["Mencocokkan Gambar"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Mencocokkan Gambar"]}</span>` : '<span class="text-muted">-</span>'}</td>
+                    <td>${row["Puzzle"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Puzzle"]}</span>` : '<span class="text-muted">-</span>'}</td>
+                    <td>${row["Menulis Ringkasan Materi"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Menulis Ringkasan Materi"]}</span>` : '<span class="text-muted">-</span>'}</td>
+                    <td><span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span></td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function hapusSemuaNilai() {
+            if (confirm("Apakah Anda yakin ingin menghapus seluruh rekap nilai siswa? Data yang dihapus tidak dapat dikembalikan!")) {
+                localStorage.removeItem("dataNilai");
+                tampilkanRekapNilai();
+                alert("Semua rekap nilai berhasil dikosongkan.");
+            }
+        }
+    </script>
+</body>
+</html>
