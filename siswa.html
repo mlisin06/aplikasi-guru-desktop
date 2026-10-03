@@ -7,68 +7,28 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-        }
-        .main-header {
-            background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
-            color: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 97, 255, 0.15);
-        }
-        .card-filter {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.07);
-            background: #ffffff;
-        }
-        .quiz-card {
-            border: none;
-            border-left: 6px solid #0061ff;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.2s ease;
-        }
-        .quiz-card:hover {
-            transform: translateY(-2px);
-        }
-        .form-control {
-            border-radius: 10px;
-            padding: 10px 15px;
-            height: calc(1.5em + 1rem + 2px);
-        }
-        .btn-custom {
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .puzzle-box {
-            background: #f8f9fa;
-            border: 2px dashed #0061ff;
-            border-radius: 12px;
-            padding: 20px;
-        }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+        .main-header { background: linear-gradient(135deg, #0061ff 0%, #60efff 100%); color: white; border-radius: 15px; box-shadow: 0 10px 20px rgba(0, 97, 255, 0.15); }
+        .card-filter { border: none; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.07); background: #ffffff; }
+        .quiz-card { border: none; border-left: 6px solid #0061ff; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .form-control { border-radius: 10px; padding: 10px 15px; height: calc(1.5em + 1rem + 2px); }
+        .btn-custom { border-radius: 10px; padding: 12px 20px; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .puzzle-box { background: #f8f9fa; border: 2px dashed #0061ff; border-radius: 12px; padding: 20px; }
     </style>
 </head>
 <body>
     <div class="container py-5">
-        <!-- Header Banner -->
         <div class="main-header p-4 mb-4 text-center">
             <h2 class="font-weight-bold mb-2">🎓 Ruang Ujian & Tugas Siswa</h2>
-            <p class="mb-0 text-white-50">Silakan pilih kelas, masukkan nama, dan pilih materi pelajaran dengan teliti sebelum mengerjakan!</p>
+            <p class="mb-0 text-white-50">Silakan pilih kelas, nama Anda, dan materi pelajaran dengan teliti sebelum mengerjakan!</p>
         </div>
 
-        <!-- Filter Card -->
         <div class="card card-filter p-4 mb-4">
             <h5 class="text-primary font-weight-bold mb-3">📋 Identitas & Pilih Kuis</h5>
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label class="font-weight-bold text-muted small">Pilih Kelas</label>
-                    <select id="pilih-kelas" class="form-control">
+                    <select id="pilih-kelas" class="form-control" onchange="muatNamaSiswa()">
                         <option value="">-- Pilih Kelas --</option>
                         <option value="Kelas 1">Kelas 1</option>
                         <option value="Kelas 2">Kelas 2</option>
@@ -81,7 +41,9 @@
                 
                 <div class="form-group col-md-3">
                     <label class="font-weight-bold text-muted small">Nama Lengkap Siswa</label>
-                    <input type="text" id="pilih-nama" class="form-control" placeholder="Contoh: Shane (No. Absen)">
+                    <select id="pilih-nama" class="form-control">
+                        <option value="">-- Pilih Kelas Dulu --</option>
+                    </select>
                 </div>
 
                 <div class="form-group col-md-3">
@@ -117,20 +79,43 @@
             </button>
         </div>
 
-        <!-- Area Tampil Soal -->
         <div id="kontainer-soal">
             <div class="card card-filter text-center py-5">
-                <h5 class="text-muted">✨ Belum ada soal yang dimuat. Silakan lengkapi formulir di atas!</h5>
+                <h5 class="text-muted">✨ Silakan pilih kelas, nama, mapel, dan jenis kuis di atas!</h5>
             </div>
         </div>
 
-        <!-- Navigasi Kembali -->
         <div class="mt-4 text-center">
             <a href="index.html" class="btn btn-light btn-custom text-muted border">&larr; Kembali ke Beranda Utama</a>
         </div>
     </div>
 
     <script>
+        // Fungsi otomatis memuat nama siswa berdasarkan kelas yang dipilih
+        function muatNamaSiswa() {
+            let kelasDipilih = document.getElementById("pilih-kelas").value;
+            let dropdownNama = document.getElementById("pilih-nama");
+            
+            dropdownNama.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
+
+            if (!kelasDipilih) return;
+
+            let dataSiswa = JSON.parse(localStorage.getItem("dataSiswa")) || [];
+            let siswaFilter = dataSiswa.filter(s => s.kelas === kelasDipilih);
+
+            if (siswaFilter.length === 0) {
+                dropdownNama.innerHTML = '<option value="">(Belum ada siswa terdaftar di kelas ini)</option>';
+                return;
+            }
+
+            siswaFilter.forEach(s => {
+                let opt = document.createElement("option");
+                opt.value = s.nama;
+                opt.textContent = s.nama;
+                dropdownNama.appendChild(opt);
+            });
+        }
+
         function acakHuruf(kata) {
             if (!kata) return "";
             let arr = kata.trim().split("");
@@ -147,7 +132,7 @@
 
         function muatDaftarSoal() {
             let kelas = document.getElementById("pilih-kelas").value;
-            let nama = document.getElementById("pilih-nama").value.trim();
+            let nama = document.getElementById("pilih-nama").value;
             let mapel = document.getElementById("pilih-mapel").value;
             let jenis = document.getElementById("pilih-jenis").value;
             let kontainer = document.getElementById("kontainer-soal");
@@ -164,7 +149,6 @@
                 kontainer.innerHTML = `
                     <div class="card card-filter text-center py-5">
                         <h5 class="text-danger">⚠️ Belum ada soal/tugas untuk <b>${kelas} - ${mapel} (${jenis})</b>.</h5>
-                        <p class="text-muted small mt-2">Pastikan guru sudah memasukkan soal melalui Panel Guru.</p>
                     </div>`;
                 return;
             }
@@ -186,37 +170,23 @@
                         <div class="custom-control custom-radio"><input class="custom-control-input" type="radio" id="optD_${index}" name="jawaban_${index}" value="D"><label class="custom-control-label" for="optD_${index}">D. ${soal.opsiD}</label></div>
                     `;
                 } else if (soal.jenis === "Essay") {
-                    htmlContent += `
-                        <div class="form-group mt-3">
-                            <textarea id="jawaban_${index}" class="form-control" rows="3" placeholder="Tulis jawaban essay Anda di sini..."></textarea>
-                        </div>
-                    `;
+                    htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="3" placeholder="Tulis jawaban essay Anda..."></textarea></div>`;
                 } else if (soal.jenis === "Mencocokkan Gambar") {
                     htmlContent += `
-                        <div class="mb-3 text-center">
-                            ${soal.gambar ? `<img src="${soal.gambar}" class="img-fluid rounded shadow-sm border mb-2" style="max-height: 220px;" alt="Gambar Soal">` : ''}
-                        </div>
-                        <div class="form-group">
-                            <input type="text" id="jawaban_${index}" class="form-control" placeholder="Tulis jawaban atau pasangan yang sesuai...">
-                        </div>
+                        <div class="mb-3 text-center">${soal.gambar ? `<img src="${soal.gambar}" class="img-fluid rounded shadow-sm border mb-2" style="max-height: 220px;" alt="Gambar Soal">` : ''}</div>
+                        <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control" placeholder="Tulis jawaban atau pasangan..."></div>
                     `;
                 } else if (soal.jenis === "Puzzle") {
                     let hurufAcak = acakHuruf(soal.kunci || "SEKOLAH");
                     htmlContent += `
                         <div class="puzzle-box text-center my-3">
-                            <span class="text-muted small d-block mb-1 font-weight-bold">SUSUNLAH HURUF-HURUF BERIKUT:</span>
-                            <h3 class="text-danger font-weight-bold tracking-wide mb-0" style="letter-spacing: 6px;">${hurufAcak}</h3>
+                            <span class="text-muted small d-block mb-1 font-weight-bold">SUSUNLAH HURUF BERIKUT:</span>
+                            <h3 class="text-danger font-weight-bold mb-0" style="letter-spacing: 6px;">${hurufAcak}</h3>
                         </div>
-                        <div class="form-group">
-                            <input type="text" id="jawaban_${index}" class="form-control font-weight-bold text-center text-uppercase" placeholder="Ketik kata yang benar di sini...">
-                        </div>
+                        <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control font-weight-bold text-center text-uppercase" placeholder="Ketik kata yang benar..."></div>
                     `;
                 } else if (soal.jenis === "Menulis Ringkasan Materi") {
-                    htmlContent += `
-                        <div class="form-group mt-3">
-                            <textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tuliskan rangkuman atau ringkasan materi Anda di sini..."></textarea>
-                        </div>
-                    `;
+                    htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tuliskan ringkasan materi Anda..."></textarea></div>`;
                 }
 
                 htmlContent += `</div>`;
