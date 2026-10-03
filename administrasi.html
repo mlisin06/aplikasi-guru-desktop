@@ -3,84 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administrasi Guru - EduAdmin Pro</title>
+    <title>Pusat Administrasi Guru</title>
+    <!-- CSS Bootstrap dll -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body { background-color: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .header-box { background: linear-gradient(135deg, #28a745, #20c997); color: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .card-admin { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: white; padding: 25px; margin-bottom: 20px; }
-    </style>
 </head>
 <body>
-    <div class="container mt-4 mb-5">
-        <!-- Header Administrasi -->
-        <div class="header-box">
-            <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px;">
-                <img src="assets/images/tutwuri.png" alt="Logo" style="height: 50px; background-color: white; padding: 3px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
-                <h3 style="margin: 0; font-size: 20px;">📂 Pusat Administrasi Guru</h3>
-            </div>
-            <p class="mb-1 mt-3">Kelola dokumen perangkat pembelajaran, data guru, absensi, serta administrasi sekolah dengan mudah.</p>
-            <small>Pencipta Aplikasi: <b>muhlisin06</b></small>
+    <div class="container mt-4">
+        <!-- Header & Konten Anda -->
+        <div class="card p-4">
+            <h3>Pusat Administrasi Guru</h3>
+            <!-- Tombol Kelola Perangkat -->
+            <button id="btn-kelola-perangkat" class="btn btn-success mt-3">Kelola Perangkat</button>
         </div>
 
-        <!-- Tombol Kembali ke Panel Guru -->
-        <a href="guru.html" class="btn btn-secondary mb-4 font-weight-bold">← Kembali ke Panel Utama Guru</a>
-
-        <!-- Konten Administrasi -->
-        <div class="row">
-            <!-- Modul 1: Perangkat Pembelajaran -->
-            <div class="col-md-6 mb-4">
-                <div class="card card-admin border-success h-100">
-                    <h5 class="text-success font-weight-bold mb-3">📑 Perangkat Pembelajaran</h5>
-                    <p class="text-muted small">Akses dan unggah dokumen Kurikulum, ATP, CP, Modul Ajar, dan RPP.</p>
-                    <a href="#perangkat" class="btn btn-outline-success mt-auto">Kelola Perangkat</a>
-                </div>
-            </div>
-
-            <!-- Modul 2: Data Kehadiran & Absensi -->
-            <div class="col-md-6 mb-4">
-                <div class="card card-admin border-info h-100">
-                    <h5 class="text-info font-weight-bold mb-3">📊 Rekap Absensi & Siswa</h5>
-                    <p class="text-muted small">Pantau kehadiran harian siswa serta rekapitulasi nilai ujian secara menyeluruh.</p>
-                    <a href="#absensi" class="btn btn-outline-info mt-auto">Lihat Rekap Absensi</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabel Ringkasan Dokumen -->
-        <div class="card card-admin">
-            <h5 class="font-weight-bold mb-3">📋 Daftar Dokumen Administrasi Aktif</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Nama Dokumen / Berkas</th>
-                            <th>Kategori</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Kalender Pendidikan & Jadwal Mengajar</td>
-                            <td>Umum</td>
-                            <td><span class="badge badge-success">Tersedia</span></td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Silabus & Capaian Pembelajaran (CP)</td>
-                            <td>Kurikulum</td>
-                            <td><span class="badge badge-success">Tersedia</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- Tabel Tempat Menampilkan Data Kurikulum -->
+        <div class="card p-4 mt-3">
+            <h5>Daftar Kurikulum & Perangkat</h5>
+            <table class="table table-bordered mt-2">
+                <thead>
+                    <tr>
+                        <th>Kelas</th>
+                        <th>Mapel</th>
+                        <th>Fase</th>
+                        <th>Capaian Pembelajaran (CP)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-kurikulum-body">
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Klik "Kelola Perangkat" untuk memuat data dari Google Sheets.</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Script Pendukung -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- TEMPAT MENARUH KODE JAVASCRIPT -->
+    <script>
+        // Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda yang terbaru!
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
+
+        document.getElementById('btn-kelola-perangkat').addEventListener('click', function() {
+            muatDataKurikulum();
+        });
+
+        function muatDataKurikulum() {
+            const url = SCRIPT_URL + "?action=getKurikulum";
+            
+            // Tampilkan pesan loading
+            const tbody = document.getElementById('tabel-kurikulum-body');
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-info">Memuat data dari Google Sheets...</td></tr>`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Data Kurikulum:", data);
+                    tbody.innerHTML = ""; // Kosongkan tabel
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Tidak ada data ditemukan di tab Kurikulum.</td></tr>`;
+                        return;
+                    }
+
+                    // Masukkan data ke dalam tabel secara otomatis
+                    data.forEach(item => {
+                        let row = `<tr>
+                            <td>${item.kelas}</td>
+                            <td>${item.mapel}</td>
+                            <td>${item.fase}</td>
+                            <td>${item.cp}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                })
+                .catch(error => {
+                    console.error("Terjadi kesalahan:", error);
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Gagal memuat data dari Google Sheets. Periksa URL Apps Script Anda.</td></tr>`;
+                });
+        }
+    </script>
 </body>
 </html>
