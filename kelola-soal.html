@@ -85,7 +85,7 @@
                     </div>
                 </div>
 
-                <!-- Bagian Khusus Mencocokkan Gambar / Puzzle -->
+                <!-- Bagian Khusus Mencocokkan Gambar -->
                 <div id="area-gambar" style="display: none;">
                     <div class="form-group">
                         <label>Link / URL Gambar Pendukung</label>
@@ -93,16 +93,18 @@
                     </div>
                 </div>
 
-                <!-- Kunci Jawaban / Petunjuk Penilaian -->
-                <div class="form-group col-md-6 px-0" id="area-kunci">
+                <!-- Kunci Jawaban / Input Dinamis -->
+                <div class="form-group col-md-6 px-0" id="area-kunci-container">
                     <label id="label-kunci">Kunci Jawaban</label>
-                    <select id="input-kunci" class="form-control border-info font-weight-bold text-info">
-                        <option value="">-- Pilih Kunci Jawaban --</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
+                    <div id="wrapper-kunci">
+                        <select id="input-kunci-select" class="form-control border-info font-weight-bold text-info">
+                            <option value="">-- Pilih Kunci Jawaban --</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
                 </div>
 
                 <button type="button" onclick="simpanSoalBaru()" class="btn btn-info btn-block font-weight-bold text-white mt-3">Simpan Soal / Tugas</button>
@@ -146,47 +148,62 @@
             let jenis = document.getElementById("input-jenis").value;
             let areaPg = document.getElementById("area-pg");
             let areaGambar = document.getElementById("area-gambar");
-            let areaKunci = document.getElementById("area-kunci");
             let labelPertanyaan = document.getElementById("label-pertanyaan");
             let labelKunci = document.getElementById("label-kunci");
-            let selectKunci = document.getElementById("input-kunci");
+            let wrapperKunci = document.getElementById("wrapper-kunci");
 
             areaPg.style.display = "none";
             areaGambar.style.display = "none";
-            areaKunci.style.display = "block";
 
             if (jenis === "Pilihan Ganda") {
                 areaPg.style.display = "block";
                 labelPertanyaan.innerText = "Pertanyaan Soal";
                 labelKunci.innerText = "Kunci Jawaban";
-                selectKunci.innerHTML = `
-                    <option value="">-- Pilih Kunci Jawaban --</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
+                wrapperKunci.innerHTML = `
+                    <select id="input-kunci" class="form-control border-info font-weight-bold text-info">
+                        <option value="">-- Pilih Kunci Jawaban --</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
                 `;
-            } else if (jenis === "Mencocokkan Gambar" || jenis === "Puzzle") {
+            } else if (jenis === "Mencocokkan Gambar") {
                 areaGambar.style.display = "block";
                 labelPertanyaan.innerText = "Instruksi / Pertanyaan Game";
                 labelKunci.innerText = "Kunci / Jawaban Cocok";
-                selectKunci.innerHTML = `
-                    <option value="Sesuai Sistem Gambar">Otomatis / Sesuai Pasangan Gambar</option>
+                wrapperKunci.innerHTML = `
+                    <input type="text" id="input-kunci" class="form-control" placeholder="Tuliskan pasangan jawaban yang benar...">
+                `;
+            } else if (jenis === "Puzzle") {
+                labelPertanyaan.innerText = "Instruksi Soal Puzzle Huruf";
+                labelKunci.innerText = "Kata Benar (Untuk Diacak Hurufnya)";
+                wrapperKunci.innerHTML = `
+                    <input type="text" id="input-kunci" class="form-control font-weight-bold text-uppercase" placeholder="Contoh: GARUDA">
                 `;
             } else if (jenis === "Essay") {
                 labelPertanyaan.innerText = "Pertanyaan Essay";
                 labelKunci.innerText = "Catatan Jawaban / Pedoman Guru";
-                selectKunci.innerHTML = `
-                    <option value="Koreksi Manual Guru">Koreksi Manual oleh Guru</option>
+                wrapperKunci.innerHTML = `
+                    <input type="text" id="input-kunci" class="form-control" value="Koreksi Manual oleh Guru" readonly>
                 `;
             } else if (jenis === "Menulis Ringkasan Materi") {
                 labelPertanyaan.innerText = "Judul / Instruksi Ringkasan Materi";
                 labelKunci.innerText = "Penilaian Guru";
-                selectKunci.innerHTML = `
-                    <option value="Penilaian Kreativitas Siswa">Dinilai Berdasarkan Isi Ringkasan Siswa</option>
+                wrapperKunci.innerHTML = `
+                    <input type="text" id="input-kunci" class="form-control" value="Dinilai Berdasarkan Isi Ringkasan Siswa" readonly>
                 `;
             } else {
                 areaPg.style.display = "block";
+                wrapperKunci.innerHTML = `
+                    <select id="input-kunci" class="form-control border-info font-weight-bold text-info">
+                        <option value="">-- Pilih Kunci Jawaban --</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                `;
             }
         }
 
@@ -199,8 +216,9 @@
             let opsiB = document.getElementById("input-opsiB").value.trim();
             let opsiC = document.getElementById("input-opsiC").value.trim();
             let opsiD = document.getElementById("input-opsiD").value.trim();
-            let gambar = document.getElementById("input-gambar").value.trim();
-            let kunci = document.getElementById("input-kunci").value;
+            let gambar = document.getElementById("input-gambar") ? document.getElementById("input-gambar").value.trim() : "";
+            let kunciEl = document.getElementById("input-kunci");
+            let kunci = kunciEl ? kunciEl.value.trim() : "";
 
             if (!kelas || !mapel || !jenis || !pertanyaan) {
                 alert("Harap lengkapi Kelas, Mata Pelajaran, Jenis Kuis/Tugas, dan Pertanyaan/Instruksi!");
@@ -219,13 +237,13 @@
             document.getElementById("input-mapel").selectedIndex = 0;
             document.getElementById("input-jenis").selectedIndex = 0;
             document.getElementById("input-pertanyaan").value = "";
-            document.getElementById("input-opsiA").value = "";
-            document.getElementById("input-opsiB").value = "";
-            document.getElementById("input-opsiC").value = "";
-            document.getElementById("input-opsiD").value = "";
-            document.getElementById("input-gambar").value = "";
+            if(document.getElementById("input-opsiA")) document.getElementById("input-opsiA").value = "";
+            if(document.getElementById("input-opsiB")) document.getElementById("input-opsiB").value = "";
+            if(document.getElementById("input-opsiC")) document.getElementById("input-opsiC").value = "";
+            if(document.getElementById("input-opsiD")) document.getElementById("input-opsiD").value = "";
+            if(document.getElementById("input-gambar")) document.getElementById("input-gambar").value = "";
+            
             ubahFormatForm();
-
             tampilkanTabelSoal();
         }
 
