@@ -1,51 +1,38 @@
-// Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda yang berakhiran /exec
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
-
 let dataSiswaGlobal = [];
 let dataSoalGlobal = [];
 
 document.addEventListener("DOMContentLoaded", function () {
-    muatDataSiswa();
+    muatDataSiswaLocal();
 
-    // Event listener saat kelas dipilih
     let selectKelas = document.getElementById("select-kelas");
     if (selectKelas) {
         selectKelas.addEventListener("change", filterNamaSiswa);
     }
     
-    // Event listener tombol muat soal
     let btnMuatSoal = document.getElementById("btn-muat-soal");
     if (btnMuatSoal) {
-        btnMuatSoal.addEventListener("click", muatSoalUjian);
+        btnMuatSoal.addEventListener("click", muatSoalUjianLocal);
     }
 });
 
-// 1. Mengambil data siswa dari Google Sheets (Aman & Otomatis Filter)
-async function muatDataSiswa() {
-    try {
-        let response = await fetch(`${SCRIPT_URL}?action=getSiswa`);
-        let result = await response.json();
-        
-        console.log("Respon server dari Google Sheets:", result);
-        
-        if (Array.isArray(result)) {
-            dataSiswaGlobal = result;
-            console.log("Data siswa berhasil dimuat:", dataSiswaGlobal);
-            
-            // Jika dropdown kelas sudah terlanjur dipilih sebelum data selesai ditarik, jalankan filter otomatis
-            let selectKelas = document.getElementById("select-kelas");
-            if (selectKelas && selectKelas.value) {
-                filterNamaSiswa();
-            }
-        } else {
-            console.error("Format data dari server bukan array:", result);
-        }
-    } catch (error) {
-        console.error("Terjadi kesalahan saat mengambil data siswa:", error);
+// 1. Mengambil data siswa dari penyimpanan lokal (localStorage / Data Input Guru)
+function muatDataSiswaLocal() {
+    // Mengambil data yang diinput dari panel guru (disimpan dengan key 'dataSiswa')
+    let storedSiswa = localStorage.getItem("dataSiswa");
+    
+    if (storedSiswa) {
+        dataSiswaGlobal = JSON.parse(storedSiswa);
+    } else {
+        // Data contoh (bisa diisi atau dihapus nanti saat guru sudah input data sendiri)
+        dataSiswaGlobal = [
+            { nama: "shane", nis: "0126", kelas: "Kelas 5" },
+            { nama: "Feela", nis: "0127", kelas: "Kelas 5" }
+        ];
     }
+    console.log("Data siswa lokal dimuat:", dataSiswaGlobal);
 }
 
-// 2. Filter nama siswa berdasarkan kelas yang dipilih (Fleksibel & Aman dari error)
+// 2. Filter nama siswa berdasarkan kelas yang dipilih
 function filterNamaSiswa() {
     let selectKelas = document.getElementById("select-kelas");
     let selectSiswa = document.getElementById("select-siswa");
@@ -53,7 +40,6 @@ function filterNamaSiswa() {
     if (!selectKelas || !selectSiswa) return;
 
     let kelasDipilih = selectKelas.value.trim().toLowerCase();
-    
     selectSiswa.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
     
     if (!kelasDipilih) return;
@@ -81,14 +67,13 @@ function filterNamaSiswa() {
     filtered.forEach(s => {
         let opt = document.createElement("option");
         opt.value = s.nama;
-        // Menampilkan NIS di depan nama secara rapi (contoh: "0126 - shane")
         opt.textContent = `${s.nis ? s.nis + ' - ' : ''}${s.nama}`;
         selectSiswa.appendChild(opt);
     });
 }
 
-// 3. Memuat soal ujian berdasarkan Mapel dan Jenis Kuis
-async function muatSoalUjian() {
+// 3. Memuat soal ujian secara lokal
+function muatSoalUjianLocal() {
     let kelas = document.getElementById("select-kelas")?.value;
     let namaSiswa = document.getElementById("select-siswa")?.value;
     let mapel = document.getElementById("select-mapel")?.value;
@@ -99,21 +84,22 @@ async function muatSoalUjian() {
         return;
     }
 
-    try {
-        let url = `${SCRIPT_URL}?action=getSoal&mapel=${encodeURIComponent(mapel)}&jenis=${encodeURIComponent(jenis)}`;
-        let response = await fetch(url);
-        let result = await response.json();
+    // Mengambil soal yang diinput dari panel guru (disimpan dengan key 'dataSoal')
+    let storedSoal = localStorage.getItem("dataSoal");
+    let semuaSoal = storedSoal ? JSON.parse(storedSoal) : [];
 
-        if (Array.isArray(result)) {
-            dataSoalGlobal = result;
-            tampilkanSoal(dataSoalGlobal);
-        } else {
-            alert("Soal tidak ditemukan untuk kriteria tersebut.");
-        }
-    } catch (error) {
-        console.error("Gagal memuat soal:", error);
-        alert("Terjadi kesalahan saat memuat soal dari server.");
+    // Filter soal berdasarkan Mapel dan Jenis Kuis yang dipilih
+    let soalFiltered = semuaSoal.filter(soal => 
+        soal.mapel.toLowerCase() === mapel.toLowerCase() && 
+        soal.jenis.toLowerCase() === jenis.toLowerCase()
+    );
+
+    if (soalFiltered.length === 0) {
+        alert("Soal tidak ditemukan untuk Mapel dan Jenis Kuis tersebut.");
+        return;
     }
+
+    tampilkanSoal(soalFiltered);
 }
 
 // 4. Menampilkan soal ke halaman web
@@ -122,11 +108,6 @@ function tampilkanSoal(soalList) {
     if (!container) return;
 
     container.innerHTML = "";
-
-    if (soalList.length === 0) {
-        container.innerHTML = "<p>Tidak ada soal tersedia.</p>";
-        return;
-    }
 
     soalList.forEach((soal, index) => {
         let soalDiv = document.createElement("div");
