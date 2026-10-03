@@ -12,47 +12,49 @@
             <h3 class="text-info mb-3">📝 Input & Kelola Soal Ujian</h3>
             <p class="text-muted">Masukkan soal pilihan ganda beserta mata pelajaran dan jenis kuisnya di sini.</p>
             
-            <form id="form-tambah-soal" class="mb-4">
+            <!-- Diubah menggunakan div biasa agar tidak bergantung pada form submit -->
+            <div id="form-tambah-soal" class="mb-4">
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Mata Pelajaran</label>
-                        <input type="text" id="input-mapel" class="form-control" placeholder="Contoh: Matematika" required>
+                        <input type="text" id="input-mapel" class="form-control" placeholder="Contoh: Matematika">
                     </div>
                     <div class="form-group col-md-6">
                         <label>Jenis Kuis</label>
-                        <input type="text" id="input-jenis" class="form-control" placeholder="Contoh: Ujian Harian" required>
+                        <input type="text" id="input-jenis" class="form-control" placeholder="Contoh: Ujian Harian">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Pertanyaan Soal</label>
-                    <textarea id="input-pertanyaan" class="form-control" rows="3" placeholder="Tulis teks pertanyaan di sini..." required></textarea>
+                    <textarea id="input-pertanyaan" class="form-control" rows="3" placeholder="Tulis teks pertanyaan di sini..."></textarea>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Opsi A</label>
-                        <input type="text" id="input-opsiA" class="form-control" placeholder="Pilihan A" required>
+                        <input type="text" id="input-opsiA" class="form-control" placeholder="Pilihan A">
                     </div>
                     <div class="form-group col-md-6">
                         <label>Opsi B</label>
-                        <input type="text" id="input-opsiB" class="form-control" placeholder="Pilihan B" required>
+                        <input type="text" id="input-opsiB" class="form-control" placeholder="Pilihan B">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Opsi C</label>
-                        <input type="text" id="input-opsiC" class="form-control" placeholder="Pilihan C" required>
+                        <input type="text" id="input-opsiC" class="form-control" placeholder="Pilihan C">
                     </div>
                     <div class="form-group col-md-6">
                         <label>Opsi D</label>
-                        <input type="text" id="input-opsiD" class="form-control" placeholder="Pilihan D" required>
+                        <input type="text" id="input-opsiD" class="form-control" placeholder="Pilihan D">
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-info btn-block font-weight-bold text-white">Simpan Soal</button>
-            </form>
+                <!-- Tombol menggunakan onclick langsung untuk menghindari error form -->
+                <button type="button" onclick="simpanSoalBaru()" class="btn btn-info btn-block font-weight-bold text-white">Simpan Soal</button>
+            </div>
 
             <hr>
 
@@ -80,11 +82,12 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", tampilkanTabelSoal);
+        // Jalankan saat halaman siap
+        document.addEventListener("DOMContentLoaded", function() {
+            tampilkanTabelSoal();
+        });
 
-        document.getElementById("form-tambah-soal").addEventListener("submit", function(e) {
-            e.preventDefault();
-            
+        function simpanSoalBaru() {
             let mapel = document.getElementById("input-mapel").value.trim();
             let jenis = document.getElementById("input-jenis").value.trim();
             let pertanyaan = document.getElementById("input-pertanyaan").value.trim();
@@ -93,19 +96,35 @@
             let opsiC = document.getElementById("input-opsiC").value.trim();
             let opsiD = document.getElementById("input-opsiD").value.trim();
 
+            if (!mapel || !jenis || !pertanyaan || !opsiA || !opsiB) {
+                alert("Harap isi minimal Mata Pelajaran, Jenis Kuis, Pertanyaan, dan Pilihan A & B!");
+                return;
+            }
+
             let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
             
             dataSoal.push({ mapel, jenis, pertanyaan, opsiA, opsiB, opsiC, opsiD });
             localStorage.setItem("dataSoal", JSON.stringify(dataSoal));
 
-            alert("Soal berhasil ditambahkan!");
-            document.getElementById("form-tambah-soal").reset();
+            alert("Soal berhasil disimpan ke memori lokal!");
+            
+            // Kosongkan form
+            document.getElementById("input-mapel").value = "";
+            document.getElementById("input-jenis").value = "";
+            document.getElementById("input-pertanyaan").value = "";
+            document.getElementById("input-opsiA").value = "";
+            document.getElementById("input-opsiB").value = "";
+            document.getElementById("input-opsiC").value = "";
+            document.getElementById("input-opsiD").value = "";
+
             tampilkanTabelSoal();
-        });
+        }
 
         function tampilkanTabelSoal() {
             let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
             let tbody = document.getElementById("tabel-soal-body");
+            if (!tbody) return;
+
             tbody.innerHTML = "";
 
             if (dataSoal.length === 0) {
@@ -125,7 +144,7 @@
             });
         }
 
-        window.hapusSoal = function(index) {
+        function hapusSoal(index) {
             if (confirm("Yakin ingin menghapus soal ini?")) {
                 let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
                 dataSoal.splice(index, 1);
