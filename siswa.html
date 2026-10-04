@@ -3,87 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduAdmin Pro - Panel Ujian Siswa</title>
+    <title>Ruang Ujian & Tugas Siswa Online</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            background: linear-gradient(135deg, #f0f8ff, #e6f2ff); 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            min-height: 100vh;
-            padding: 30px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .student-card { 
-            background: white;
-            border-radius: 20px; 
-            padding: 30px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            max-width: 700px;
-            width: 100%;
-        }
-        .header-logo {
-            height: 60px; 
-            background-color: white; 
-            padding: 5px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        }
-        .btn-custom {
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 50px;
-            padding: 12px 20px;
-            transition: all 0.3s ease;
-        }
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
+        .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
+        .header-box { background: linear-gradient(135deg, #007bff 0%, #6610f2 100%); color: white; border-radius: 15px; }
+        .form-control { border-radius: 10px; padding: 10px 15px; }
+        .btn-custom { border-radius: 10px; padding: 12px 20px; font-weight: 600; }
     </style>
 </head>
 <body>
+    <div class="container py-5">
+        <div class="header-box p-4 mb-4 text-center">
+            <h2 class="font-weight-bold mb-2">🎓 Ruang Ujian & Tugas Siswa Online</h2>
+            <p class="mb-0 text-white-50">Silakan pilih nama Anda dan jenis kuis di bawah ini:</p>
+        </div>
 
-    <div class="container">
-        <div class="student-card mx-auto">
-            <div class="text-center">
-                <img src="assets/images/tutwuri.png" alt="Logo Tut Wuri Handayani" class="header-logo">
-                <h2 class="font-weight-bold text-dark mb-1">Ruang Ujian & Tugas Siswa Online</h2>
-                <p class="text-muted mb-4">Silakan pilih nama Anda dan jenis kuis di bawah ini:</p>
+        <div class="card card-custom p-4 mb-4">
+            <div class="form-row">
+                <!-- Pilihan Nama Siswa -->
+                <div class="form-group col-md-6">
+                    <label class="font-weight-bold small text-muted">Pilih Nama Siswa:</label>
+                    <select id="select-siswa" class="form-control" required>
+                        <option value="">-- Memuat Data Siswa... --</option>
+                    </select>
+                </div>
+
+                <!-- Pilihan Jenis Kuis / Modul (5 Jenis) -->
+                <div class="form-group col-md-6">
+                    <label class="font-weight-bold small text-muted">Pilih Jenis Kuis / Modul:</label>
+                    <select id="select-modul" class="form-control">
+                        <option value="Pilihan Ganda">1. Pilihan Ganda</option>
+                        <option value="Essay / Uraian">2. Essay / Uraian</option>
+                        <option value="Mencocokkan Gambar">3. Mencocokkan Gambar</option>
+                        <option value="Puzzle Kata">4. Puzzle Kata</option>
+                        <option value="Menulis Ringkasan Materi">5. Menulis Ringkasan Materi</option>
+                    </select>
+                </div>
             </div>
+        </div>
 
-            <!-- Form Pengerjaan Siswa -->
-            <div class="form-group">
-                <label class="font-weight-bold">Pilih Nama Siswa:</label>
-                <select id="select-siswa" class="form-control">
-                    <option value="">-- Memuat Data Siswa --</option>
-                </select>
+        <!-- Wadah Tempat Soal Muncul Dinamis -->
+        <div class="card card-custom p-4 mb-4">
+            <h4 class="font-weight-bold text-dark mb-3">📝 Lembar Soal Ujian</h4>
+            <div id="container-soal">
+                <!-- Soal akan dimuat otomatis oleh JavaScript -->
+                <p class="text-center text-muted">Memuat soal...</p>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="font-weight-bold">Pilih Jenis Kuis / Modul:</label>
-                <select id="select-modul" class="form-control">
-                    <option value="pg">1. Soal PG & Essay</option>
-                    <option value="gambar">2. Mencocokkan Gambar</option>
-                    <option value="kata">3. Mencocokkan Kata</option>
-                    <option value="rangkum">4. Merangkum Materi</option>
-                </select>
-            </div>
+        <!-- Tombol Kirim Jawaban -->
+        <button type="button" onclick="kirimJawabanSiswa()" class="btn btn-primary btn-custom btn-block mb-4 shadow">📤 Kirim Jawaban Ujian</button>
 
-            <hr class="my-4">
-
-            <!-- Container Soal / Kuis -->
-            <div id="container-soal" class="mb-4" style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                <p class="text-center text-muted mb-0">Memuat kuis...</p>
-            </div>
-
-            <div class="text-center">
-                <button onclick="kirimJawabanSiswa()" class="btn btn-success btn-custom btn-block shadow-sm">
-                    🚀 Selesai & Kirim Jawaban
-                </button>
-                <a href="index.html" class="btn btn-outline-secondary btn-sm mt-3">← Kembali ke Beranda Utama</a>
-            </div>
+        <div class="text-center">
+            <a href="index.html" class="btn btn-light btn-custom border text-muted">&larr; Kembali ke Beranda Utama</a>
         </div>
     </div>
 
+    <!-- Menghubungkan ke file JavaScript Siswa -->
     <script src="siswa.js"></script>
 </body>
 </html>
