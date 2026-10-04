@@ -136,10 +136,19 @@ async function muatDataSoal() {
             });
         } else if (jenisDipilih.includes("puzzle kata")) {
             soalTersaring.forEach((soal, index) => {
+                // Mengacak huruf dari kata yang diinput guru (misal: "MAKAN" diacak otomatis)
+                let kataAsli = String(soal.pertanyaan || "").trim();
+                let hurufArray = kataAsli.split('');
+                for (let i = hurufArray.length - 1; i > 0; i--) {
+                    let j = Math.floor(Math.random() * (i + 1));
+                    [hurufArray[i], hurufArray[j]] = [hurufArray[j], hurufArray[i]];
+                }
+                let kataAcak = hurufArray.join(' '); // Ditampilkan dengan spasi agar mudah dibaca siswa
+
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
                         <p style="font-weight:bold; margin-top:0;">${index + 1}. Susun / Ketik Kata yang Benar:</p>
-                        <p style="font-size: 1.2em; color: #2563eb; font-weight: bold; margin-bottom: 8px;">Huruf Acak: ${soal.pertanyaan}</p>
+                        <p style="font-size: 1.2em; color: #2563eb; font-weight: bold; margin-bottom: 8px;">Huruf Acak: ${kataAcak}</p>
                         <input type="text" name="soal_${index}" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Ketik jawaban kata yang benar di sini...">
                     </div>`;
             });
