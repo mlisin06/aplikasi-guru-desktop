@@ -229,8 +229,8 @@ async function muatDataSoal() {
     }
 }
 
-// 3. Mengirim Jawaban Siswa ke Google Sheets (Lengkap dengan action simpanNilai)
-async function kirimJawabanSiswa() {
+// 3. Mengirim Jawaban Siswa ke Google Sheets (Metode Form Aman CORS)
+function kirimJawabanSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
     const selectModul = document.getElementById("select-modul");
@@ -258,7 +258,6 @@ async function kirimJawabanSiswa() {
     const d = new Date();
     const tglFormat = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
 
-    let hasilJawaban = {};
     let jumlahBenar = 0;
     let totalSoal = soalTersaring.length;
 
@@ -272,11 +271,9 @@ async function kirimJawabanSiswa() {
         if (inputRadio) val = inputRadio.value;
         else if (inputSelect) val = inputSelect.value;
         else if (inputText) {
-            val = inputText.value.trim().toUpperCase(); // Otomatis uppercase untuk puzzle kata
+            val = inputText.value.trim().toUpperCase();
         }
         else if (inputTextarea) val = inputTextarea.value;
-
-        hasilJawaban[`Soal_${index + 1}`] = val || "Tidak Diisi";
 
         // Cek jawaban benar jika ada kunci jawaban di soal
         if (soal.kunci && val === String(soal.kunci).trim().toUpperCase()) {
@@ -284,11 +281,9 @@ async function kirimJawabanSiswa() {
         }
     });
 
-    // Hitung nilai akhir (skala 100)
     let nilaiAkhir = totalSoal > 0 ? Math.round((jumlahBenar / totalSoal) * 100) : 0;
     let ket = `${jumlahBenar}/${totalSoal} benar`;
 
-    // Payload wajib membawa "action: simpanNilai" agar tertangkap oleh Google Apps Script
     const payload = {
         action: "simpanNilai",
         tanggal: tglFormat,
@@ -301,28 +296,39 @@ async function kirimJawabanSiswa() {
     };
 
     const btnKirim = document.querySelector('button[onclick="kirimJawabanSiswa()"]');
-    try {
-        if (btnKirim) {
-            btnKirim.disabled = true;
-            btnKirim.innerText = "Sedang Mengirim Jawaban...";
-        }
+    if (btnKirim) {
+        btnKirim.disabled = true;
+        btnKirim.innerText = "Sedang Mengirim Jawaban...";
+    }
 
-        await fetch(URL_WEB_APP, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+    // Gunakan teknik form tersembunyi agar 100% tembus CORS Google Apps Script
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = URL_WEB_APP;
+    form.target = "hidden_iframe";
 
+    const inputData = document.createElement("input");
+    inputData.type = "hidden";
+    inputData.name = "payload";
+    inputData.value = JSON.stringify(payload);
+    form.appendChild(inputData);
+
+    // Buat iframe tersembunyi jika belum ada
+    let iframe = document.getElementById("hidden_iframe");
+    if (!iframe) {
+        iframe = document.createElement("iframe");
+        iframe.name = "hidden_iframe";
+        iframe.id = "hidden_iframe";
+        iframe.style.display = "none";
+        document.body.appendChild(iframe);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    setTimeout(() => {
         alert(`Jawaban berhasil dikirim!\nPerkiraan Nilai: ${nilaiAkhir}`);
         location.reload();
-
-    } catch (err) {
-        console.error("Gagal mengirim jawaban:", err);
-        alert("Gagal mengirim jawaban. Silakan coba lagi.");
-        if (btnKirim) {
-            btnKirim.disabled = false;
-            btnKirim.innerText = "Kirim Jawaban Ujian";
-        }
-    }
+    }, 1500);
 }
