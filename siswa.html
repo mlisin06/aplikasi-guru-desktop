@@ -185,7 +185,7 @@
                         <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control font-weight-bold text-center text-uppercase" placeholder="Ketik kata yang benar..."></div>
                     `;
                 } else if (soal.jenis === "Menulis Ringkasan Materi") {
-                    htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tulis ringkasan materi (minimal 200 karakter)..."></textarea></div>`;
+                    htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tulis ringkasan materi (minimal 300 karakter)..."></textarea></div>`;
                 }
 
                 htmlContent += `</div>`;
@@ -254,8 +254,8 @@
                     if (inputTeks) {
                         let teksVal = inputTeks.value.trim();
                         if (teksVal !== "") {
-                            if (teksVal.length < 200) {
-                                alert(`⚠️ Ringkasan materi pada soal No. ${index + 1} terlalu singkat!\nMinimal harus 200 karakter (Saat ini baru ${teksVal.length} karakter).`);
+                            if (teksVal.length < 300) {
+                                alert(`⚠️ Ringkasan materi pada soal No. ${index + 1} terlalu singkat!\nMinimal harus 300 karakter (Saat ini baru ${teksVal.length} karakter).`);
                                 inputTeks.focus();
                                 return;
                             }
