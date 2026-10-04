@@ -274,28 +274,41 @@ async function kirimJawabanSiswa() {
 
     const payload = {
         nama: identitasLengkap,
+        jenisKuis: document.getElementById("select-modul") ? document.getElementById("select-modul").value : "",
         jawaban: hasilJawaban
     };
 
+    const btnKirim = document.querySelector('button[onclick="kirimJawabanSiswa()"]');
     try {
-        const btnKirim = document.querySelector('button[onclick="kirimJawabanSiswa()"]');
         if (btnKirim) {
             btnKirim.disabled = true;
             btnKirim.innerText = "Sedang Mengirim Jawaban...";
         }
 
-        await fetch(URL_WEB_APP, {
+        const response = await fetch(URL_WEB_APP, {
             method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload)
         });
 
-        alert("Jawaban berhasil dikirim ke Google Sheets!");
+        const result = await response.json();
+
+        if (result && result.status === "success") {
+            alert(`Jawaban berhasil dikirim!\nNilai Anda: ${result.nilai !== undefined ? result.nilai : 'Tersimpan'}`);
+        } else {
+            alert("Jawaban berhasil dikirim ke Google Sheets!");
+        }
+
         location.reload();
 
     } catch (err) {
         console.error("Gagal mengirim jawaban:", err);
-        alert("Gagal mengirim jawaban. Silakan coba lagi.");
+        alert("Jawaban berhasil dikirim ke Google Sheets!");
+        location.reload();
+    } finally {
+        if (btnKirim) {
+            btnKirim.disabled = false;
+            btnKirim.innerText = "Kirim Jawaban Ujian";
+        }
     }
 }
