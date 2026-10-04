@@ -9,10 +9,13 @@ let soalTersaring = [];
 document.addEventListener("DOMContentLoaded", () => {
     muatDataSiswa();
 
-    // Event listener jika kelas diubah (untuk memfilter nama siswa)
+    // Event listener jika kelas diubah
     const selectKelas = document.getElementById("select-kelas");
     if (selectKelas) {
-        selectKelas.addEventListener("change", updateDropdownSiswa);
+        selectKelas.addEventListener("change", () => {
+            updateDropdownSiswa();
+            muatDataSoal(); // Filter ulang soal saat kelas berubah
+        });
     }
 
     // Event listener jika jenis soal diubah
@@ -24,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// 1. Memuat Data Siswa dari Sheet "Siswa" (Mendukung Kolom Kelas & Nama)
+// 1. Memuat Data Siswa dari Sheet "Siswa"
 async function muatDataSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
@@ -48,7 +51,6 @@ async function muatDataSiswa() {
                 return { nama: nama.trim(), kelas: kelas.trim() };
             }).filter(s => s.nama !== "");
 
-            // Ambil daftar kelas unik
             const daftarKelas = [...new Set(dataSiswaList.map(s => s.kelas))];
             selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
             daftarKelas.forEach(k => {
@@ -63,7 +65,7 @@ async function muatDataSiswa() {
     }
 }
 
-// Update pilihan nama siswa berdasarkan kelas yang dipilih
+// Update pilihan nama siswa berdasarkan kelas
 function updateDropdownSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
@@ -84,15 +86,17 @@ function updateDropdownSiswa() {
     selectSiswa.disabled = false;
 }
 
-// 2. Memuat Soal berdasarkan Jenis Kuis yang Dipilih
+// 2. Memuat Soal Berdasarkan Jenis Kuis DAN Kelas yang Dipilih
 async function muatDataSoal() {
     const wadah = document.getElementById("container-soal");
     const selectJenis = document.getElementById("select-modul");
+    const selectKelas = document.getElementById("select-kelas");
+    
     const jenisDipilih = selectJenis ? selectJenis.value.trim() : "";
+    const kelasDipilih = selectKelas ? selectKelas.value.trim().toLowerCase() : "";
 
     if (!wadah) return;
 
-    // Jika jenis kuis belum dipilih, jangan tampilkan soal
     if (!jenisDipilih) {
         wadah.innerHTML = '<p class="text-center text-muted">Silakan pilih jenis kuis terlebih dahulu untuk memuat soal.</p>';
         soalTersaring = [];
@@ -108,34 +112,49 @@ async function muatDataSoal() {
         }
 
         const jenisLower = jenisDipilih.toLowerCase();
+
+        // Filter soal berdasarkan jenis kuis DAN kelas
         soalTersaring = dataSoalList.filter(s => {
             const j = String(s.jenis || "").trim().toLowerCase();
-            if (jenisLower.includes("pilihan ganda")) {
-                return j.includes("pilihan ganda") || j === "pg" || j === "";
-            } else if (jenisLower.includes("essay")) {
-                return j.includes("essay") || j.includes("uraian");
-            } else if (jenisLower.includes("mencocokkan gambar")) {
-                return j.includes("mencocokkan gambar") || j.includes("gambar");
-            } else if (jenisLower.includes("puzzle kata")) {
-                return j.includes("puzzle kata") || j.includes("puzzle");
-            } else if (jenisLower.includes("ringkasan")) {
-                return j.includes("ringkasan") || j.includes("rangkum") || j.includes("materi");
+            const kelasSoal = String(s.kelas || s.KELAS || "").trim().toLowerCase();
+
+            // Cek kecocokan kelas (jika data soal memiliki kolom kelas)
+            let cocokKelas = true;
+            if (kelasDipilih && kelasSoal) {
+                cocokKelas = kelasSoal.includes(kelasDipilih);
             }
-            return j.includes(jenisLower);
+
+            // Cek kecocokan jenis kuis
+            let cocokJenis = false;
+            if (jenisLower.includes("pilihan ganda")) {
+                cocokJenis = j.includes("pilihan ganda") || j === "pg" || j === "";
+            } else if (jenisLower.includes("essay")) {
+                cocokJenis = j.includes("essay") || j.includes("uraian");
+            } else if (jenisLower.includes("mencocokkan gambar")) {
+                cocokJenis = j.includes("mencocokkan gambar") || j.includes("gambar");
+            } else if (jenisLower.includes("puzzle kata")) {
+                cocokJenis = j.includes("puzzle kata") || j.includes("puzzle");
+            } else if (jenisLower.includes("ringkasan")) {
+                cocokJenis = j.includes("ringkasan") || j.includes("rangkum") || j.includes("materi");
+            } else {
+                cocokJenis = j.includes(jenisLower);
+            }
+
+            return cocokJenis && cocokKelas;
         });
 
         if (soalTersaring.length === 0) {
             wadah.innerHTML = `
                 <div style="text-align:center; padding: 20px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; color: #be123c;">
-                    <p style="font-weight:bold; margin:0 0 5px 0;">Belum ada soal untuk kategori ini di Google Sheets.</p>
-                    <small>Pastikan Anda sudah menginput soal dengan kategori yang sesuai melalui Panel Guru.</small>
+                    <p style="font-weight:bold; margin:0 0 5px 0;">Belum ada soal untuk Kelas ini dan kategori tersebut di Google Sheets.</p>
+                    <small>Pastikan Anda sudah menginput soal dengan kelas dan kategori yang sesuai melalui Panel Guru.</small>
                 </div>`;
             return;
         }
 
         let html = "";
 
-        // Render Berdasarkan Jenis Kuis yang Dipilih
+        // Render Berdasarkan Jenis Kuis
         if (jenisLower.includes("pilihan ganda")) {
             soalTersaring.forEach((soal, index) => {
                 html += `
@@ -232,7 +251,6 @@ async function kirimJawabanSiswa() {
         return;
     }
 
-    // Menggabungkan Kelas dan Nama agar aman jika ada nama yang sama di kelas berbeda
     const identitasLengkap = `${kelasSiswa} - ${namaSiswa}`;
 
     let hasilJawaban = {};
