@@ -229,7 +229,7 @@ async function muatDataSoal() {
     }
 }
 
-// 3. Mengirim Jawaban Siswa ke Google Sheets (Format Payload Asli yang Stabil)
+// 3. Mengirim Jawaban Siswa ke Google Sheets (Menggunakan format asli yang terbukti sukses)
 async function kirimJawabanSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
@@ -264,7 +264,7 @@ async function kirimJawabanSiswa() {
         if (inputRadio) val = inputRadio.value;
         else if (inputSelect) val = inputSelect.value;
         else if (inputText) {
-            // Otomatis ubah teks input puzzle menjadi huruf kapital (uppercase)
+            // Otomatis ubah teks input puzzle menjadi huruf kapital (uppercase) agar sesuai kunci jawaban GS
             val = inputText.value.trim().toUpperCase();
         }
         else if (inputTextarea) val = inputTextarea.value;
@@ -272,14 +272,13 @@ async function kirimJawabanSiswa() {
         hasilJawaban[`Soal_${index + 1}`] = val || "Tidak Diisi";
     });
 
-    // Struktur payload dikembalikan persis seperti saat berhasil mencatat data Mayang sebelumnya
     const payload = {
         nama: identitasLengkap,
         jawaban: hasilJawaban
     };
 
-    const btnKirim = document.querySelector('button[onclick="kirimJawabanSiswa()"]');
     try {
+        const btnKirim = document.querySelector('button[onclick="kirimJawabanSiswa()"]');
         if (btnKirim) {
             btnKirim.disabled = true;
             btnKirim.innerText = "Sedang Mengirim Jawaban...";
@@ -298,9 +297,5 @@ async function kirimJawabanSiswa() {
     } catch (err) {
         console.error("Gagal mengirim jawaban:", err);
         alert("Gagal mengirim jawaban. Silakan coba lagi.");
-        if (btnKirim) {
-            btnKirim.disabled = false;
-            btnKirim.innerText = "Kirim Jawaban Ujian";
-        }
     }
 }
