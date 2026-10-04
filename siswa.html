@@ -3,127 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduAdmin Pro - Panel Siswa</title>
+    <title>EduAdmin Pro - Panel Ujian Siswa</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            background-color: #f1f5f9;
-        }
-        .sidebar {
-            width: 250px;
-            background-color: #1e293b;
-            color: #ffffff;
+        body { 
+            background: linear-gradient(135deg, #f0f8ff, #e6f2ff); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             min-height: 100vh;
-            padding: 20px 10px;
-            box-sizing: border-box;
+            padding: 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .sidebar h2 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            padding-left: 10px;
-            color: #38bdf8;
-        }
-        .sidebar ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .sidebar li {
-            margin-bottom: 5px;
-        }
-        .sidebar a {
-            color: #cbd5e1;
-            text-decoration: none;
-            display: block;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        .sidebar a:hover {
-            background-color: #334155;
-            color: #ffffff;
-        }
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            box-sizing: border-box;
-        }
-        .card {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            margin-top: 15px;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        .form-group label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-control {
+        .student-card { 
+            background: white;
+            border-radius: 20px; 
+            padding: 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            max-width: 700px;
             width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #94a3b8;
-            box-sizing: border-box;
         }
-        .btn-primary {
-            padding: 10px 20px;
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
+        .header-logo {
+            height: 60px; 
+            background-color: white; 
+            padding: 5px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .btn-custom {
+            font-size: 1.1rem;
             font-weight: bold;
+            border-radius: 50px;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
         }
     </style>
 </head>
 <body>
 
-  <!-- SIDEBAR NAVIGATION SISWA -->
-  <div class="sidebar">
-    <h2>Ruang Siswa</h2>
-    <ul>
-      <li><a href="index.html">🏠 Beranda Utama</a></li>
-      <li><a href="#" onclick="showSection('kerjakan-kuis')">📝 Kerjakan Kuis</a></li>
-      <li><a href="#" onclick="showSection('materi')">📚 Lihat Materi</a></li>
-    </ul>
-  </div>
+    <div class="container">
+        <div class="student-card mx-auto">
+            <div class="text-center">
+                <img src="assets/images/tutwuri.png" alt="Logo Tut Wuri Handayani" class="header-logo">
+                <h2 class="font-weight-bold text-dark mb-1">Ruang Ujian & Tugas Siswa Online</h2>
+                <p class="text-muted mb-4">Silakan pilih nama Anda dan jenis kuis di bawah ini:</p>
+            </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
-    <section id="kerjakan-kuis">
-      <h2>Panel Ujian & Tugas Siswa</h2>
-      <div class="card">
-        <div class="form-group">
-          <label>Pilih Nama Siswa:</label>
-          <select id="select-siswa" class="form-control">
-            <option value="">-- Memuat Data Siswa --</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Pilih Jenis Kuis / Modul:</label>
-          <select id="select-modul" class="form-control">
-            <option value="pg">1. Soal PG & Essay</option>
-            <option value="gambar">2. Mencocokkan Gambar</option>
-            <option value="kata">3. Mencocokkan Kata</option>
-            <option value="rangkum">4. Merangkum Materi</option>
-          </select>
-        </div>
-        <div id="container-soal" style="margin-top: 20px;">
-          <p>Memuat kuis...</p>
-        </div>
-        <button onclick="kirimJawabanSiswa()" class="btn-primary" style="margin-top: 20px;">🚀 Selesai & Kirim Jawaban</button>
-      </div>
-    </section>
-  </div>
+            <!-- Form Pengerjaan Siswa -->
+            <div class="form-group">
+                <label class="font-weight-bold">Pilih Nama Siswa:</label>
+                <select id="select-siswa" class="form-control">
+                    <option value="">-- Memuat Data Siswa --</option>
+                </select>
+            </div>
 
-  <script src="siswa.js"></script>
+            <div class="form-group">
+                <label class="font-weight-bold">Pilih Jenis Kuis / Modul:</label>
+                <select id="select-modul" class="form-control">
+                    <option value="pg">1. Soal PG & Essay</option>
+                    <option value="gambar">2. Mencocokkan Gambar</option>
+                    <option value="kata">3. Mencocokkan Kata</option>
+                    <option value="rangkum">4. Merangkum Materi</option>
+                </select>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Container Soal / Kuis -->
+            <div id="container-soal" class="mb-4" style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <p class="text-center text-muted mb-0">Memuat kuis...</p>
+            </div>
+
+            <div class="text-center">
+                <button onclick="kirimJawabanSiswa()" class="btn btn-success btn-custom btn-block shadow-sm">
+                    🚀 Selesai & Kirim Jawaban
+                </button>
+                <a href="index.html" class="btn btn-outline-secondary btn-sm mt-3">← Kembali ke Beranda Utama</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="siswa.js"></script>
 </body>
 </html>
