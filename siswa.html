@@ -20,7 +20,7 @@
     <div class="container py-5">
         <div class="main-header p-4 mb-4 text-center">
             <h2 class="font-weight-bold mb-2">🎓 Ruang Ujian & Tugas Siswa Online</h2>
-            <p class="mb-0 text-white-50">Silakan pilih kelas, ketik nama Anda, pilih mapel, dan ambil soal dari server cloud!</p>
+            <p class="mb-0 text-white-50">Pilih kelas Anda, pilih nama Anda dari daftar, tentukan mapel, dan ambil soal dari cloud!</p>
         </div>
 
         <div class="card card-filter p-4 mb-4">
@@ -28,7 +28,7 @@
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label class="font-weight-bold text-muted small">Pilih Kelas</label>
-                    <select id="pilih-kelas" class="form-control">
+                    <select id="pilih-kelas" class="form-control" onchange="muatDaftarSiswaByKelas()">
                         <option value="">-- Pilih Kelas --</option>
                         <option value="Kelas 1">Kelas 1</option>
                         <option value="Kelas 2">Kelas 2</option>
@@ -40,8 +40,10 @@
                 </div>
                 
                 <div class="form-group col-md-3">
-                    <label class="font-weight-bold text-muted small">Nama Lengkap Siswa</label>
-                    <input type="text" id="pilih-nama" class="form-control" placeholder="Ketik nama lengkap Anda...">
+                    <label class="font-weight-bold text-muted small">Pilih Nama Lengkap Siswa</label>
+                    <select id="pilih-nama" class="form-control">
+                        <option value="">-- Pilih Kelas Dahulu --</option>
+                    </select>
                 </div>
 
                 <div class="form-group col-md-3">
@@ -92,6 +94,44 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
 
+        // Fungsi otomatis mengambil daftar siswa dari Google Sheets berdasarkan kelas yang dipilih
+        async function muatDaftarSiswaByKelas() {
+            let kelasDipilih = document.getElementById("pilih-kelas").value;
+            let selectNama = document.getElementById("pilih-nama");
+            
+            selectNama.innerHTML = `<option value="">Memuat data siswa...</option>`;
+
+            if (!kelasDipilih) {
+                selectNama.innerHTML = `<option value="">-- Pilih Kelas Dahulu --</option>`;
+                return;
+            }
+
+            try {
+                let response = await fetch(SCRIPT_URL + "?action=getSiswa");
+                let dataSiswa = await response.json();
+
+                // Filter siswa sesuai kelas yang dipilih guru
+                let siswaFiltered = dataSiswa.filter(s => s.kelas && s.kelas.trim().toLowerCase() === kelasDipilih.trim().toLowerCase());
+
+                selectNama.innerHTML = `<option value="">-- Pilih Nama Anda --</option>`;
+
+                if (siswaFiltered.length === 0) {
+                    selectNama.innerHTML = `<option value="">⚠️️ Belum ada data siswa di kelas ini</option>`;
+                    return;
+                }
+
+                siswaFiltered.forEach(siswa => {
+                    let opt = document.createElement("option");
+                    opt.value = siswa.nama;
+                    opt.text = siswa.nis ? `${siswa.nama} (NIS: ${siswa.nis})` : siswa.nama;
+                    selectNama.appendChild(opt);
+                });
+
+            } catch (e) {
+                selectNama.innerHTML = `<option value="">Gagal memuat daftar siswa</option>`;
+            }
+        }
+
         function acakHuruf(kata) {
             if (!kata) return "";
             let arr = kata.trim().split("");
@@ -108,13 +148,13 @@
 
         async function muatDaftarSoalOnline() {
             let kelas = document.getElementById("pilih-kelas").value;
-            let nama = document.getElementById("pilih-nama").value.trim();
+            let nama = document.getElementById("pilih-nama").value;
             let mapel = document.getElementById("pilih-mapel").value;
             let jenis = document.getElementById("pilih-jenis").value;
             let kontainer = document.getElementById("kontainer-soal");
 
             if (!kelas || !nama || !mapel || !jenis) {
-                alert("Harap lengkapi Kelas, Nama Siswa, Mata Pelajaran, dan Jenis Kuis terlebih dahulu!");
+                alert("Harap lengkapi Kelas, Pilih Nama Siswa, Mata Pelajaran, dan Jenis Kuis terlebih dahulu!");
                 return;
             }
 
@@ -124,7 +164,6 @@
                 let response = await fetch(SCRIPT_URL + "?action=getSoal");
                 let dataSoal = await response.json();
                 
-                // Filter ketat berdasarkan kelas, mapel, dan jenis soal yang dipilih
                 let soalFilter = dataSoal.filter(s => {
                     let matchKelas = s.kelas && s.kelas.trim().toLowerCase() === kelas.trim().toLowerCase();
                     let matchMapel = s.mapel && s.mapel.trim().toLowerCase() === mapel.trim().toLowerCase();
@@ -151,7 +190,6 @@
                         </div>
                         <p class="font-weight-bold mt-2 text-dark" style="font-size: 1.05rem;">${soal.pertanyaan}</p>`;
 
-                    // Pengecekan jenis soal agar render form-nya tidak salah lari ke Pilihan Ganda
                     if (jenisSoal === "Pilihan Ganda") {
                         htmlContent += `
                             <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optA_${index}" name="jawaban_${index}" value="A"><label class="custom-control-label" for="optA_${index}">A. ${soal.opsiA || ''}</label></div>
