@@ -10,6 +10,18 @@
         body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
     </style>
+    <script>
+        // Cek password saat halaman pertama kali dimuat
+        (function() {
+            let passwordBenar = "240785";
+            let passwordUser = prompt("🔒 Masukkan Password Panel Guru:");
+            
+            if (passwordUser !== passwordBenar) {
+                alert("❌ Password salah atau akses dibatalkan!");
+                window.location.href = "index.html"; // Lempar kembali ke beranda jika salah
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="container mt-5 mb-5" style="max-width: 600px;">
