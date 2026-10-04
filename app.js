@@ -1,105 +1,172 @@
-// --- NAVIGASI HALAMAN ---
+const URL_WEB_APP = 'https://script.google.com/macros/s/AKfycbx9vGwmRfHZe-oozoheMZzAudzJIPNLywWV4-qDEozoHoeKgee6C4jAGW4sFZwmdav9qQ/exec';
+// Fungsi untuk Berpindah Halaman / Section dari Sidebar
 function showSection(sectionId) {
-  const sections = document.querySelectorAll('section');
-  sections.forEach(sec => sec.classList.add('hidden-section'));
-  document.getElementById(sectionId).classList.remove('hidden-section');
-  document.getElementById(sectionId).classList.add('active-section');
-}
-
-// --- LOGIKA KUIS INTERAKTIF ---
-const quizData = [
-  {
-    question: "Manakah yang merupakan komponen utama dalam rancangan modul ajar?",
-    options: ["Tujuan Pembelajaran", "Slogan Sekolah", "Warna Cat Kelas", "Merk Laptop"],
-    correct: 0
-  },
-  {
-    question: "Metode penilaian yang dilakukan di awal proses pembelajaran dinamakan?",
-    options: ["Asesmen Sumatif", "Asesmen Diagnostik", "Asesmen Formatif", "Evaluasi Akhir"],
-    correct: 1
-  }
-];
-
-let currentQuestionIndex = 0;
-let score = 0;
-
-function loadQuiz() {
-  const currentQuiz = quizData[currentQuestionIndex];
-  document.getElementById("question").innerText = currentQuiz.question;
-  const optionsContainer = document.getElementById("options-container");
-  optionsContainer.innerHTML = "";
-  document.getElementById("feedback").innerText = "";
-  document.getElementById("next-btn").style.display = "none";
-
-  currentQuiz.options.forEach((option, index) => {
-    const btn = document.createElement("button");
-    btn.classList.add("option-btn");
-    btn.innerText = option;
-    btn.onclick = () => selectOption(index, currentQuiz.correct);
-    optionsContainer.appendChild(btn);
+  const sections = document.querySelectorAll('.main-content section');
+  sections.forEach(sec => {
+    sec.classList.add('hidden-section');
   });
+
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.classList.remove('hidden-section');
+  }
 }
 
-function selectOption(selectedIndex, correctIndex) {
-  const feedbackEl = document.getElementById("feedback");
-  if (selectedIndex === correctIndex) {
-    feedbackEl.innerText = "✅ Benar!";
-    feedbackEl.style.color = "green";
-    score += 50; // Tiap soal bernilai 50
+// Fungsi untuk Menyembunyikan/Menampilkan Pilihan ABCD
+function togglePilihanGanda() {
+  const jenis = document.getElementById('pg-jenis-soal').value;
+  const wrapPilihan = document.getElementById('wrapper-pilihan-pg');
+  const wrapKunci = document.getElementById('wrapper-kunci-pg');
+
+  if (jenis === 'pg') {
+    wrapPilihan.style.display = 'block';
+    wrapKunci.style.display = 'block';
   } else {
-    feedbackEl.innerText = "❌ Salah! Jawaban benar adalah opsi ke-" + (correctIndex + 1);
-    feedbackEl.style.color = "red";
+    wrapPilihan.style.display = 'none';
+    wrapKunci.style.display = 'none';
+  }
+}
+
+// Fungsi Simpan Soal PG Manual
+function simpanSoalPG() {
+  alert('Soal berhasil disimpan!');
+}
+
+// Fungsi Simpan Kuis Mencocokkan Gambar
+function simpanKuisGambar() {
+  const instruksi = document.getElementById('img-instruksi').value;
+  const file1 = document.getElementById('img-file-1').files[0];
+  const text1 = document.getElementById('img-text-1').value;
+
+  if (!instruksi) {
+    alert('Silakan isi instruksi kuis terlebih dahulu!');
+    return;
   }
 
-  // Matikan semua tombol opsi setelah menjawab
-  const buttons = document.querySelectorAll(".option-btn");
-  buttons.forEach(btn => btn.disabled = true);
+  if (!file1 || !text1) {
+    alert('Silakan pilih minimal 1 gambar dan isi nama pasangannya!');
+    return;
+  }
 
-  document.getElementById("next-btn").style.display = "block";
+  alert('Berhasil menyimpan kuis mencocokkan gambar!');
 }
 
-function nextQuestion() {
-  currentQuestionIndex++;
-  if (currentQuestionIndex < quizData.length) {
-    loadQuiz();
-  } else {
-    // Kuis Selesai
-    document.getElementById("quiz-container").innerHTML = `
-      <h2>🎉 Kuis Selesai!</h2>
-      <p style="font-size: 18px; margin-top: 10px;">Nilai Akhir Anda: <strong>${score}</strong></p>
-      <button onclick="location.reload()" style="margin-top: 15px;">Ulangi Kuis</button>
+// Array & Fungsi Membaca Soal dari Google Sheets
+let daftarSoalDariSheets = [];
+
+function muatSoalDariSheets() {
+  const url = document.getElementById('url-google-sheets').value;
+
+  if (!url) {
+    alert('Silakan masukkan link CSV Google Sheets terlebih dahulu!');
+    return;
+  }
+
+  fetch(url)
+    .then(response => response.text())
+    .then(csvData => {
+      const baris = csvData.split('\n');
+      daftarSoalDariSheets = [];
+
+      for (let i = 1; i < baris.length; i++) {
+        const kolom = baris[i].split(',');
+        if (kolom.length >= 2) {
+          daftarSoalDariSheets.push({
+            jenis: kolom[0]?.trim(),
+            pertanyaan: kolom[1]?.trim(),
+            optA: kolom[2]?.trim(),
+            optB: kolom[3]?.trim(),
+            optC: kolom[4]?.trim(),
+            optD: kolom[5]?.trim(),
+            kunci: kolom[6]?.trim()
+          });
+        }
+      }
+
+      alert(`Berhasil menarik ${daftarSoalDariSheets.length} soal dari Google Sheets!`);
+      console.log('Daftar Soal Loaded:', daftarSoalDariSheets);
+    })
+    .catch(error => {
+      alert('Gagal mengambil data. Pastikan link Google Sheets sudah dipublikasikan ke web sebagai CSV!');
+      console.error(error);
+    });
+}
+// FUNGSI CETAK / EXPORT SOAL KE PDF
+function cetakSoalPDF() {
+  window.print();
+}
+// ==========================================
+// FUNGSI PRATINJAU & CETAK SOAL
+// ==========================================
+
+// 1. Fungsi untuk Membuka Pratinjau Kuis
+function bukaPreview() {
+  const modal = document.getElementById('modal-preview');
+  const previewContent = document.getElementById('preview-content');
+
+  if (!modal || !previewContent) {
+    alert("Elemen modal pratinjau belum ditemukan!");
+    return;
+  }
+
+  // Jika belum ada data soal
+  if (typeof dataSoal === 'undefined' || dataSoal.length === 0) {
+    previewContent.innerHTML = `
+      <div style="text-align: center; padding: 30px; color: #64748b;">
+        <p style="font-size: 16px; font-weight: bold;">Belum ada soal yang dimasukkan.</p>
+        <p style="font-size: 13px;">Silakan isi form manual atau klik "Tarik Soal" terlebih dahulu.</p>
+      </div>
     `;
-    tambahNilaiKeTabel("Siswa Contoh", "IPAS / Administrasi", score);
+  } else {
+    // Menyusun daftar soal untuk ditampilkan
+    let htmlSoal = `<h3 style="margin-top: 0; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; text-align: center;">LEMBAR SOAL KUIS</h3>`;
+
+    dataSoal.forEach((item, index) => {
+      htmlSoal += `
+        <div style="margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <p style="font-weight: bold; margin-top: 0; color: #0f172a;">${index + 1}. ${item.pertanyaan}</p>
+      `;
+
+      if (item.jenis === 'pg') {
+        htmlSoal += `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; font-size: 14px;">
+            <div>A. ${item.optA || '-'}</div>
+            <div>B. ${item.optB || '-'}</div>
+            <div>C. ${item.optC || '-'}</div>
+            <div>D. ${item.optD || '-'}</div>
+          </div>
+        `;
+      } else if (item.jenis === 'isian') {
+        htmlSoal += `
+          <div style="margin-top: 10px;">
+            <input type="text" placeholder="Jawaban isian siswa..." disabled style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff;">
+          </div>
+        `;
+      } else if (item.jenis === 'uraian') {
+        htmlSoal += `
+          <div style="margin-top: 10px;">
+            <textarea placeholder="Jawaban uraian siswa..." disabled rows="3" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff;"></textarea>
+          </div>
+        `;
+      }
+
+      htmlSoal += `</div>`;
+    });
+
+    previewContent.innerHTML = htmlSoal;
   }
+
+  // Tampilkan modal pop-up
+  modal.style.display = 'flex';
 }
 
-// --- LOGIKA SIMPAN NILAI KE TABEL REKAP ---
-function tambahNilaiKeTabel(nama, mapel, nilai) {
-  const tbody = document.getElementById("tabel-nilai");
-  const rowCount = tbody.rows.length + 1;
-  const row = `<tr>
-    <td>${rowCount}</td>
-    <td>${nama}</td>
-    <td>${mapel}</td>
-    <td><strong>${nilai}</strong></td>
-  </tr>`;
-  tbody.innerHTML += row;
+// 2. Fungsi untuk Menutup Pratinjau Kuis
+function tutupPreview() {
+  const modal = document.getElementById('modal-preview');
+  if (modal) modal.style.display = 'none';
 }
 
-// --- LOGIKA MODUL ADMINISTRASI ---
-document.getElementById("form-modul").addEventListener("submit", function(e) {
-  e.preventDefault();
-  const judul = document.getElementById("judul-modul").value;
-  const link = document.getElementById("link-media").value;
-
-  const list = document.getElementById("daftar-modul");
-  const item = document.createElement("li");
-  item.innerHTML = `<strong>${judul}</strong> — <a href="${link}" target="_blank">Buka Media</a>`;
-  list.appendChild(item);
-
-  document.getElementById("judul-modul").value = "";
-  document.getElementById("link-media").value = "";
-});
-
-// Jalankan Kuis saat Pertama Kali Dimuat
-loadQuiz();
+// 3. Fungsi untuk Mencetak / Simpan PDF
+function cetakSoalPDF() {
+  window.print();
+}

@@ -147,3 +147,30 @@ button:hover {
   background-color: #34495e;
   color: white;
 }
+/* ATURAN TAMPILAN KHUSUS CETAK & PDF */
+@media print {
+  /* Sembunyikan semua elemen aplikasi kecuali isi pratinjau */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Tampilkan hanya area modal pratinjau soal */
+  #modal-preview, #modal-preview * {
+    visibility: visible;
+  }
+
+  #modal-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+
+  /* Sembunyikan tombol cetak & tutup di hasil cetakan */
+  #modal-preview button {
+    display: none !important;
+  }
+}

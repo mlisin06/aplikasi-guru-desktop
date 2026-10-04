@@ -4,7 +4,95 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aplikasi Administrasi Guru & Kuis Interaktif</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      background-color: #f1f5f9;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #1e293b;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 20px 10px;
+      box-sizing: border-box;
+    }
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      padding-left: 10px;
+      color: #38bdf8;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar li {
+      margin-bottom: 5px;
+    }
+    .sidebar a {
+      color: #cbd5e1;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .sidebar a:hover {
+      background-color: #334155;
+      color: #ffffff;
+    }
+    .menu-header {
+      font-weight: bold;
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 15px 10px 5px 10px;
+    }
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+    .hidden-section {
+      display: none !important;
+    }
+    .card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      margin-top: 15px;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #94a3b8;
+      box-sizing: border-box;
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
@@ -13,201 +101,213 @@
     <h2>EduAdmin Pro</h2>
     <ul>
       <li><a href="#" onclick="showSection('dashboard')">🏠 Dashboard</a></li>
-      <li><a href="#" onclick="showSection('administrasi')">📁 Modul & Media</a></li>
-      <li><a href="#" onclick="showSection('kuis')">✏️ Kuis Interaktif</a></li>
+      <li><a href="#" onclick="showSection('administrasi')">📚 Modul & Media</a></li>
+
+      <li class="menu-header">Kuis Interaktif</li>
+      <li><a href="#" onclick="showSection('kuis-pg-essay')">📌 1. Soal PG & Essay</a></li>
+      <li><a href="#" onclick="showSection('kuis-cocok-gambar')">🖼️ 2. Mencocokkan Gambar</a></li>
+      <li><a href="#" onclick="showSection('kuis-cocok-kata')">🔤 3. Mencocokkan Kata</a></li>
+      <li><a href="#" onclick="showSection('kuis-rangkum')">📖 4. Merangkum Materi</a></li>
+
+      <li class="menu-header">Hasil & Evaluasi</li>
       <li><a href="#" onclick="showSection('nilai')">📊 Rekap Nilai</a></li>
-<li><a href="#" onclick="showSection('siswa')">👨‍🎓 Daftar Siswa</a></li>
     </ul>
   </div>
 
   <!-- MAIN CONTENT -->
-  <div class="content">
-    
-    <!-- DASHBOARD SECTION -->
-    <section id="dashboard" class="active-section">
-      <h1>Selamat Datang, Bapak/Ibu Guru</h1>
-      <p>Aplikasi administrasi dan penilaian interaktif berbasis desktop.</p>
-      <div class="card-grid">
-        <div class="card">
-          <h3>Total Modul</h3>
-          <p id="total-modul">1 Modul</p>
+  <div class="main-content">
+
+    <!-- 0. DASHBOARD -->
+    <section id="dashboard">
+      <h2>Selamat Datang, Bapak/Ibu Guru</h2>
+      <p>Silakan pilih menu di sebelah kiri untuk mengelola media pembelajaran dan kuis interaktif.</p>
+    </section>
+
+    <!-- MODUL & MEDIA -->
+    <section id="administrasi" class="hidden-section">
+      <h2>📚 Modul & Media Pembelajaran</h2>
+      <div class="card">
+        <div class="form-group">
+          <label>Judul Modul / RPP:</label>
+          <input type="text" class="form-control" placeholder="Masukkan judul modul...">
         </div>
-        <div class="card">
-          <h3>Jumlah Kuis</h3>
-          <p id="total-kuis">1 Kuis</p>
+        <div class="form-group">
+          <label>Link Media / Drive (Opsional):</label>
+          <input type="text" class="form-control" placeholder="https://...">
         </div>
+        <div class="form-group">
+          <label>Upload File:</label>
+          <input type="file" class="form-control">
+        </div>
+        <button class="btn-primary">Tambah Modul</button>
       </div>
     </section>
 
-    <!-- MODUL & MEDIA SECTION -->
-    <section id="administrasi" class="hidden-section">
-      <h1>Modul & Media Pembelajaran</h1>
-<form id="form-modul">
-  <input type="text" id="judul-modul" placeholder="Judul Modul / RPP" required>
-  <input type="text" id="link-media" placeholder="Link Media / Drive (Opsional)">
-  <input type="file" id="file-lokal" accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4">
-  <button type="submit">Tambah Modul</button>
-</form>
-      <ul id="daftar-modul" class="item-list"></ul>
+    <!-- 1. FORM SOAL PG & ESSAY -->
+    <section id="kuis-pg-essay" class="hidden-section">
+      <h2>📌 Input Soal: Pilihan Ganda, Isian & Uraian</h2>
+      <p>Guru dapat memasukkan pertanyaan dan pilihan jawaban tanpa batas jumlah.</p>
+      
+      <!-- IMPOR GOOGLE SHEETS -->
+      <div class="card" style="background: #e0f2fe; border-color: #7dd3fc; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; color: #0369a1;">📊 Impor Soal dari Google Sheets</h3>
+        <p style="font-size: 13px; color: #0c4a6e; margin-bottom: 10px;">
+          Masukkan link Google Sheets (format CSV yang sudah dipublikasikan ke web):
+        </p>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="url-google-sheets" class="form-control" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+          <button onclick="muatSoalDariSheets()" class="btn-primary" style="white-space: nowrap; background: #0284c7;">
+            📥 Tarik Soal
+          </button>
+        </div>
+      </div>
+
+      <!-- FORM INPUT MANUAL SOAL -->
+      <div class="card">
+        <h3>✏️ Input Soal Manual</h3>
+        <div class="form-group">
+          <label>Jenis Soal:</label>
+          <select id="pg-jenis-soal" onchange="togglePilihanGanda()" class="form-control">
+            <option value="pg">Pilihan Ganda</option>
+            <option value="isian">Isian Singkat</option>
+            <option value="uraian">Uraian / Essay</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Pertanyaan / Teks Soal:</label>
+          <textarea id="pg-pertanyaan" rows="3" class="form-control" placeholder="Ketik pertanyaan kuis di sini..."></textarea>
+        </div>
+
+        <!-- CONTAINER PILIHAN JAWABAN (OTOMATIS HILANG SAAT ISIAN/URAIAN) -->
+        <div id="wrapper-pilihan-pg" class="form-group">
+          <label>Pilihan Jawaban (A, B, C, D):</label>
+          <input type="text" id="pg-opt-a" placeholder="Pilihan A" class="form-control" style="margin-bottom: 5px;">
+          <input type="text" id="pg-opt-b" placeholder="Pilihan B" class="form-control" style="margin-bottom: 5px;">
+          <input type="text" id="pg-opt-c" placeholder="Pilihan C" class="form-control" style="margin-bottom: 5px;">
+          <input type="text" id="pg-opt-d" placeholder="Pilihan D" class="form-control" style="margin-bottom: 5px;">
+        </div>
+
+       <!-- CONTAINER KUNCI JAWABAN -->
+        <div id="wrapper-kunci-pg" class="form-group">
+          <label id="label-kunci">Kunci Jawaban Benar:</label>
+          <select id="pg-kunci" class="form-control">
+            <option value="A">Pilihan A</option>
+            <option value="B">Pilihan B</option>
+            <option value="C">Pilihan C</option>
+            <option value="D">Pilihan D</option>
+          </select>
+          <input type="text" id="isian-kunci" class="form-control" placeholder="Masukkan kunci jawaban isian (bisa pisah dengan | contoh: Jakarta|dki jakarta)" style="display: none;">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <button onclick="simpanSoalPG()" class="btn-primary">💾 Simpan Soal</button>
+          <button onclick="bukaPreview()" class="btn-primary" style="background: #059669;">👁️ Pratinjau Kuis</button>
+      </div>
     </section>
 
-    <!-- KUIS INTERAKTIF SECTION -->
-<!-- KUIS INTERAKTIF SECTION -->
-<section id="kuis" class="hidden-section">
-  <h1>Kuis Interaktif - Mencocokkan Gambar</h1>
-  <p>Klik/Pilih gambar di sebelah kiri, lalu klik nama/jawaban yang sesuai di sebelah kanan!</p>
+    <!-- 2. MENCOCOKKAN GAMBAR -->
+    <section id="kuis-cocok-gambar" class="hidden-section">
+      <h2>🖼️ Input Soal: Mencocokkan Gambar</h2>
+      <p>Unggah gambar dari laptop dan tentukan nama / pasangannya.</p>
+      
+      <div class="card">
+        <div class="form-group">
+          <label>Pertanyaan / Instruksi Kuis:</label>
+          <input type="text" id="img-instruksi" class="form-control" placeholder="Contoh: Pasangkan gambar hewan berikut dengan namanya!">
+        </div>
 
-  <div class="matching-container" style="display: flex; gap: 20px; margin-top: 20px;">
-    <!-- Kolom Gambar (Kiri) -->
-    <div id="image-column" style="display: flex; flex-direction: column; gap: 10px; width: 45%;">
-      <!-- Card Gambar akan dirender via JS -->
-    </div>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
 
-    <!-- Kolom Teks/Jawaban (Kanan) -->
-    <div id="text-column" style="display: flex; flex-direction: column; gap: 10px; width: 45%;">
-      <!-- Card Teks akan dirender via JS -->
-    </div>
-  </div>
+        <!-- INPUT PASANGAN GAMBAR 1 -->
+        <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
+          <div class="form-group">
+            <label>Gambar 1 (Pilih dari Laptop):</label>
+            <input type="file" id="img-file-1" accept="image/*" class="form-control">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Nama / Pasangan Gambar 1:</label>
+            <input type="text" id="img-text-1" class="form-control" placeholder="Contoh: Kucing">
+          </div>
+        </div>
 
-  <div id="matching-feedback" style="margin-top: 15px; font-weight: bold;"></div>
-  <button onclick="resetMatchingGame()" class="btn btn-secondary" style="margin-top: 15px;">Ulangi Kuis</button>
-</section>
-<!-- DAFTAR SISWA SECTION -->
-<section id="siswa" class="hidden-section">
-  <h1>Daftar Siswa</h1>
-  <form id="form-siswa">
-    <input type="text" id="nama-siswa" placeholder="Nama Lengkap Siswa" required>
-    <input type="text" id="kelas-siswa" placeholder="Kelas (contoh: Kelas 3)" required>
-    <button type="submit">Tambah Siswa</button>
-  </form>
-  <ul id="daftar-siswa" class="item-list"></ul>
-</section>
+        <!-- INPUT PASANGAN GAMBAR 2 -->
+        <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
+          <div class="form-group">
+            <label>Gambar 2 (Pilih dari Laptop):</label>
+            <input type="file" id="img-file-2" accept="image/*" class="form-control">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Nama / Pasangan Gambar 2:</label>
+            <input type="text" id="img-text-2" class="form-control" placeholder="Contoh: Anjing">
+          </div>
+        </div>
 
-    <!-- REKAP NILAI SECTION -->
+        <button onclick="simpanKuisGambar()" class="btn-primary">💾 Simpan Kuis Gambar</button>
+      </div>
+    </section>
+
+    <!-- 3. MENCOCOKKAN KATA -->
+    <section id="kuis-cocok-kata" class="hidden-section">
+      <h2>🔤 Input Soal: Mencocokkan Kata</h2>
+      <p>Buat pasangan kata kiri dan kanan.</p>
+      <div class="card">
+        <div class="form-group">
+          <label>Kata Kiri:</label>
+          <input type="text" class="form-control" placeholder="Contoh: Indonesia">
+        </div>
+        <div class="form-group">
+          <label>Kata Kanan (Pasangan):</label>
+          <input type="text" class="form-control" placeholder="Contoh: Jakarta">
+        </div>
+        <button class="btn-primary">💾 Simpan Kuis Kata</button>
+      </div>
+    </section>
+
+    <!-- 4. MERANGKUM MATERI -->
+    <section id="kuis-rangkum" class="hidden-section">
+      <h2>📖 Tugas Merangkum Materi</h2>
+      <p>Siswa membaca teks/materi dan menuliskan rangkuman.</p>
+      <div class="card">
+        <div class="form-group">
+          <label>Judul Materi:</label>
+          <input type="text" class="form-control" placeholder="Judul materi...">
+        </div>
+        <button class="btn-primary">💾 Simpan Tugas</button>
+      </div>
+    </section>
+
+    <!-- REKAP NILAI -->
     <section id="nilai" class="hidden-section">
-      <h1>Rekapitulasi Nilai Kuis</h1>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Nama Siswa</th>
-            <th>Mata Pelajaran</th>
-            <th>Skor</th>
-          </tr>
-        </thead>
-        <tbody id="tabel-nilai">
-          <!-- Data nilai kuis akan otomatis masuk ke sini -->
-        </tbody>
-      </table>
+      <h2>📊 Rekap Nilai Siswa</h2>
+      <p>Daftar nilai hasil pengerjaan kuis siswa.</p>
     </section>
 
+  </div>
+<!-- MODAL POPUP PRATINJAU KUIS -->
+  <div id="modal-preview" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+      
+      <!-- HEADER MODAL -->
+      <div style="background: #1e293b; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 16px;">👁️ Pratinjau Kuis (Simulasi Tampilan Siswa)</h3>
+        <button onclick="tutupPreview()" style="background: transparent; border: none; color: #ffffff; font-size: 20px; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- ISI KUIS PRATINJAU -->
+      <div id="preview-content" style="padding: 20px; overflow-y: auto; flex: 1;">
+        <!-- Soal-soal akan muncul di sini secara otomatis -->
+      </div>
+
+<!-- FOOTER MODAL -->
+      <div style="padding: 15px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+        <button onclick="cetakSoalPDF()" class="btn-primary" style="background: #0284c7;">🖨️ Cetak / Simpan PDF</button>
+        <button onclick="tutupPreview()" class="btn-primary" style="background: #64748b;">Tutup Pratinjau</button>
+      </div>
+
+    </div>
   </div>
 
   <script src="app.js"></script>
-<script src="app.js"></script>
-
-<!-- PASTE KODE JAVASCRIPT KUIS DI SINI -->
-<script>
-  const dataKuisGambar = [
-    {
-      id: 1,
-      gambar: "https://cdn-icons-png.flaticon.com/512/3068/3068327.png",
-      label: "Apel"
-    },
-    {
-      id: 2,
-      gambar: "https://cdn-icons-png.flaticon.com/512/2909/2909761.png",
-      label: "Pisang"
-    },
-    {
-      id: 3,
-      gambar: "https://cdn-icons-png.flaticon.com/512/415/415733.png",
-      label: "Jeruk"
-    }
-  ];
-
-  let selectedImageId = null;
-  let selectedTextId = null;
-  let matchedCount = 0;
-
-  function renderMatchingGame() {
-    const imageCol = document.getElementById('image-column');
-    const textCol = document.getElementById('text-column');
-    
-    if (!imageCol || !textCol) return;
-
-    imageCol.innerHTML = '';
-    textCol.innerHTML = '';
-    document.getElementById('matching-feedback').innerText = '';
-    matchedCount = 0;
-
-    const shuffledTextData = [...dataKuisGambar].sort(() => Math.random() - 0.5);
-
-    dataKuisGambar.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'matching-card img-card';
-      card.dataset.id = item.id;
-      card.style = "border: 2px solid #ccc; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; background: #fff;";
-      card.innerHTML = `<img src="${item.gambar}" alt="Gambar" style="height: 70px; object-fit: contain;"><br><small>Gambar ${item.id}</small>`;
-      card.onclick = () => selectImage(item.id, card);
-      imageCol.appendChild(card);
-    });
-
-    shuffledTextData.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'matching-card text-card';
-      card.dataset.id = item.id;
-      card.style = "border: 2px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; cursor: pointer; background: #fff; font-weight: bold;";
-      card.innerText = item.label;
-      card.onclick = () => selectText(item.id, card);
-      textCol.appendChild(card);
-    });
-  }
-
-  function selectImage(id, element) {
-    document.querySelectorAll('.img-card').forEach(el => el.style.borderColor = '#ccc');
-    element.style.borderColor = '#0d6efd';
-    selectedImageId = id;
-    checkMatch();
-  }
-
-  function selectText(id, element) {
-    document.querySelectorAll('.text-card').forEach(el => el.style.borderColor = '#ccc');
-    element.style.borderColor = '#0d6efd';
-    selectedTextId = id;
-    checkMatch();
-  }
-
-  function checkMatch() {
-    if (selectedImageId !== null && selectedTextId !== null) {
-      const feedback = document.getElementById('matching-feedback');
-      
-      if (selectedImageId === selectedTextId) {
-        feedback.innerText = "✅ Cocok! Pasangan Benar.";
-        feedback.style.color = "green";
-
-        document.querySelector(`.img-card[data-id="${selectedImageId}"]`).style.opacity = "0.4";
-        document.querySelector(`.img-card[data-id="${selectedImageId}"]`).style.pointerEvents = "none";
-        document.querySelector(`.text-card[data-id="${selectedTextId}"]`).style.opacity = "0.4";
-        document.querySelector(`.text-card[data-id="${selectedTextId}"]`).style.pointerEvents = "none";
-
-        matchedCount++;
-        if (matchedCount === dataKuisGambar.length) {
-          feedback.innerText = "🎉 Selamat! Semua gambar berhasil dicocokkan dengan benar!";
-        }
-      } else {
-        feedback.innerText = "❌ Kurang Tepat! Coba lagi.";
-        feedback.style.color = "red";
-      }
-
-      selectedImageId = null;
-      selectedTextId = null;
-    }
-  }
-
-  function resetMatchingGame() {
-    renderMatchingGame();
-  }
-</script>
 </body>
 </html>
