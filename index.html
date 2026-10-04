@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<<<<<<< HEAD
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aplikasi Administrasi Guru & Kuis Interaktif</title>
@@ -309,5 +310,94 @@
   </div>
 
   <script src="app.js"></script>
+=======
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beranda - Ruang Ujian & Tugas Sekolah</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #f0f8ff, #e6f2ff); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .welcome-card { 
+            background: white;
+            border-radius: 20px; 
+            padding: 40px 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+        }
+        .header-logo {
+            height: 70px; 
+            background-color: white; 
+            padding: 5px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .btn-menu {
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            padding: 14px 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .btn-siswa {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            border: none;
+            color: white;
+        }
+        .btn-siswa:hover {
+            background: linear-gradient(135deg, #138496, #117a8b);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .btn-guru {
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            border: none;
+            color: white;
+        }
+        .btn-guru:hover {
+            background: linear-gradient(135deg, #e86b4c, #e59f67);
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="welcome-card mx-auto">
+            <!-- Logo Tut Wuri -->
+            <img src="assets/images/tutwuri.png" alt="Logo Tut Wuri Handayani" class="header-logo">
+            
+            <h2 class="font-weight-bold text-dark mb-2">Portal Ujian & Tugas</h2>
+            <p class="text-muted mb-4">Silakan pilih menu di bawah ini sesuai dengan peran Anda:</p>
+
+            <!-- Tombol Navigasi ke Halaman Siswa atau Guru -->
+            <div class="d-flex flex-column">
+                <a href="siswa.html" class="btn btn-menu btn-siswa shadow-sm">
+                    🎓 Masuk ke Ruang Siswa (Mengerjakan Ujian)
+                </a>
+                <a href="guru.html" class="btn btn-menu btn-guru shadow-sm">
+                    👩‍🏫 Masuk ke Panel Guru (Kelola Soal & Nilai)
+                </a>
+            </div>
+
+            <hr class="my-4">
+            <small class="text-muted">Pencipta Aplikasi: <b>muhlisin06</b></small>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+>>>>>>> 785fba3411abc6279efdde8d2d922d3d9fc554ba
 </body>
 </html>

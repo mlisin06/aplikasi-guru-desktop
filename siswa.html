@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<<<<<<< HEAD
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EduAdmin Pro - Panel Siswa</title>
@@ -58,3 +59,356 @@
   <script src="siswa.js"></script>
 </body>
 </html>
+=======
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Ujian & Tugas Siswa - Portal Pembelajaran</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+        .main-header { background: linear-gradient(135deg, #0061ff 0%, #60efff 100%); color: white; border-radius: 15px; box-shadow: 0 10px 20px rgba(0, 97, 255, 0.15); }
+        .card-filter { border: none; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.07); background: #ffffff; }
+        .quiz-card { border: none; border-left: 6px solid #0061ff; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .form-control { border-radius: 10px; padding: 10px 15px; height: calc(1.5em + 1rem + 2px); }
+        .btn-custom { border-radius: 10px; padding: 12px 20px; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .puzzle-box { background: #f8f9fa; border: 2px dashed #0061ff; border-radius: 12px; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="main-header p-4 mb-4 text-center">
+            <h2 class="font-weight-bold mb-2">🎓 Ruang Ujian & Tugas Siswa Online</h2>
+            <p class="mb-0 text-white-50">Pilih kelas Anda, pilih nama Anda dari daftar, tentukan mapel, dan ambil soal dari cloud!</p>
+        </div>
+
+        <div class="card card-filter p-4 mb-4">
+            <h5 class="text-primary font-weight-bold mb-3">📋 Identitas & Pilih Kuis</h5>
+            <div class="form-row">
+                <div class="form-group col-md-3">
+                    <label class="font-weight-bold text-muted small">Pilih Kelas</label>
+                    <select id="pilih-kelas" class="form-control" onchange="muatDaftarSiswaByKelas()">
+                        <option value="">-- Pilih Kelas --</option>
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                </div>
+                
+                <div class="form-group col-md-3">
+                    <label class="font-weight-bold text-muted small">Pilih Nama Lengkap Siswa</label>
+                    <select id="pilih-nama" class="form-control">
+                        <option value="">-- Pilih Kelas Dahulu --</option>
+                    </select>
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label class="font-weight-bold text-muted small">Mata Pelajaran</label>
+                    <select id="pilih-mapel" class="form-control">
+                        <option value="">-- Pilih Mapel --</option>
+                        <option value="PAIBP">PAIBP</option>
+                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="IPAS">IPAS</option>
+                        <option value="PJOK">PJOK</option>
+                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                        <option value="Bahasa Jawa">Bahasa Jawa</option>
+                    </select>
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label class="font-weight-bold text-muted small">Jenis Kuis / Tugas</label>
+                    <select id="pilih-jenis" class="form-control">
+                        <option value="">-- Pilih Jenis --</option>
+                        <option value="Pilihan Ganda">Pilihan Ganda</option>
+                        <option value="Essay / Uraian">Essay / Uraian</option>
+                        <option value="Mencocokkan Gambar">Mencocokkan Gambar</option>
+                        <option value="Puzzle Kata">Puzzle Kata</option>
+                        <option value="Menulis Ringkasan Materi">Menulis Ringkasan Materi</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-custom btn-block mt-2" onclick="muatDaftarSoalOnline()">
+                🚀 Ambil Soal dari Server Cloud
+            </button>
+        </div>
+
+        <div id="kontainer-soal">
+            <div class="card card-filter text-center py-5">
+                <h5 class="text-muted">✨ Silakan lengkapi identitas dan pilih jenis kuis di atas!</h5>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="administrasi.html" class="btn btn-info btn-custom text-white mr-2">📚 Baca Materi PDF Terlebih Dahulu</a>
+            <a href="index.html" class="btn btn-light btn-custom text-muted border">&larr; Kembali ke Beranda</a>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
+
+        // Fungsi otomatis mengambil daftar siswa dari Google Sheets berdasarkan kelas yang dipilih
+        async function muatDaftarSiswaByKelas() {
+            let kelasDipilih = document.getElementById("pilih-kelas").value;
+            let selectNama = document.getElementById("pilih-nama");
+            
+            selectNama.innerHTML = `<option value="">Memuat data siswa...</option>`;
+
+            if (!kelasDipilih) {
+                selectNama.innerHTML = `<option value="">-- Pilih Kelas Dahulu --</option>`;
+                return;
+            }
+
+            try {
+                let response = await fetch(SCRIPT_URL + "?action=getSiswa");
+                let dataSiswa = await response.json();
+
+                // Filter siswa sesuai kelas yang dipilih guru
+                let siswaFiltered = dataSiswa.filter(s => s.kelas && s.kelas.trim().toLowerCase() === kelasDipilih.trim().toLowerCase());
+
+                selectNama.innerHTML = `<option value="">-- Pilih Nama Anda --</option>`;
+
+                if (siswaFiltered.length === 0) {
+                    selectNama.innerHTML = `<option value="">⚠️️ Belum ada data siswa di kelas ini</option>`;
+                    return;
+                }
+
+                siswaFiltered.forEach(siswa => {
+                    let opt = document.createElement("option");
+                    opt.value = siswa.nama;
+                    opt.text = siswa.nis ? `${siswa.nama} (NIS: ${siswa.nis})` : siswa.nama;
+                    selectNama.appendChild(opt);
+                });
+
+            } catch (e) {
+                selectNama.innerHTML = `<option value="">Gagal memuat daftar siswa</option>`;
+            }
+        }
+
+        function acakHuruf(kata) {
+            if (!kata) return "";
+            let arr = kata.trim().split("");
+            for (let i = arr.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            let hasilAcak = arr.join(" ");
+            if (hasilAcak.replace(/\s+/g, '') === kata.trim() && kata.length > 2) {
+                return acakHuruf(kata);
+            }
+            return hasilAcak;
+        }
+
+        async function muatDaftarSoalOnline() {
+            let kelas = document.getElementById("pilih-kelas").value;
+            let nama = document.getElementById("pilih-nama").value;
+            let mapel = document.getElementById("pilih-mapel").value;
+            let jenis = document.getElementById("pilih-jenis").value;
+            let kontainer = document.getElementById("kontainer-soal");
+
+            if (!kelas || !nama || !mapel || !jenis) {
+                alert("Harap lengkapi Kelas, Pilih Nama Siswa, Mata Pelajaran, dan Jenis Kuis terlebih dahulu!");
+                return;
+            }
+
+            kontainer.innerHTML = `<div class="card card-filter text-center py-5"><h5 class="text-primary">⏳ Sedang mengambil soal dari server cloud...</h5></div>`;
+
+            try {
+                let response = await fetch(SCRIPT_URL + "?action=getSoal");
+                let dataSoal = await response.json();
+                
+                let soalFilter = dataSoal.filter(s => {
+                    let matchKelas = s.kelas && s.kelas.trim().toLowerCase() === kelas.trim().toLowerCase();
+                    let matchMapel = s.mapel && s.mapel.trim().toLowerCase() === mapel.trim().toLowerCase();
+                    let matchJenis = s.jenis && s.jenis.trim().toLowerCase() === jenis.trim().toLowerCase();
+                    return matchKelas && matchMapel && matchJenis;
+                });
+
+                if (soalFilter.length === 0) {
+                    kontainer.innerHTML = `
+                        <div class="card card-filter text-center py-5">
+                            <h5 class="text-danger">⚠️ Belum ada soal untuk <b>${kelas} - ${mapel} (${jenis})</b> di server.</h5>
+                        </div>`;
+                    return;
+                }
+
+                let htmlContent = "";
+                soalFilter.forEach((soal, index) => {
+                    let jenisSoal = soal.jenis ? soal.jenis.trim() : "Pilihan Ganda";
+
+                    htmlContent += `<div class="card quiz-card mb-4 p-4 bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="text-primary font-weight-bold mb-0">Soal No. ${index + 1}</h5>
+                            <span class="badge badge-info px-3 py-2" style="font-size: 12px; border-radius: 20px;">${jenisSoal}</span>
+                        </div>
+                        <p class="font-weight-bold mt-2 text-dark" style="font-size: 1.05rem;">${soal.pertanyaan}</p>`;
+
+                    if (jenisSoal === "Pilihan Ganda") {
+                        htmlContent += `
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optA_${index}" name="jawaban_${index}" value="A"><label class="custom-control-label" for="optA_${index}">A. ${soal.opsiA || ''}</label></div>
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optB_${index}" name="jawaban_${index}" value="B"><label class="custom-control-label" for="optB_${index}">B. ${soal.opsiB || ''}</label></div>
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optC_${index}" name="jawaban_${index}" value="C"><label class="custom-control-label" for="optC_${index}">C. ${soal.opsiC || ''}</label></div>
+                            <div class="custom-control custom-radio"><input class="custom-control-input" type="radio" id="optD_${index}" name="jawaban_${index}" value="D"><label class="custom-control-label" for="optD_${index}">D. ${soal.opsiD || ''}</label></div>
+                        `;
+                    } else if (jenisSoal === "Essay / Uraian") {
+                        htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="3" placeholder="Tulis jawaban essay Anda..."></textarea></div>`;
+                    } else if (jenisSoal === "Mencocokkan Gambar") {
+                        htmlContent += `
+                            <div class="mb-3 text-center">${soal.gambar ? `<img src="${soal.gambar}" class="img-fluid rounded shadow-sm border mb-2" style="max-height: 220px;" alt="Gambar Soal">` : ''}</div>
+                            <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control" placeholder="Tulis jawaban atau pasangan..."></div>
+                        `;
+                    } else if (jenisSoal === "Puzzle Kata") {
+                        let hurufAcak = acakHuruf(soal.kunci);
+                        htmlContent += `
+                            <div class="puzzle-box text-center my-3">
+                                <span class="text-muted small d-block mb-1 font-weight-bold">SUSUNLAH HURUF BERIKUT:</span>
+                                <h3 class="text-danger font-weight-bold mb-0" style="letter-spacing: 6px;">${hurufAcak}</h3>
+                            </div>
+                            <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control font-weight-bold text-center text-uppercase" placeholder="Ketik kata yang benar..."></div>
+                        `;
+                    } else if (jenisSoal === "Menulis Ringkasan Materi") {
+                        htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tulis ringkasan materi (minimal 300 karakter)..."></textarea></div>`;
+                    }
+
+                    htmlContent += `</div>`;
+                });
+
+                htmlContent += `<button type="button" class="btn btn-success btn-custom btn-lg btn-block mt-4 shadow" onclick='kirimJawabanKeServer(${JSON.stringify(soalFilter)}, "${kelas}", "${mapel}", "${jenis}", "${nama}")'>✨ Kirim Semua Jawaban ke Server</button>`;
+                kontainer.innerHTML = htmlContent;
+
+            } catch (e) {
+                kontainer.innerHTML = `<div class="card card-filter text-center py-5"><h5 class="text-danger">Gagal memuat soal dari server. Periksa koneksi internet Anda.</h5></div>`;
+            }
+        }
+
+        function kirimJawabanKeServer(soalFilter, kelas, mapel, jenis, nama) {
+            let jenisTarget = jenis.trim();
+
+            if (jenisTarget === "Essay / Uraian") {
+                let diisiSemua = true;
+                soalFilter.forEach((soal, index) => {
+                    let inputTeks = document.getElementById(`jawaban_${index}`);
+                    if (!inputTeks || inputTeks.value.trim() === "") diisiSemua = false;
+                });
+
+                if (!diisiSemua) {
+                    alert("Harap jawab semua soal essay terlebih dahulu!");
+                    return;
+                }
+
+                let dataKirim = {
+                    action: "simpanNilai",
+                    tanggal: new Date().toLocaleDateString(),
+                    nama: nama,
+                    kelas: kelas,
+                    mapel: mapel,
+                    jenis: jenisTarget,
+                    nilai: null,
+                    keterangan: "Menunggu Koreksi Guru"
+                };
+
+                prosesKirimDataKeServer(dataKirim, nama);
+                return;
+            }
+
+            let totalDinilai = 0;
+            let jumlahBenar = 0;
+
+            for (let index = 0; index < soalFilter.length; index++) {
+                let soal = soalFilter[index];
+                let diisi = false;
+                let benar = false;
+
+                if (soal.jenis.trim() === "Pilihan Ganda") {
+                    let pilihan = document.querySelector(`input[name="jawaban_${index}"]:checked`);
+                    if (pilihan) {
+                        diisi = true;
+                        if (pilihan.value.trim().toUpperCase() === soal.kunci.trim().toUpperCase()) benar = true;
+                    }
+                } else if (soal.jenis.trim() === "Puzzle Kata") {
+                    let inputPuzzle = document.getElementById(`jawaban_${index}`);
+                    if (inputPuzzle && inputPuzzle.value.trim() !== "") {
+                        diisi = true;
+                        if (inputPuzzle.value.trim().toUpperCase() === soal.kunci.trim().toUpperCase()) benar = true;
+                    }
+                } else if (soal.jenis.trim() === "Menulis Ringkasan Materi") {
+                    let inputTeks = document.getElementById(`jawaban_${index}`);
+                    if (inputTeks) {
+                        let teksVal = inputTeks.value.trim();
+                        if (teksVal !== "") {
+                            if (teksVal.length < 300) {
+                                alert(`⚠️ Ringkasan materi pada soal No. ${index + 1} terlalu singkat!\nMinimal harus 300 karakter (Saat ini baru ${teksVal.length} karakter).`);
+                                inputTeks.focus();
+                                return;
+                            }
+                            diisi = true;
+                            benar = true;
+                        }
+                    }
+                } else {
+                    let inputTeks = document.getElementById(`jawaban_${index}`);
+                    if (inputTeks && inputTeks.value.trim() !== "") {
+                        diisi = true;
+                        benar = true;
+                    }
+                }
+
+                if (diisi) {
+                    totalDinilai++;
+                    if (benar) jumlahBenar++;
+                }
+            }
+
+            if (totalDinilai === 0) {
+                alert("Harap kerjakan setidaknya satu soal sebelum mengirim jawaban!");
+                return;
+            }
+
+            let nilaiAkhir = Math.round((jumlahBenar / totalDinilai) * 100);
+
+            let dataKirim = {
+                action: "simpanNilai",
+                tanggal: new Date().toLocaleDateString(),
+                nama: nama,
+                kelas: kelas,
+                mapel: mapel,
+                jenis: jenisTarget,
+                nilai: nilaiAkhir,
+                keterangan: `${jumlahBenar}/${totalDinilai} benar`
+            };
+
+            prosesKirimDataKeServer(dataKirim, nama, nilaiAkhir);
+        }
+
+        function prosesKirimDataKeServer(dataKirim, nama, nilaiAkhir = null) {
+            let btn = event.target;
+            btn.disabled = true;
+            btn.innerText = "Mengirim Nilai ke Server Cloud...";
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataKirim)
+            }).then(() => {
+                if (nilaiAkhir !== null) {
+                    alert(`🎉 Berhasil dikirim, ${nama}!\nNilai Akhir Anda: ${nilaiAkhir}`);
+                } else {
+                    alert(`🎉 Jawaban Essay berhasil dikirim, ${nama}!\nStatus: Menunggu Koreksi Guru.`);
+                }
+                window.location.reload();
+            }).catch(err => {
+                alert("Gagal mengirim jawaban: " + err);
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
+>>>>>>> 785fba3411abc6279efdde8d2d922d3d9fc554ba
