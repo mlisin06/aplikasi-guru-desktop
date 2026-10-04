@@ -229,7 +229,7 @@ async function muatDataSoal() {
     }
 }
 
-// 3. Mengirim Jawaban Siswa ke Google Sheets
+// 3. Mengirim Jawaban Siswa ke Google Sheets (Format Payload Asli yang Stabil)
 async function kirimJawabanSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
@@ -272,9 +272,9 @@ async function kirimJawabanSiswa() {
         hasilJawaban[`Soal_${index + 1}`] = val || "Tidak Diisi";
     });
 
+    // Struktur payload dikembalikan persis seperti saat berhasil mencatat data Mayang sebelumnya
     const payload = {
         nama: identitasLengkap,
-        jenisKuis: document.getElementById("select-modul") ? document.getElementById("select-modul").value : "",
         jawaban: hasilJawaban
     };
 
@@ -285,7 +285,6 @@ async function kirimJawabanSiswa() {
             btnKirim.innerText = "Sedang Mengirim Jawaban...";
         }
 
-        // Menggunakan mode "no-cors" agar sukses mencatat data ke Google Sheets
         await fetch(URL_WEB_APP, {
             method: "POST",
             mode: "no-cors",
@@ -293,12 +292,12 @@ async function kirimJawabanSiswa() {
             body: JSON.stringify(payload)
         });
 
-        alert("Jawaban berhasil dikirim dan tersimpan di Google Sheets!");
+        alert("Jawaban berhasil dikirim ke Google Sheets!");
         location.reload();
 
     } catch (err) {
         console.error("Gagal mengirim jawaban:", err);
-        alert("Terjadi kesalahan saat mengirim jawaban. Silakan coba lagi.");
+        alert("Gagal mengirim jawaban. Silakan coba lagi.");
         if (btnKirim) {
             btnKirim.disabled = false;
             btnKirim.innerText = "Kirim Jawaban Ujian";
