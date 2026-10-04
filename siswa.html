@@ -91,7 +91,6 @@
     </div>
 
     <script>
-        // Fungsi otomatis memuat nama siswa berdasarkan kelas yang dipilih
         function muatNamaSiswa() {
             let kelasDipilih = document.getElementById("pilih-kelas").value;
             let dropdownNama = document.getElementById("pilih-nama");
@@ -177,7 +176,7 @@
                         <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control" placeholder="Tulis jawaban atau pasangan..."></div>
                     `;
                 } else if (soal.jenis === "Puzzle") {
-                    let hurufAcak = acakHuruf(soal.kunci || "SEKOLAH");
+                    let hurufAcak = acakHuruf(soal.kunci);
                     htmlContent += `
                         <div class="puzzle-box text-center my-3">
                             <span class="text-muted small d-block mb-1 font-weight-bold">SUSUNLAH HURUF BERIKUT:</span>
@@ -186,7 +185,7 @@
                         <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control font-weight-bold text-center text-uppercase" placeholder="Ketik kata yang benar..."></div>
                     `;
                 } else if (soal.jenis === "Menulis Ringkasan Materi") {
-                    htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tuliskan ringkasan materi Anda..."></textarea></div>`;
+                    htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tulis ringkasan materi (minimal 200 karakter)..."></textarea></div>`;
                 }
 
                 htmlContent += `</div>`;
@@ -200,10 +199,41 @@
             let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
             let soalFilter = dataSoal.filter(s => s.kelas === kelas && s.mapel === mapel && s.jenis === jenis);
 
+            // Khusus Essay: Catat sebagai menunggu koreksi guru
+            if (jenis === "Essay") {
+                let diisiSemua = true;
+                soalFilter.forEach((soal, index) => {
+                    let inputTeks = document.getElementById(`jawaban_${index}`);
+                    if (!inputTeks || inputTeks.value.trim() === "") diisiSemua = false;
+                });
+
+                if (!diisiSemua) {
+                    alert("Harap jawab semua soal essay terlebih dahulu!");
+                    return;
+                }
+
+                let dataNilai = JSON.parse(localStorage.getItem("dataNilai")) || [];
+                dataNilai.push({
+                    tanggal: new Date().toLocaleDateString(),
+                    nama: nama,
+                    kelas: kelas,
+                    mapel: mapel,
+                    jenis: jenis,
+                    nilai: null,
+                    keterangan: "Menunggu Koreksi Guru"
+                });
+                localStorage.setItem("dataNilai", JSON.stringify(dataNilai));
+
+                alert(`🎉 Jawaban Essay berhasil dikirim, ${nama}!\nStatus: Menunggu Koreksi Guru.`);
+                window.location.reload();
+                return;
+            }
+
             let totalDinilai = 0;
             let jumlahBenar = 0;
 
-            soalFilter.forEach((soal, index) => {
+            for (let index = 0; index < soalFilter.length; index++) {
+                let soal = soalFilter[index];
                 let diisi = false;
                 let benar = false;
 
@@ -219,6 +249,20 @@
                         diisi = true;
                         if (inputPuzzle.value.trim().toUpperCase() === soal.kunci.trim().toUpperCase()) benar = true;
                     }
+                } else if (soal.jenis === "Menulis Ringkasan Materi") {
+                    let inputTeks = document.getElementById(`jawaban_${index}`);
+                    if (inputTeks) {
+                        let teksVal = inputTeks.value.trim();
+                        if (teksVal !== "") {
+                            if (teksVal.length < 200) {
+                                alert(`⚠️ Ringkasan materi pada soal No. ${index + 1} terlalu singkat!\nMinimal harus 200 karakter (Saat ini baru ${teksVal.length} karakter).`);
+                                inputTeks.focus();
+                                return;
+                            }
+                            diisi = true;
+                            benar = true;
+                        }
+                    }
                 } else {
                     let inputTeks = document.getElementById(`jawaban_${index}`);
                     if (inputTeks && inputTeks.value.trim() !== "") {
@@ -231,7 +275,7 @@
                     totalDinilai++;
                     if (benar) jumlahBenar++;
                 }
-            });
+            }
 
             if (totalDinilai === 0) {
                 alert("Harap kerjakan setidaknya satu soal sebelum mengirim jawaban!");
