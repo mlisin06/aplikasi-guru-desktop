@@ -10,7 +10,7 @@
         body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .table th, .table td { vertical-align: middle !important; text-align: center; }
-        .table th:nth-child(3), .table td:nth-child(3) { text-align: left; } /* Nama rata kiri */
+        .table th:nth-child(3), .table td:nth-child(3) { text-align: left; }
     </style>
 </head>
 <body>
@@ -19,14 +19,13 @@
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <div>
                     <h3 class="text-success font-weight-bold mb-1">📊 Rekap Nilai & Tugas Siswa</h3>
-                    <p class="text-muted small mb-0">Rekap nilai per siswa berdasarkan mata pelajaran dengan perhitungan rata-rata dari kuis yang dikerjakan.</p>
+                    <p class="text-muted small mb-0">Rekap nilai per siswa berdasarkan mata pelajaran dengan perhitungan rata-rata proporsional.</p>
                 </div>
                 <div class="mt-2 mt-md-0">
                     <button class="btn btn-outline-danger btn-sm font-weight-bold" onclick="hapusSemuaNilai()">🗑️ Hapus Semua Nilai</button>
                 </div>
             </div>
 
-            <!-- Filter Mata Pelajaran & Kelas -->
             <div class="form-row mb-4 bg-light p-3 rounded">
                 <div class="form-group col-md-4 mb-2">
                     <label class="small font-weight-bold">Filter Kelas:</label>
@@ -96,7 +95,6 @@
             let tbody = document.getElementById("tabel-nilai-body");
             tbody.innerHTML = "";
 
-            // Filter data berdasarkan pilihan dropdown guru
             let dataFiltered = dataNilai.filter(item => {
                 let matchKelas = filterKelas ? item.kelas === filterKelas : true;
                 let matchMapel = filterMapel ? item.mapel === filterMapel : true;
@@ -108,7 +106,6 @@
                 return;
             }
 
-            // Kelompokkan data berdasarkan kombinasi: Kelas + Nama + Mapel
             let rekapMap = {};
             dataFiltered.forEach(item => {
                 let key = `${item.kelas}_${item.nama}_${item.mapel}`;
@@ -124,7 +121,6 @@
                         "Menulis Ringkasan Materi": null
                     };
                 }
-                // Masukkan nilai ke jenis kuis yang sesuai
                 rekapMap[key][item.jenis] = item.nilai;
             });
 
@@ -132,13 +128,12 @@
             for (let key in rekapMap) {
                 let row = rekapMap[key];
                 
-                // Hitung rata-rata hanya dari kuis yang dikerjakan (tidak null)
                 let totalNilai = 0;
                 let jumlahDikerjakan = 0;
 
                 let jenisKuisList = ["Pilihan Ganda", "Essay", "Mencocokkan Gambar", "Puzzle", "Menulis Ringkasan Materi"];
                 jenisKuisList.forEach(jenis => {
-                    if (row[jenis] !== null) {
+                    if (row[jenis] !== null && row[jenis] !== undefined && typeof row[jenis] === 'number') {
                         totalNilai += row[jenis];
                         jumlahDikerjakan++;
                     }
@@ -147,18 +142,27 @@
                 let nilaiAkhir = jumlahDikerjakan > 0 ? Math.round(totalNilai / jumlahDikerjakan) : 0;
                 let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
 
+                let renderKolom = (val) => {
+                    if (val === null || val === undefined) {
+                        return '<span class="badge badge-warning" style="font-size: 10px;">Menunggu Koreksi</span>';
+                    } else if (typeof val === 'number') {
+                        return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
+                    }
+                    return '<span class="text-muted">-</span>';
+                };
+
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td>${index++}</td>
                     <td><b>${row.kelas}</b></td>
                     <td class="font-weight-bold text-left">${row.nama}</td>
                     <td><span class="badge badge-secondary">${row.mapel}</span></td>
-                    <td>${row["Pilihan Ganda"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Pilihan Ganda"]}</span>` : '<span class="text-muted">-</span>'}</td>
-                    <td>${row["Essay"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Essay"]}</span>` : '<span class="text-muted">-</span>'}</td>
-                    <td>${row["Mencocokkan Gambar"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Mencocokkan Gambar"]}</span>` : '<span class="text-muted">-</span>'}</td>
-                    <td>${row["Puzzle"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Puzzle"]}</span>` : '<span class="text-muted">-</span>'}</td>
-                    <td>${row["Menulis Ringkasan Materi"] !== null ? `<span class="badge badge-light border px-2 py-1">${row["Menulis Ringkasan Materi"]}</span>` : '<span class="text-muted">-</span>'}</td>
-                    <td><span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span></td>
+                    <td>${renderKolom(row["Pilihan Ganda"])}</td>
+                    <td>${renderKolom(row["Essay"])}</td>
+                    <td>${renderKolom(row["Mencocokkan Gambar"])}</td>
+                    <td>${renderKolom(row["Puzzle"])}</td>
+                    <td>${renderKolom(row["Menulis Ringkasan Materi"])}</td>
+                    <td>${jumlahDikerjakan > 0 ? `<span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span>` : '<span class="text-muted">-</span>'}</td>
                 `;
                 tbody.appendChild(tr);
             }
