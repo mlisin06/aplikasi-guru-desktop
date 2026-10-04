@@ -3,211 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Soal & Tugas - Panel Guru</title>
+    <title>Kelola Soal & Kuis - Portal Pendidikan</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
+        .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
+        .form-control { border-radius: 10px; padding: 10px 15px; height: calc(1.5em + 1rem + 2px); }
+        .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5 mb-5">
-        <div class="card shadow p-4">
-            <h3 class="text-info mb-3">📝 Input & Kelola Soal & Tugas</h3>
-            <p class="text-muted">Formulir di bawah akan menyesuaikan secara otomatis berdasarkan Jenis Kuis/Tugas yang Anda pilih.</p>
-            
-            <div id="form-tambah-soal" class="mb-4">
-                <div class="form-row">
-                    <!-- Dropdown Kelas 1 - 6 -->
-                    <div class="form-group col-md-4">
-                        <label>Kelas</label>
-                        <select id="input-kelas" class="form-control">
-                            <option value="">-- Pilih Kelas --</option>
-                            <option value="Kelas 1">Kelas 1</option>
-                            <option value="Kelas 2">Kelas 2</option>
-                            <option value="Kelas 3">Kelas 3</option>
-                            <option value="Kelas 4">Kelas 4</option>
-                            <option value="Kelas 5">Kelas 5</option>
-                            <option value="Kelas 6">Kelas 6</option>
-                        </select>
-                    </div>
-                    <!-- Dropdown Mata Pelajaran -->
-                    <div class="form-group col-md-4">
-                        <label>Mata Pelajaran</label>
-                        <select id="input-mapel" class="form-control">
-                            <option value="">-- Pilih Mata Pelajaran --</option>
-                            <option value="PAIBP">PAIBP</option>
-                            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-                            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                            <option value="Matematika">Matematika</option>
-                            <option value="IPAS">IPAS</option>
-                            <option value="PJOK">PJOK</option>
-                            <option value="Bahasa Inggris">Bahasa Inggris</option>
-                            <option value="Bahasa Jawa">Bahasa Jawa</option>
-                        </select>
-                    </div>
-                    <!-- Dropdown Jenis Kuis / Tugas -->
-                    <div class="form-group col-md-4">
-                        <label>Jenis Kuis / Tugas</label>
-                        <select id="input-jenis" class="form-control" onchange="ubahFormatForm()">
-                            <option value="">-- Pilih Jenis --</option>
-                            <option value="Pilihan Ganda">Pilihan Ganda</option>
-                            <option value="Essay">Essay</option>
-                            <option value="Mencocokkan Gambar">Mencocokkan Gambar</option>
-                            <option value="Puzzle">Puzzle</option>
-                            <option value="Menulis Ringkasan Materi">Menulis Ringkasan Materi</option>
-                        </select>
-                    </div>
-                </div>
+<body>
+    <div class="container py-5">
+        <div class="card card-custom p-4 mb-4 bg-primary text-white text-center shadow-sm">
+            <h2 class="font-weight-bold mb-1">📝 Panel Guru: Input Soal & Kuis Online</h2>
+            <p class="mb-0 text-white-50">Soal yang diinput di sini akan langsung tersinkron ke Google Sheets dan bisa dikerjakan siswa di HP masing-masing.</p>
+        </div>
 
-                <div class="form-group">
-                    <label id="label-pertanyaan">Pertanyaan / Instruksi Soal</label>
-                    <textarea id="input-pertanyaan" class="form-control" rows="3" placeholder="Tulis teks pertanyaan atau instruksi tugas di sini..."></textarea>
+        <!-- Form Input Soal -->
+        <div class="card card-custom p-4 mb-4">
+            <h4 class="text-primary font-weight-bold mb-3">Tambah Soal Baru</h4>
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label class="small font-weight-bold">Kelas</label>
+                    <select id="input-kelas" class="form-control">
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
                 </div>
-
-                <!-- Bagian Khusus Pilihan Ganda -->
-                <div id="area-pg">
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>Opsi A</label>
-                            <input type="text" id="input-opsiA" class="form-control" placeholder="Pilihan A">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>Opsi B</label>
-                            <input type="text" id="input-opsiB" class="form-control" placeholder="Pilihan B">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>Opsi C</label>
-                            <input type="text" id="input-opsiC" class="form-control" placeholder="Pilihan C">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>Opsi D</label>
-                            <input type="text" id="input-opsiD" class="form-control" placeholder="Pilihan D">
-                        </div>
-                    </div>
+                <div class="form-group col-md-4">
+                    <label class="small font-weight-bold">Mata Pelajaran</label>
+                    <select id="input-mapel" class="form-control">
+                        <option value="PAIBP">PAIBP</option>
+                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="IPAS">IPAS</option>
+                        <option value="PJOK">PJOK</option>
+                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                        <option value="Bahasa Jawa">Bahasa Jawa</option>
+                    </select>
                 </div>
-
-                <!-- Bagian Khusus Mencocokkan Gambar -->
-                <div id="area-gambar" style="display: none;">
-                    <div class="form-group">
-                        <label>Link / URL Gambar Pendukung</label>
-                        <input type="text" id="input-gambar" class="form-control" placeholder="Masukkan link gambar (contoh: https://...)">
-                    </div>
+                <div class="form-group col-md-4">
+                    <label class="small font-weight-bold">Jenis / Kategori Soal</label>
+                    <select id="input-jenis" class="form-control">
+                        <option value="Pilihan Ganda">Pilihan Ganda</option>
+                        <option value="Essay / Uraian">Essay / Uraian</option>
+                        <option value="Mencocokkan Gambar">Mencocokkan Gambar</option>
+                        <option value="Puzzle Kata">Puzzle Kata</option>
+                        <option value="Menulis Ringkasan Materi">Menulis Ringkasan Materi</option>
+                    </select>
                 </div>
-
-                <!-- Kunci Jawaban / Input Dinamis -->
-                <div class="form-group col-md-6 px-0" id="area-kunci-container">
-                    <label id="label-kunci">Kunci Jawaban</label>
-                    <div id="wrapper-kunci">
-                        <select id="input-kunci-select" class="form-control border-info font-weight-bold text-info">
-                            <option value="">-- Pilih Kunci Jawaban --</option>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="C">C</option>
-                            <option value="D">D</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button type="button" onclick="simpanSoalBaru()" class="btn btn-info btn-block font-weight-bold text-white mt-3">Simpan Soal / Tugas</button>
             </div>
 
-            <hr>
-
-            <h5 class="mt-4">Daftar Soal & Tugas yang Tersimpan</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped mt-2">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>No</th>
-                            <th>Kelas / Mapel / Jenis</th>
-                            <th>Detail Pertanyaan & Kunci</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabel-soal-body">
-                        <!-- Data soal akan dimuat otomatis lewat JavaScript -->
-                    </tbody>
-                </table>
+            <div class="form-group">
+                <label class="small font-weight-bold">Pertanyaan / Perintah Soal</label>
+                <textarea id="input-pertanyaan" class="form-control" rows="3" placeholder="Tuliskan pertanyaan atau instruksi tugas di sini..."></textarea>
             </div>
 
-            <!-- Tombol Navigasi Kembali -->
-            <div class="mt-4 d-flex justify-content-between">
-                <a href="kelola-soal.html" class="btn btn-outline-info">&larr; Refresh / Kelola Soal</a>
-                <a href="guru.html" class="btn btn-secondary">&larr; Kembali ke Dashboard Guru</a>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label class="small font-weight-bold">Opsi A (Khusus Pilihan Ganda)</label>
+                    <input type="text" id="input-opsiA" class="form-control" placeholder="Pilihan A">
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="small font-weight-bold">Opsi B (Khusus Pilihan Ganda)</label>
+                    <input type="text" id="input-opsiB" class="form-control" placeholder="Pilihan B">
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="small font-weight-bold">Opsi C (Khusus Pilihan Ganda)</label>
+                    <input type="text" id="input-opsiC" class="form-control" placeholder="Pilihan C">
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="small font-weight-bold">Opsi D (Khusus Pilihan Ganda)</label>
+                    <input type="text" id="input-opsiD" class="form-control" placeholder="Pilihan D">
+                </div>
             </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label class="small font-weight-bold text-success">Kunci Jawaban / Kata Kunci Benar</label>
+                    <input type="text" id="input-kunci" class="form-control border-success" placeholder="Contoh: A, atau jawaban puzzle/essay">
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="small font-weight-bold">Link Gambar Pendukung (Opsional)</label>
+                    <input type="text" id="input-gambar" class="form-control" placeholder="https://... (kosongkan jika tidak ada)">
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-success btn-custom btn-block mt-3 shadow-sm" onclick="kirimSoalKeGoogleSheet()">
+                🚀 Unggah Soal ke Google Sheets Online
+            </button>
+        </div>
+
+        <div class="text-center">
+            <a href="guru.html" class="btn btn-secondary btn-custom">&larr; Kembali ke Dashboard Guru</a>
         </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            tampilkanTabelSoal();
-            ubahFormatForm();
-        });
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
 
-        // Fungsi untuk mengubah tampilan form berdasarkan jenis kuis
-        function ubahFormatForm() {
-            let jenis = document.getElementById("input-jenis").value;
-            let areaPg = document.getElementById("area-pg");
-            let areaGambar = document.getElementById("area-gambar");
-            let labelPertanyaan = document.getElementById("label-pertanyaan");
-            let labelKunci = document.getElementById("label-kunci");
-            let wrapperKunci = document.getElementById("wrapper-kunci");
-
-            areaPg.style.display = "none";
-            areaGambar.style.display = "none";
-
-            if (jenis === "Pilihan Ganda") {
-                areaPg.style.display = "block";
-                labelPertanyaan.innerText = "Pertanyaan Soal";
-                labelKunci.innerText = "Kunci Jawaban";
-                wrapperKunci.innerHTML = `
-                    <select id="input-kunci" class="form-control border-info font-weight-bold text-info">
-                        <option value="">-- Pilih Kunci Jawaban --</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
-                `;
-            } else if (jenis === "Mencocokkan Gambar") {
-                areaGambar.style.display = "block";
-                labelPertanyaan.innerText = "Instruksi / Pertanyaan Game";
-                labelKunci.innerText = "Kunci / Jawaban Cocok";
-                wrapperKunci.innerHTML = `
-                    <input type="text" id="input-kunci" class="form-control" placeholder="Tuliskan pasangan jawaban yang benar...">
-                `;
-            } else if (jenis === "Puzzle") {
-                labelPertanyaan.innerText = "Instruksi Soal Puzzle Huruf";
-                labelKunci.innerText = "Kata Benar (Untuk Diacak Hurufnya)";
-                wrapperKunci.innerHTML = `
-                    <input type="text" id="input-kunci" class="form-control font-weight-bold text-uppercase" placeholder="Contoh: GARUDA">
-                `;
-            } else if (jenis === "Essay") {
-                labelPertanyaan.innerText = "Pertanyaan Essay";
-                labelKunci.innerText = "Catatan Jawaban / Pedoman Guru";
-                wrapperKunci.innerHTML = `
-                    <input type="text" id="input-kunci" class="form-control" value="Koreksi Manual oleh Guru" readonly>
-                `;
-            } else if (jenis === "Menulis Ringkasan Materi") {
-                labelPertanyaan.innerText = "Judul / Instruksi Ringkasan Materi";
-                labelKunci.innerText = "Penilaian Guru";
-                wrapperKunci.innerHTML = `
-                    <input type="text" id="input-kunci" class="form-control" value="Dinilai Berdasarkan Isi Ringkasan Siswa" readonly>
-                `;
-            } else {
-                areaPg.style.display = "block";
-                wrapperKunci.innerHTML = `
-                    <select id="input-kunci" class="form-control border-info font-weight-bold text-info">
-                        <option value="">-- Pilih Kunci Jawaban --</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
-                `;
-            }
-        }
-
-        function simpanSoalBaru() {
+        function kirimSoalKeGoogleSheet() {
             let kelas = document.getElementById("input-kelas").value;
             let mapel = document.getElementById("input-mapel").value;
             let jenis = document.getElementById("input-jenis").value;
@@ -216,73 +117,53 @@
             let opsiB = document.getElementById("input-opsiB").value.trim();
             let opsiC = document.getElementById("input-opsiC").value.trim();
             let opsiD = document.getElementById("input-opsiD").value.trim();
-            let gambar = document.getElementById("input-gambar") ? document.getElementById("input-gambar").value.trim() : "";
-            let kunciEl = document.getElementById("input-kunci");
-            let kunci = kunciEl ? kunciEl.value.trim() : "";
+            let kunci = document.getElementById("input-kunci").value.trim();
+            let gambar = document.getElementById("input-gambar").value.trim();
 
-            if (!kelas || !mapel || !jenis || !pertanyaan) {
-                alert("Harap lengkapi Kelas, Mata Pelajaran, Jenis Kuis/Tugas, dan Pertanyaan/Instruksi!");
+            if (!pertanyaan || !kunci) {
+                alert("Pertanyaan dan Kunci Jawaban wajib diisi!");
                 return;
             }
 
-            let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
-            
-            dataSoal.push({ kelas, mapel, jenis, pertanyaan, opsiA, opsiB, opsiC, opsiD, gambar, kunci });
-            localStorage.setItem("dataSoal", JSON.stringify(dataSoal));
+            let dataKirim = {
+                action: "simpanSoal",
+                kelas: kelas,
+                mapel: mapel,
+                jenis: jenis,
+                pertanyaan: pertanyaan,
+                opsiA: opsiA,
+                opsiB: opsiB,
+                opsiC: opsiC,
+                opsiD: opsiD,
+                kunci: kunci,
+                gambar: gambar
+            };
 
-            alert("Soal / Tugas berhasil disimpan!");
-            
-            // Reset form
-            document.getElementById("input-kelas").selectedIndex = 0;
-            document.getElementById("input-mapel").selectedIndex = 0;
-            document.getElementById("input-jenis").selectedIndex = 0;
-            document.getElementById("input-pertanyaan").value = "";
-            if(document.getElementById("input-opsiA")) document.getElementById("input-opsiA").value = "";
-            if(document.getElementById("input-opsiB")) document.getElementById("input-opsiB").value = "";
-            if(document.getElementById("input-opsiC")) document.getElementById("input-opsiC").value = "";
-            if(document.getElementById("input-opsiD")) document.getElementById("input-opsiD").value = "";
-            if(document.getElementById("input-gambar")) document.getElementById("input-gambar").value = "";
-            
-            ubahFormatForm();
-            tampilkanTabelSoal();
-        }
+            let btn = event.target;
+            btn.disabled = true;
+            btn.innerText = "Sedang Mengirim ke Cloud...";
 
-        function tampilkanTabelSoal() {
-            let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
-            let tbody = document.getElementById("tabel-soal-body");
-            if (!tbody) return;
-
-            tbody.innerHTML = "";
-
-            if (dataSoal.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada soal atau tugas tersedia.</td></tr>`;
-                return;
-            }
-
-            dataSoal.forEach((soal, index) => {
-                let detailInfo = soal.pertanyaan;
-                if(soal.gambar) {
-                    detailInfo += `<br><small class="text-primary">Gambar: ${soal.gambar}</small>`;
-                }
-                
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td><b>${soal.kelas}</b><br>${soal.mapel}<br><small class="text-muted">${soal.jenis}</small></td>
-                    <td>${detailInfo}<br><span class="badge badge-success mt-1">Kunci/Info: ${soal.kunci}</span></td>
-                    <td><button class="btn btn-danger btn-sm" onclick="hapusSoal(${index})">Hapus</button></td>
-                `;
-                tbody.appendChild(tr);
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataKirim)
+            }).then(() => {
+                alert("🎉 Soal berhasil disimpan secara online ke Google Sheets!");
+                document.getElementById("input-pertanyaan").value = "";
+                document.getElementById("input-opsiA").value = "";
+                document.getElementById("input-opsiB").value = "";
+                document.getElementById("input-opsiC").value = "";
+                document.getElementById("input-opsiD").value = "";
+                document.getElementById("input-kunci").value = "";
+                document.getElementById("input-gambar").value = "";
+                btn.disabled = false;
+                btn.innerText = "🚀 Unggah Soal ke Google Sheets Online";
+            }).catch(err => {
+                alert("Gagal terhubung ke server: " + err);
+                btn.disabled = false;
+                btn.innerText = "🚀 Unggah Soal ke Google Sheets Online";
             });
-        }
-
-        function hapusSoal(index) {
-            if (confirm("Yakin ingin menghapus soal/tugas ini?")) {
-                let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
-                dataSoal.splice(index, 1);
-                localStorage.setItem("dataSoal", JSON.stringify(dataSoal));
-                tampilkanTabelSoal();
-            }
         }
     </script>
 </body>
