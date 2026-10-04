@@ -9,25 +9,30 @@ let soalTersaring = [];
 document.addEventListener("DOMContentLoaded", () => {
     muatDataSiswa();
 
-    // Event listener jika kelas diubah
     const selectKelas = document.getElementById("select-kelas");
     if (selectKelas) {
         selectKelas.addEventListener("change", () => {
             updateDropdownSiswa();
-            muatDataSoal(); // Filter ulang soal saat kelas berubah
+            muatDataSoal();
         });
     }
 
-    // Event listener jika jenis soal diubah
     const selectModul = document.getElementById("select-modul");
     if (selectModul) {
         selectModul.addEventListener("change", () => {
             muatDataSoal();
         });
     }
+
+    const selectSiswa = document.getElementById("select-siswa");
+    if (selectSiswa) {
+        selectSiswa.addEventListener("change", () => {
+            muatHistoriSiswa();
+        });
+    }
 });
 
-// 1. Memuat Data Siswa dari Sheet "Siswa"
+// 1. Memuat Data Siswa
 async function muatDataSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
@@ -56,23 +61,18 @@ async function muatDataSiswa() {
             daftarKelas.forEach(k => {
                 selectKelas.innerHTML += `<option value="${k}">${k}</option>`;
             });
-        } else {
-            selectKelas.innerHTML = '<option value="">-- Tidak ada data kelas --</option>';
         }
     } catch (err) {
         console.error("Gagal muat siswa:", err);
-        selectKelas.innerHTML = '<option value="">-- Gagal Memuat Data --</option>';
     }
 }
 
-// Update pilihan nama siswa berdasarkan kelas
 function updateDropdownSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
     const kelasPilihan = selectKelas.value;
 
     selectSiswa.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
-
     if (!kelasPilihan) {
         selectSiswa.disabled = true;
         return;
@@ -82,11 +82,10 @@ function updateDropdownSiswa() {
     siswaFiltered.forEach(s => {
         selectSiswa.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
     });
-
     selectSiswa.disabled = false;
 }
 
-// 2. Memuat Soal Berdasarkan Jenis Kuis DAN Kelas yang Dipilih
+// 2. Memuat Soal
 async function muatDataSoal() {
     const wadah = document.getElementById("container-soal");
     const selectJenis = document.getElementById("select-modul");
@@ -96,9 +95,8 @@ async function muatDataSoal() {
     const kelasDipilih = selectKelas ? selectKelas.value.trim().toLowerCase() : "";
 
     if (!wadah) return;
-
     if (!jenisDipilih) {
-        wadah.innerHTML = '<p class="text-center text-muted">Silakan pilih jenis kuis terlebih dahulu untuk memuat soal.</p>';
+        wadah.innerHTML = '<p class="text-center text-muted">Silakan pilih jenis kuis terlebih dahulu.</p>';
         soalTersaring = [];
         return;
     }
@@ -113,50 +111,34 @@ async function muatDataSoal() {
 
         const jenisLower = jenisDipilih.toLowerCase();
 
-        // Filter soal berdasarkan jenis kuis DAN kelas
         soalTersaring = dataSoalList.filter(s => {
             const j = String(s.jenis || "").trim().toLowerCase();
             const kelasSoal = String(s.kelas || s.KELAS || "").trim().toLowerCase();
 
-            // Cek kecocokan kelas (jika data soal memiliki kolom kelas)
             let cocokKelas = true;
             if (kelasDipilih && kelasSoal) {
                 cocokKelas = kelasSoal.includes(kelasDipilih);
             }
 
-            // Cek kecocokan jenis kuis
             let cocokJenis = false;
-            if (jenisLower.includes("pilihan ganda")) {
-                cocokJenis = j.includes("pilihan ganda") || j === "pg" || j === "";
-            } else if (jenisLower.includes("essay")) {
-                cocokJenis = j.includes("essay") || j.includes("uraian");
-            } else if (jenisLower.includes("mencocokkan gambar")) {
-                cocokJenis = j.includes("mencocokkan gambar") || j.includes("gambar");
-            } else if (jenisLower.includes("puzzle kata")) {
-                cocokJenis = j.includes("puzzle kata") || j.includes("puzzle");
-            } else if (jenisLower.includes("ringkasan")) {
-                cocokJenis = j.includes("ringkasan") || j.includes("rangkum") || j.includes("materi");
-            } else {
-                cocokJenis = j.includes(jenisLower);
-            }
+            if (jenisLower.includes("pilihan ganda")) cocokJenis = j.includes("pilihan ganda") || j === "pg" || j === "";
+            else if (jenisLower.includes("essay")) cocokJenis = j.includes("essay") || j.includes("uraian");
+            else if (jenisLower.includes("mencocokkan gambar")) cocokJenis = j.includes("mencocokkan gambar") || j.includes("gambar");
+            else if (jenisLower.includes("puzzle kata")) cocokJenis = j.includes("puzzle kata") || j.includes("puzzle");
+            else if (jenisLower.includes("ringkasan")) cocokJenis = j.includes("ringkasan") || j.includes("rangkum");
+            else cocokJenis = j.includes(jenisLower);
 
             return cocokJenis && cocokKelas;
         });
 
         if (soalTersaring.length === 0) {
-            wadah.innerHTML = `
-                <div style="text-align:center; padding: 20px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; color: #be123c;">
-                    <p style="font-weight:bold; margin:0 0 5px 0;">Belum ada soal untuk Kelas ini dan kategori tersebut di Google Sheets.</p>
-                    <small>Pastikan Anda sudah menginput soal dengan kelas dan kategori yang sesuai melalui Panel Guru.</small>
-                </div>`;
+            wadah.innerHTML = `<div style="text-align:center; padding: 20px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; color: #be123c;"><p style="font-weight:bold; margin:0;">Belum ada soal untuk Kelas ini.</p></div>`;
             return;
         }
 
         let html = "";
-
-        // Render Berdasarkan Jenis Kuis
-        if (jenisLower.includes("pilihan ganda")) {
-            soalTersaring.forEach((soal, index) => {
+        soalTersaring.forEach((soal, index) => {
+            if (jenisLower.includes("pilihan ganda")) {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
                         <p style="font-weight:bold; margin-top:0;">${index + 1}. ${soal.pertanyaan}</p>
@@ -165,71 +147,49 @@ async function muatDataSoal() {
                         <div><label><input type="radio" name="soal_${index}" value="C"> C. ${soal.opsiC || '-'}</label></div>
                         <div><label><input type="radio" name="soal_${index}" value="D"> D. ${soal.opsiD || '-'}</label></div>
                     </div>`;
-            });
-        } else if (jenisLower.includes("essay")) {
-            soalTersaring.forEach((soal, index) => {
+            } else if (jenisLower.includes("essay") || jenisLower.includes("ringkasan")) {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
                         <p style="font-weight:bold; margin-top:0;">${index + 1}. ${soal.pertanyaan}</p>
-                        <textarea name="soal_${index}" rows="4" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Tuliskan jawaban essay/uraian Anda di sini..."></textarea>
+                        <textarea name="soal_${index}" rows="4" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Tulis jawaban..."></textarea>
                     </div>`;
-            });
-        } else if (jenisLower.includes("mencocokkan gambar")) {
-            soalTersaring.forEach((soal, index) => {
+            } else if (jenisLower.includes("mencocokkan gambar")) {
                 html += `
-                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                        <div style="flex:1; min-width:200px;">
-                            <p style="font-weight:bold; margin: 0 0 8px 0;">Soal ${index + 1}</p>
-                            <img src="${soal.gambar || soal.pertanyaan}" alt="Gambar Soal" style="max-width:100%; height:auto; border-radius:8px;" onerror="this.src='https://via.placeholder.com/200?text=Gambar+Tidak+Ditemukan'">
-                        </div>
-                        <div style="flex:1; min-width:200px;">
-                            <p style="margin: 0 0 5px 0; font-size:0.9em; color:#475569;">${soal.pertanyaan}</p>
-                            <label style="display:block; margin-bottom: 5px; font-weight:bold;">Pilih Pasangan / Jawaban:</label>
-                            <select name="soal_${index}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
-                                <option value="">-- Pilih Jawaban --</option>
-                                <option value="A">A. ${soal.opsiA || '-'}</option>
-                                <option value="B">B. ${soal.opsiB || '-'}</option>
-                                <option value="C">C. ${soal.opsiC || '-'}</option>
-                                <option value="D">D. ${soal.opsiD || '-'}</option>
-                            </select>
-                        </div>
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <p style="font-weight:bold;">${index + 1}. ${soal.pertanyaan}</p>
+                        <img src="${soal.gambar || ''}" style="max-width:150px; display:block; margin-bottom:8px;" onerror="this.style.display='none'">
+                        <select name="soal_${index}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
+                            <option value="">-- Pilih Jawaban --</option>
+                            <option value="A">A. ${soal.opsiA || '-'}</option>
+                            <option value="B">B. ${soal.opsiB || '-'}</option>
+                            <option value="C">C. ${soal.opsiC || '-'}</option>
+                            <option value="D">D. ${soal.opsiD || '-'}</option>
+                        </select>
                     </div>`;
-            });
-        } else if (jenisLower.includes("puzzle kata")) {
-            soalTersaring.forEach((soal, index) => {
+            } else if (jenisLower.includes("puzzle kata")) {
                 let kataAsli = String(soal.pertanyaan || "").trim();
                 let hurufArray = kataAsli.split('');
                 for (let i = hurufArray.length - 1; i > 0; i--) {
                     let j = Math.floor(Math.random() * (i + 1));
                     [hurufArray[i], hurufArray[j]] = [hurufArray[j], hurufArray[i]];
                 }
-                let kataAcak = hurufArray.join(' ');
-
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                        <p style="font-weight:bold; margin-top:0;">${index + 1}. Susun / Ketik Kata yang Benar:</p>
-                        <p style="font-size: 1.2em; color: #2563eb; font-weight: bold; margin-bottom: 8px;">Huruf Acak: ${kataAcak}</p>
-                        <input type="text" name="soal_${index}" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Ketik jawaban kata yang benar di sini...">
+                        <p style="font-weight:bold; margin-top:0;">${index + 1}. Susun Kata:</p>
+                        <p style="font-size: 1.2em; color: #2563eb; font-weight: bold;">${hurufArray.join(' ')}</p>
+                        <input type="text" name="soal_${index}" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Ketik jawaban...">
                     </div>`;
-            });
-        } else if (jenisLower.includes("ringkasan")) {
-            soalTersaring.forEach((soal, index) => {
-                html += `
-                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                        <p style="font-weight:bold; margin-top:0;">${index + 1}. ${soal.pertanyaan}</p>
-                        <textarea name="soal_${index}" rows="6" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Tuliskan rangkuman materi Anda di sini..."></textarea>
-                    </div>`;
-            });
-        }
+            }
+        });
 
         wadah.innerHTML = html;
     } catch (err) {
         console.error("Gagal muat soal:", err);
-        wadah.innerHTML = '<p style="text-align:center; color:#e11d48;">Gagal memuat format soal dari Google Sheets.</p>';
+        wadah.innerHTML = '<p style="color:red; text-align:center;">Gagal memuat soal.</p>';
     }
 }
 
-// 3. Mengirim Jawaban Siswa ke Google Sheets (Metode Form Aman CORS)
+// 3. Mengirim Jawaban Siswa dengan Rekaman Detail Rinci Jawaban
 function kirimJawabanSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
@@ -239,27 +199,22 @@ function kirimJawabanSiswa() {
     const namaSiswa = selectSiswa ? selectSiswa.value : "";
     const jenisKuis = selectModul ? selectModul.value : "";
 
-    if (!kelasSiswa) {
-        alert("Silakan pilih Kelas terlebih dahulu!");
-        return;
-    }
-
-    if (!namaSiswa) {
-        alert("Silakan pilih Nama Siswa terlebih dahulu!");
+    if (!kelasSiswa || !namaSiswa) {
+        alert("Silakan pilih Kelas dan Nama Siswa terlebih dahulu!");
         return;
     }
 
     if (soalTersaring.length === 0) {
-        alert("Silakan pilih jenis kuis dan pastikan soal sudah tampil.");
+        alert("Belum ada soal yang dimuat.");
         return;
     }
 
-    // Format tanggal hari ini (DD/MM/YYYY)
     const d = new Date();
     const tglFormat = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
 
     let jumlahBenar = 0;
     let totalSoal = soalTersaring.length;
+    let hasilJawabanText = [];
 
     soalTersaring.forEach((soal, index) => {
         const inputRadio = document.querySelector(`input[name="soal_${index}"]:checked`);
@@ -270,22 +225,24 @@ function kirimJawabanSiswa() {
         let val = "";
         if (inputRadio) val = inputRadio.value;
         else if (inputSelect) val = inputSelect.value;
-        else if (inputText) {
-            val = inputText.value.trim().toUpperCase();
-        }
+        else if (inputText) val = inputText.value.trim().toUpperCase();
         else if (inputTextarea) val = inputTextarea.value;
 
-        // Cek jawaban benar jika ada kunci jawaban di soal
         if (soal.kunci && val === String(soal.kunci).trim().toUpperCase()) {
             jumlahBenar++;
         }
+
+        // Simpan rincian jawaban per nomor soal
+        hasilJawabanText.push(`S${index + 1}:${val || '-'}`);
     });
 
     let nilaiAkhir = totalSoal > 0 ? Math.round((jumlahBenar / totalSoal) * 100) : 0;
-    let ket = `${jumlahBenar}/${totalSoal} benar`;
+    
+    // Gabungkan ringkasan skor dan detail jawaban anak ke dalam kolom keterangan
+    let ket = `${jumlahBenar}/${totalSoal} benar | Detail: [${hasilJawabanText.join(", ")}]`;
 
-    const payload = {
-        action: "simpanNilai",
+    const params = new URLSearchParams({
+        action: "simpanNilaiGET",
         tanggal: tglFormat,
         nama: namaSiswa,
         kelas: kelasSiswa,
@@ -293,42 +250,79 @@ function kirimJawabanSiswa() {
         jenis: jenisKuis,
         nilai: nilaiAkhir,
         keterangan: ket
-    };
+    });
 
     const btnKirim = document.querySelector('button[onclick="kirimJawabanSiswa()"]');
     if (btnKirim) {
         btnKirim.disabled = true;
-        btnKirim.innerText = "Sedang Mengirim Jawaban...";
+        btnKirim.innerText = "Mengirim...";
     }
 
-    // Gunakan teknik form tersembunyi agar 100% tembus CORS Google Apps Script
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = URL_WEB_APP;
-    form.target = "hidden_iframe";
+    fetch(URL_WEB_APP + "?" + params.toString(), { mode: 'no-cors' })
+        .then(() => {
+            alert(`Jawaban berhasil dikirim!\nNilai Anda: ${nilaiAkhir}`);
+            location.reload();
+        })
+        .catch(err => {
+            console.error(err);
+            alert(`Jawaban terkirim / Selesai!\nNilai Anda: ${nilaiAkhir}`);
+            location.reload();
+        });
+}
 
-    const inputData = document.createElement("input");
-    inputData.type = "hidden";
-    inputData.name = "payload";
-    inputData.value = JSON.stringify(payload);
-    form.appendChild(inputData);
+// 4. Memuat Histori Nilai Siswa (Opsional jika ingin ditampilkan di halaman siswa)
+async function muatHistoriSiswa() {
+    const selectSiswa = document.getElementById("select-siswa");
+    const wadahHistori = document.getElementById("container-histori");
+    if (!selectSiswa || !wadahHistori) return;
 
-    // Buat iframe tersembunyi jika belum ada
-    let iframe = document.getElementById("hidden_iframe");
-    if (!iframe) {
-        iframe = document.createElement("iframe");
-        iframe.name = "hidden_iframe";
-        iframe.id = "hidden_iframe";
-        iframe.style.display = "none";
-        document.body.appendChild(iframe);
+    const namaSiswa = selectSiswa.value.trim();
+    if (!namaSiswa) {
+        wadahHistori.innerHTML = '<p class="text-muted">Pilih nama Anda untuk melihat histori.</p>';
+        return;
     }
 
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+    try {
+        const res = await fetch(URL_WEB_APP + "?action=getNilai");
+        const dataNilai = await res.json();
 
-    setTimeout(() => {
-        alert(`Jawaban berhasil dikirim!\nPerkiraan Nilai: ${nilaiAkhir}`);
-        location.reload();
-    }, 1500);
+        const historiMilikSiswa = dataNilai.filter(item => {
+            return String(item.nama || "").trim().toLowerCase() === namaSiswa.toLowerCase();
+        });
+
+        if (historiMilikSiswa.length === 0) {
+            wadahHistori.innerHTML = '<p style="color: #64748b; font-style: italic;">Belum ada riwayat kuis.</p>';
+            return;
+        }
+
+        let html = `
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                    <thead>
+                        <tr style="background: #f1f5f9; text-align: left; border-bottom: 2px solid #cbd5e1;">
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">Tanggal</th>
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">Jenis Kuis</th>
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">Nilai</th>
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">Keterangan / Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        historiMilikSiswa.forEach(item => {
+            html += `
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #e2e8f0;">${item.tanggal || '-'}</td>
+                    <td style="padding: 8px; border: 1px solid #e2e8f0;">${item.jenis || '-'}</td>
+                    <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold; color: #2563eb;">${item.nilai || '0'}</td>
+                    <td style="padding: 8px; border: 1px solid #e2e8f0; font-size: 0.85em;">${item.keterangan || '-'}</td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        wadahHistori.innerHTML = html;
+    } catch (err) {
+        console.error("Gagal memuat histori:", err);
+    }
 }
