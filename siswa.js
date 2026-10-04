@@ -1,13 +1,19 @@
 const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
 
 // Variable Global
+let dataSiswaList = [];
 let dataSoalList = [];
 let soalTersaring = [];
 
 // Otomatis jalankan saat halaman terbuka
 document.addEventListener("DOMContentLoaded", () => {
     muatDataSiswa();
-    muatDataSoal();
+
+    // Event listener jika kelas diubah (untuk memfilter nama siswa)
+    const selectKelas = document.getElementById("select-kelas");
+    if (selectKelas) {
+        selectKelas.addEventListener("change", updateDropdownSiswa);
+    }
 
     // Event listener jika jenis soal diubah
     const selectModul = document.getElementById("select-modul");
@@ -18,42 +24,80 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// 1. Memuat Data Siswa dari Sheet "Siswa" (Mencegah [object Object])
+// 1. Memuat Data Siswa dari Sheet "Siswa" (Mendukung Kolom Kelas & Nama)
 async function muatDataSiswa() {
+    const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
-    if (!selectSiswa) return;
+    if (!selectKelas || !selectSiswa) return;
 
     try {
         const res = await fetch(URL_WEB_APP + "?action=getSiswa");
-        const daftarSiswa = await res.json();
+        const data = await res.json();
 
-        if (Array.isArray(daftarSiswa) && daftarSiswa.length > 0) {
-            selectSiswa.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
-            daftarSiswa.forEach(item => {
-                let namaSiswa = "";
+        if (Array.isArray(data) && data.length > 0) {
+            dataSiswaList = data.map(item => {
+                let nama = "";
+                let kelas = "";
                 if (typeof item === "object" && item !== null) {
-                    namaSiswa = item.nama || item.Nama || item.SISWA || item.Siswa || Object.values(item)[0] || "";
+                    nama = item.nama || item.Nama || item.SISWA || item.Siswa || Object.values(item)[0] || "";
+                    kelas = item.kelas || item.Kelas || item.KELAS || Object.values(item)[1] || "Umum";
                 } else {
-                    namaSiswa = String(item);
+                    nama = String(item);
+                    kelas = "Umum";
                 }
+                return { nama: nama.trim(), kelas: kelas.trim() };
+            }).filter(s => s.nama !== "");
 
-                if (namaSiswa.trim() !== "") {
-                    selectSiswa.innerHTML += `<option value="${namaSiswa}">${namaSiswa}</option>`;
-                }
+            // Ambil daftar kelas unik
+            const daftarKelas = [...new Set(dataSiswaList.map(s => s.kelas))];
+            selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            daftarKelas.forEach(k => {
+                selectKelas.innerHTML += `<option value="${k}">${k}</option>`;
             });
         } else {
-            selectSiswa.innerHTML = '<option value="">-- Tidak ada data siswa --</option>';
+            selectKelas.innerHTML = '<option value="">-- Tidak ada data kelas --</option>';
         }
     } catch (err) {
         console.error("Gagal muat siswa:", err);
-        selectSiswa.innerHTML = '<option value="">-- Gagal Memuat Data Siswa --</option>';
+        selectKelas.innerHTML = '<option value="">-- Gagal Memuat Data --</option>';
     }
 }
 
-// 2. Memuat Soal berdasarkan 5 Jenis Kuis dari Panel Guru
+// Update pilihan nama siswa berdasarkan kelas yang dipilih
+function updateDropdownSiswa() {
+    const selectKelas = document.getElementById("select-kelas");
+    const selectSiswa = document.getElementById("select-siswa");
+    const kelasPilihan = selectKelas.value;
+
+    selectSiswa.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
+
+    if (!kelasPilihan) {
+        selectSiswa.disabled = true;
+        return;
+    }
+
+    const siswaFiltered = dataSiswaList.filter(s => s.kelas === kelasPilihan);
+    siswaFiltered.forEach(s => {
+        selectSiswa.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
+    });
+
+    selectSiswa.disabled = false;
+}
+
+// 2. Memuat Soal berdasarkan Jenis Kuis yang Dipilih
 async function muatDataSoal() {
     const wadah = document.getElementById("container-soal");
+    const selectJenis = document.getElementById("select-modul");
+    const jenisDipilih = selectJenis ? selectJenis.value.trim() : "";
+
     if (!wadah) return;
+
+    // Jika jenis kuis belum dipilih, jangan tampilkan soal
+    if (!jenisDipilih) {
+        wadah.innerHTML = '<p class="text-center text-muted">Silakan pilih jenis kuis terlebih dahulu untuk memuat soal.</p>';
+        soalTersaring = [];
+        return;
+    }
 
     wadah.innerHTML = '<p style="text-align:center; color:#64748b;">Memuat kuis...</p>';
 
@@ -63,23 +107,21 @@ async function muatDataSoal() {
             dataSoalList = await res.json();
         }
 
-        const selectJenis = document.getElementById("select-modul");
-        const jenisDipilih = selectJenis ? selectJenis.value.trim().toLowerCase() : "pilihan ganda";
-
+        const jenisLower = jenisDipilih.toLowerCase();
         soalTersaring = dataSoalList.filter(s => {
             const j = String(s.jenis || "").trim().toLowerCase();
-            if (jenisDipilih.includes("pilihan ganda")) {
+            if (jenisLower.includes("pilihan ganda")) {
                 return j.includes("pilihan ganda") || j === "pg" || j === "";
-            } else if (jenisDipilih.includes("essay")) {
+            } else if (jenisLower.includes("essay")) {
                 return j.includes("essay") || j.includes("uraian");
-            } else if (jenisDipilih.includes("mencocokkan gambar")) {
+            } else if (jenisLower.includes("mencocokkan gambar")) {
                 return j.includes("mencocokkan gambar") || j.includes("gambar");
-            } else if (jenisDipilih.includes("puzzle kata")) {
+            } else if (jenisLower.includes("puzzle kata")) {
                 return j.includes("puzzle kata") || j.includes("puzzle");
-            } else if (jenisDipilih.includes("ringkasan")) {
+            } else if (jenisLower.includes("ringkasan")) {
                 return j.includes("ringkasan") || j.includes("rangkum") || j.includes("materi");
             }
-            return j.includes(jenisDipilih);
+            return j.includes(jenisLower);
         });
 
         if (soalTersaring.length === 0) {
@@ -94,7 +136,7 @@ async function muatDataSoal() {
         let html = "";
 
         // Render Berdasarkan Jenis Kuis yang Dipilih
-        if (jenisDipilih.includes("pilihan ganda")) {
+        if (jenisLower.includes("pilihan ganda")) {
             soalTersaring.forEach((soal, index) => {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
@@ -105,7 +147,7 @@ async function muatDataSoal() {
                         <div><label><input type="radio" name="soal_${index}" value="D"> D. ${soal.opsiD || '-'}</label></div>
                     </div>`;
             });
-        } else if (jenisDipilih.includes("essay")) {
+        } else if (jenisLower.includes("essay")) {
             soalTersaring.forEach((soal, index) => {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
@@ -113,7 +155,7 @@ async function muatDataSoal() {
                         <textarea name="soal_${index}" rows="4" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Tuliskan jawaban essay/uraian Anda di sini..."></textarea>
                     </div>`;
             });
-        } else if (jenisDipilih.includes("mencocokkan gambar")) {
+        } else if (jenisLower.includes("mencocokkan gambar")) {
             soalTersaring.forEach((soal, index) => {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
@@ -134,16 +176,15 @@ async function muatDataSoal() {
                         </div>
                     </div>`;
             });
-        } else if (jenisDipilih.includes("puzzle kata")) {
+        } else if (jenisLower.includes("puzzle kata")) {
             soalTersaring.forEach((soal, index) => {
-                // Mengacak huruf dari kata yang diinput guru (misal: "MAKAN" diacak otomatis)
                 let kataAsli = String(soal.pertanyaan || "").trim();
                 let hurufArray = kataAsli.split('');
                 for (let i = hurufArray.length - 1; i > 0; i--) {
                     let j = Math.floor(Math.random() * (i + 1));
                     [hurufArray[i], hurufArray[j]] = [hurufArray[j], hurufArray[i]];
                 }
-                let kataAcak = hurufArray.join(' '); // Ditampilkan dengan spasi agar mudah dibaca siswa
+                let kataAcak = hurufArray.join(' ');
 
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
@@ -152,7 +193,7 @@ async function muatDataSoal() {
                         <input type="text" name="soal_${index}" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Ketik jawaban kata yang benar di sini...">
                     </div>`;
             });
-        } else if (jenisDipilih.includes("ringkasan")) {
+        } else if (jenisLower.includes("ringkasan")) {
             soalTersaring.forEach((soal, index) => {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
@@ -171,8 +212,15 @@ async function muatDataSoal() {
 
 // 3. Mengirim Jawaban Siswa ke Google Sheets
 async function kirimJawabanSiswa() {
+    const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
+    const kelasSiswa = selectKelas ? selectKelas.value : "";
     const namaSiswa = selectSiswa ? selectSiswa.value : "";
+
+    if (!kelasSiswa) {
+        alert("Silakan pilih Kelas terlebih dahulu!");
+        return;
+    }
 
     if (!namaSiswa) {
         alert("Silakan pilih Nama Siswa terlebih dahulu!");
@@ -180,11 +228,13 @@ async function kirimJawabanSiswa() {
     }
 
     if (soalTersaring.length === 0) {
-        alert("Tidak ada soal yang bisa dikirim.");
+        alert("Silakan pilih jenis kuis dan pastikan soal sudah tampil.");
         return;
     }
 
-    // Mengumpulkan jawaban dari berbagai jenis input form
+    // Menggabungkan Kelas dan Nama agar aman jika ada nama yang sama di kelas berbeda
+    const identitasLengkap = `${kelasSiswa} - ${namaSiswa}`;
+
     let hasilJawaban = {};
     soalTersaring.forEach((soal, index) => {
         const inputRadio = document.querySelector(`input[name="soal_${index}"]:checked`);
@@ -202,7 +252,7 @@ async function kirimJawabanSiswa() {
     });
 
     const payload = {
-        nama: namaSiswa,
+        nama: identitasLengkap,
         jawaban: hasilJawaban
     };
 
