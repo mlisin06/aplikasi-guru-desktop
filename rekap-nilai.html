@@ -18,18 +18,19 @@
         <div class="card card-custom p-4 bg-white">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <div>
-                    <h3 class="text-success font-weight-bold mb-1">📊 Rekap Nilai & Tugas Siswa</h3>
-                    <p class="text-muted small mb-0">Rekap nilai per siswa berdasarkan mata pelajaran dengan perhitungan rata-rata proporsional.</p>
+                    <h3 class="text-success font-weight-bold mb-1">📊 Rekap Nilai & Tugas Online</h3>
+                    <p class="text-muted small mb-0">Data nilai ditarik langsung secara real-time dari Google Sheets.</p>
                 </div>
                 <div class="mt-2 mt-md-0">
-                    <button class="btn btn-outline-danger btn-sm font-weight-bold" onclick="hapusSemuaNilai()">🗑️ Hapus Semua Nilai</button>
+                    <button class="btn btn-outline-danger btn-sm font-weight-bold" onclick="hapusSemuaNilaiOnline()">🗑️ Kosongkan Data Nilai</button>
+                    <button class="btn btn-outline-primary btn-sm font-weight-bold ml-2" onclick="tampilkanRekapNilaiOnline()">🔄 Muat Ulang Data</button>
                 </div>
             </div>
 
             <div class="form-row mb-4 bg-light p-3 rounded">
                 <div class="form-group col-md-4 mb-2">
                     <label class="small font-weight-bold">Filter Kelas:</label>
-                    <select id="filter-kelas" class="form-control form-control-sm" onchange="tampilkanRekapNilai()">
+                    <select id="filter-kelas" class="form-control form-control-sm" onchange="tampilkanRekapNilaiOnline()">
                         <option value="">-- Semua Kelas --</option>
                         <option value="Kelas 1">Kelas 1</option>
                         <option value="Kelas 2">Kelas 2</option>
@@ -41,7 +42,7 @@
                 </div>
                 <div class="form-group col-md-4 mb-2">
                     <label class="small font-weight-bold">Filter Mata Pelajaran:</label>
-                    <select id="filter-mapel" class="form-control form-control-sm" onchange="tampilkanRekapNilai()">
+                    <select id="filter-mapel" class="form-control form-control-sm" onchange="tampilkanRekapNilaiOnline()">
                         <option value="">-- Semua Mata Pelajaran --</option>
                         <option value="PAIBP">PAIBP</option>
                         <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
@@ -64,15 +65,15 @@
                             <th>Nama Siswa</th>
                             <th>Mata Pelajaran</th>
                             <th>Pilihan Ganda</th>
-                            <th>Essay</th>
+                            <th>Essay / Uraian</th>
                             <th>Mencocokkan Gambar</th>
-                            <th>Puzzle</th>
+                            <th>Puzzle Kata</th>
                             <th>Ringkasan Materi</th>
                             <th>Nilai Akhir (Rata-rata)</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-nilai-body">
-                        <!-- Data dirender otomatis via JavaScript -->
+                        <tr><td colspan="10" class="text-center text-muted py-4">Memuat data rekap dari server cloud...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -84,95 +85,110 @@
     </div>
 
     <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
+
         document.addEventListener("DOMContentLoaded", function() {
-            tampilkanRekapNilai();
+            tampilkanRekapNilaiOnline();
         });
 
-        function tampilkanRekapNilai() {
-            let dataNilai = JSON.parse(localStorage.getItem("dataNilai")) || [];
+        async function tampilkanRekapNilaiOnline() {
             let filterKelas = document.getElementById("filter-kelas").value;
             let filterMapel = document.getElementById("filter-mapel").value;
             let tbody = document.getElementById("tabel-nilai-body");
-            tbody.innerHTML = "";
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center text-primary py-4">⏳ Mengambil rekap nilai dari Google Sheets...</td></tr>`;
 
-            let dataFiltered = dataNilai.filter(item => {
-                let matchKelas = filterKelas ? item.kelas === filterKelas : true;
-                let matchMapel = filterMapel ? item.mapel === filterMapel : true;
-                return matchKelas && matchMapel;
-            });
+            try {
+                let response = await fetch(SCRIPT_URL + "?action=getNilai");
+                let dataNilai = await response.json();
+                tbody.innerHTML = "";
 
-            if (dataFiltered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">Belum ada data rekap nilai yang sesuai.</td></tr>`;
-                return;
-            }
-
-            let rekapMap = {};
-            dataFiltered.forEach(item => {
-                let key = `${item.kelas}_${item.nama}_${item.mapel}`;
-                if (!rekapMap[key]) {
-                    rekapMap[key] = {
-                        kelas: item.kelas,
-                        nama: item.nama,
-                        mapel: item.mapel,
-                        "Pilihan Ganda": null,
-                        "Essay": null,
-                        "Mencocokkan Gambar": null,
-                        "Puzzle": null,
-                        "Menulis Ringkasan Materi": null
-                    };
-                }
-                rekapMap[key][item.jenis] = item.nilai;
-            });
-
-            let index = 1;
-            for (let key in rekapMap) {
-                let row = rekapMap[key];
-                
-                let totalNilai = 0;
-                let jumlahDikerjakan = 0;
-
-                let jenisKuisList = ["Pilihan Ganda", "Essay", "Mencocokkan Gambar", "Puzzle", "Menulis Ringkasan Materi"];
-                jenisKuisList.forEach(jenis => {
-                    if (row[jenis] !== null && row[jenis] !== undefined && typeof row[jenis] === 'number') {
-                        totalNilai += row[jenis];
-                        jumlahDikerjakan++;
-                    }
+                let dataFiltered = dataNilai.filter(item => {
+                    let matchKelas = filterKelas ? item.kelas === filterKelas : true;
+                    let matchMapel = filterMapel ? item.mapel === filterMapel : true;
+                    return matchKelas && matchMapel;
                 });
 
-                let nilaiAkhir = jumlahDikerjakan > 0 ? Math.round(totalNilai / jumlahDikerjakan) : 0;
-                let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
+                if (dataFiltered.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">Belum ada data nilai di server.</td></tr>`;
+                    return;
+                }
 
-                let renderKolom = (val) => {
-                    if (val === null || val === undefined) {
-                        return '<span class="badge badge-warning" style="font-size: 10px;">Menunggu Koreksi</span>';
-                    } else if (typeof val === 'number') {
-                        return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
+                let rekapMap = {};
+                dataFiltered.forEach(item => {
+                    let key = `${item.kelas}_${item.nama}_${item.mapel}`;
+                    if (!rekapMap[key]) {
+                        rekapMap[key] = {
+                            kelas: item.kelas,
+                            nama: item.nama,
+                            mapel: item.mapel,
+                            "Pilihan Ganda": null,
+                            "Essay / Uraian": null,
+                            "Mencocokkan Gambar": null,
+                            "Puzzle Kata": null,
+                            "Menulis Ringkasan Materi": null
+                        };
                     }
-                    return '<span class="text-muted">-</span>';
-                };
+                    rekapMap[key][item.jenis] = item.nilai;
+                });
 
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${index++}</td>
-                    <td><b>${row.kelas}</b></td>
-                    <td class="font-weight-bold text-left">${row.nama}</td>
-                    <td><span class="badge badge-secondary">${row.mapel}</span></td>
-                    <td>${renderKolom(row["Pilihan Ganda"])}</td>
-                    <td>${renderKolom(row["Essay"])}</td>
-                    <td>${renderKolom(row["Mencocokkan Gambar"])}</td>
-                    <td>${renderKolom(row["Puzzle"])}</td>
-                    <td>${renderKolom(row["Menulis Ringkasan Materi"])}</td>
-                    <td>${jumlahDikerjakan > 0 ? `<span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span>` : '<span class="text-muted">-</span>'}</td>
-                `;
-                tbody.appendChild(tr);
+                let index = 1;
+                for (let key in rekapMap) {
+                    let row = rekapMap[key];
+                    
+                    let totalNilai = 0;
+                    let jumlahDikerjakan = 0;
+
+                    let jenisKuisList = ["Pilihan Ganda", "Essay / Uraian", "Mencocokkan Gambar", "Puzzle Kata", "Menulis Ringkasan Materi"];
+                    jenisKuisList.forEach(jenis => {
+                        if (row[jenis] !== null && row[jenis] !== undefined && typeof row[jenis] === 'number') {
+                            totalNilai += row[jenis];
+                            jumlahDikerjakan++;
+                        }
+                    });
+
+                    let nilaiAkhir = jumlahDikerjakan > 0 ? Math.round(totalNilai / jumlahDikerjakan) : 0;
+                    let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
+
+                    let renderKolom = (val) => {
+                        if (val === null || val === undefined) {
+                            return '<span class="badge badge-warning" style="font-size: 10px;">Menunggu Koreksi</span>';
+                        } else if (typeof val === 'number') {
+                            return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
+                        }
+                        return '<span class="text-muted">-</span>';
+                    };
+
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${index++}</td>
+                        <td><b>${row.kelas}</b></td>
+                        <td class="font-weight-bold text-left">${row.nama}</td>
+                        <td><span class="badge badge-secondary">${row.mapel}</span></td>
+                        <td>${renderKolom(row["Pilihan Ganda"])}</td>
+                        <td>${renderKolom(row["Essay / Uraian"])}</td>
+                        <td>${renderKolom(row["Mencocokkan Gambar"])}</td>
+                        <td>${renderKolom(row["Puzzle Kata"])}</td>
+                        <td>${renderKolom(row["Menulis Ringkasan Materi"])}</td>
+                        <td>${jumlahDikerjakan > 0 ? `<span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span>` : '<span class="text-muted">-</span>'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Gagal memuat rekap nilai dari server.</td></tr>`;
             }
         }
 
-        function hapusSemuaNilai() {
-            if (confirm("Apakah Anda yakin ingin menghapus seluruh rekap nilai siswa? Data yang dihapus tidak dapat dikembalikan!")) {
-                localStorage.removeItem("dataNilai");
-                tampilkanRekapNilai();
-                alert("Semua rekap nilai berhasil dikosongkan.");
+        function hapusSemuaNilaiOnline() {
+            if (confirm("Apakah Anda yakin ingin mengosongkan seluruh data nilai di server Google Sheets?")) {
+                fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "hapusNilai" })
+                }).then(() => {
+                    alert("Data nilai di server berhasil dikosongkan.");
+                    tampilkanRekapNilaiOnline();
+                });
             }
         }
     </script>
