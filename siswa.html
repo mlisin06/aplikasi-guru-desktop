@@ -19,8 +19,8 @@
 <body>
     <div class="container py-5">
         <div class="main-header p-4 mb-4 text-center">
-            <h2 class="font-weight-bold mb-2">🎓 Ruang Ujian & Tugas Siswa</h2>
-            <p class="mb-0 text-white-50">Silakan pilih kelas, nama Anda, dan materi pelajaran dengan teliti sebelum mengerjakan!</p>
+            <h2 class="font-weight-bold mb-2">🎓 Ruang Ujian & Tugas Siswa Online</h2>
+            <p class="mb-0 text-white-50">Silakan pilih kelas, ketik nama Anda, pilih mapel, dan ambil soal dari server cloud!</p>
         </div>
 
         <div class="card card-filter p-4 mb-4">
@@ -28,7 +28,7 @@
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label class="font-weight-bold text-muted small">Pilih Kelas</label>
-                    <select id="pilih-kelas" class="form-control" onchange="muatNamaSiswa()">
+                    <select id="pilih-kelas" class="form-control">
                         <option value="">-- Pilih Kelas --</option>
                         <option value="Kelas 1">Kelas 1</option>
                         <option value="Kelas 2">Kelas 2</option>
@@ -41,9 +41,7 @@
                 
                 <div class="form-group col-md-3">
                     <label class="font-weight-bold text-muted small">Nama Lengkap Siswa</label>
-                    <select id="pilih-nama" class="form-control">
-                        <option value="">-- Pilih Kelas Dulu --</option>
-                    </select>
+                    <input type="text" id="pilih-nama" class="form-control" placeholder="Ketik nama lengkap Anda...">
                 </div>
 
                 <div class="form-group col-md-3">
@@ -66,54 +64,33 @@
                     <select id="pilih-jenis" class="form-control">
                         <option value="">-- Pilih Jenis --</option>
                         <option value="Pilihan Ganda">Pilihan Ganda</option>
-                        <option value="Essay">Essay</option>
+                        <option value="Essay / Uraian">Essay / Uraian</option>
                         <option value="Mencocokkan Gambar">Mencocokkan Gambar</option>
-                        <option value="Puzzle">Puzzle</option>
+                        <option value="Puzzle Kata">Puzzle Kata</option>
                         <option value="Menulis Ringkasan Materi">Menulis Ringkasan Materi</option>
                     </select>
                 </div>
             </div>
 
-            <button type="button" class="btn btn-primary btn-custom btn-block mt-2" onclick="muatDaftarSoal()">
-                🚀 Muat Soal & Tugas Sekarang
+            <button type="button" class="btn btn-primary btn-custom btn-block mt-2" onclick="muatDaftarSoalOnline()">
+                🚀 Ambil Soal dari Server Cloud
             </button>
         </div>
 
         <div id="kontainer-soal">
             <div class="card card-filter text-center py-5">
-                <h5 class="text-muted">✨ Silakan pilih kelas, nama, mapel, dan jenis kuis di atas!</h5>
+                <h5 class="text-muted">✨ Silakan lengkapi identitas dan pilih jenis kuis di atas!</h5>
             </div>
         </div>
 
         <div class="mt-4 text-center">
-            <a href="index.html" class="btn btn-light btn-custom text-muted border">&larr; Kembali ke Beranda Utama</a>
+            <a href="administrasi.html" class="btn btn-info btn-custom text-white mr-2">📚 Baca Materi PDF Terlebih Dahulu</a>
+            <a href="index.html" class="btn btn-light btn-custom text-muted border">&larr; Kembali ke Beranda</a>
         </div>
     </div>
 
     <script>
-        function muatNamaSiswa() {
-            let kelasDipilih = document.getElementById("pilih-kelas").value;
-            let dropdownNama = document.getElementById("pilih-nama");
-            
-            dropdownNama.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
-
-            if (!kelasDipilih) return;
-
-            let dataSiswa = JSON.parse(localStorage.getItem("dataSiswa")) || [];
-            let siswaFilter = dataSiswa.filter(s => s.kelas === kelasDipilih);
-
-            if (siswaFilter.length === 0) {
-                dropdownNama.innerHTML = '<option value="">(Belum ada siswa terdaftar di kelas ini)</option>';
-                return;
-            }
-
-            siswaFilter.forEach(s => {
-                let opt = document.createElement("option");
-                opt.value = s.nama;
-                opt.textContent = s.nama;
-                dropdownNama.appendChild(opt);
-            });
-        }
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
 
         function acakHuruf(kata) {
             if (!kata) return "";
@@ -129,9 +106,9 @@
             return hasilAcak;
         }
 
-        function muatDaftarSoal() {
+        async function muatDaftarSoalOnline() {
             let kelas = document.getElementById("pilih-kelas").value;
-            let nama = document.getElementById("pilih-nama").value;
+            let nama = document.getElementById("pilih-nama").value.trim();
             let mapel = document.getElementById("pilih-mapel").value;
             let jenis = document.getElementById("pilih-jenis").value;
             let kontainer = document.getElementById("kontainer-soal");
@@ -141,66 +118,71 @@
                 return;
             }
 
-            let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
-            let soalFilter = dataSoal.filter(s => s.kelas === kelas && s.mapel === mapel && s.jenis === jenis);
+            kontainer.innerHTML = `<div class="card card-filter text-center py-5"><h5 class="text-primary">⏳ Sedang mengambil soal dari server cloud...</h5></div>`;
 
-            if (soalFilter.length === 0) {
-                kontainer.innerHTML = `
-                    <div class="card card-filter text-center py-5">
-                        <h5 class="text-danger">⚠️ Belum ada soal/tugas untuk <b>${kelas} - ${mapel} (${jenis})</b>.</h5>
-                    </div>`;
-                return;
-            }
+            try {
+                let response = await fetch(SCRIPT_URL + "?action=getSoal");
+                let dataSoal = await response.json();
+                
+                let soalFilter = dataSoal.filter(s => s.kelas === kelas && s.mapel === mapel && s.jenis === jenis);
 
-            let htmlContent = "";
-            soalFilter.forEach((soal, index) => {
-                htmlContent += `<div class="card quiz-card mb-4 p-4 bg-white">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="text-primary font-weight-bold mb-0">Soal No. ${index + 1}</h5>
-                        <span class="badge badge-info px-3 py-2" style="font-size: 12px; border-radius: 20px;">${soal.jenis}</span>
-                    </div>
-                    <p class="font-weight-bold mt-2 text-dark" style="font-size: 1.05rem;">${soal.pertanyaan}</p>`;
-
-                if (soal.jenis === "Pilihan Ganda") {
-                    htmlContent += `
-                        <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optA_${index}" name="jawaban_${index}" value="A"><label class="custom-control-label" for="optA_${index}">A. ${soal.opsiA}</label></div>
-                        <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optB_${index}" name="jawaban_${index}" value="B"><label class="custom-control-label" for="optB_${index}">B. ${soal.opsiB}</label></div>
-                        <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optC_${index}" name="jawaban_${index}" value="C"><label class="custom-control-label" for="optC_${index}">C. ${soal.opsiC}</label></div>
-                        <div class="custom-control custom-radio"><input class="custom-control-input" type="radio" id="optD_${index}" name="jawaban_${index}" value="D"><label class="custom-control-label" for="optD_${index}">D. ${soal.opsiD}</label></div>
-                    `;
-                } else if (soal.jenis === "Essay") {
-                    htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="3" placeholder="Tulis jawaban essay Anda..."></textarea></div>`;
-                } else if (soal.jenis === "Mencocokkan Gambar") {
-                    htmlContent += `
-                        <div class="mb-3 text-center">${soal.gambar ? `<img src="${soal.gambar}" class="img-fluid rounded shadow-sm border mb-2" style="max-height: 220px;" alt="Gambar Soal">` : ''}</div>
-                        <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control" placeholder="Tulis jawaban atau pasangan..."></div>
-                    `;
-                } else if (soal.jenis === "Puzzle") {
-                    let hurufAcak = acakHuruf(soal.kunci);
-                    htmlContent += `
-                        <div class="puzzle-box text-center my-3">
-                            <span class="text-muted small d-block mb-1 font-weight-bold">SUSUNLAH HURUF BERIKUT:</span>
-                            <h3 class="text-danger font-weight-bold mb-0" style="letter-spacing: 6px;">${hurufAcak}</h3>
-                        </div>
-                        <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control font-weight-bold text-center text-uppercase" placeholder="Ketik kata yang benar..."></div>
-                    `;
-                } else if (soal.jenis === "Menulis Ringkasan Materi") {
-                    htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tulis ringkasan materi (minimal 300 karakter)..."></textarea></div>`;
+                if (soalFilter.length === 0) {
+                    kontainer.innerHTML = `
+                        <div class="card card-filter text-center py-5">
+                            <h5 class="text-danger">⚠️ Belum ada soal untuk <b>${kelas} - ${mapel} (${jenis})</b> di server.</h5>
+                        </div>`;
+                    return;
                 }
 
-                htmlContent += `</div>`;
-            });
+                let htmlContent = "";
+                soalFilter.forEach((soal, index) => {
+                    htmlContent += `<div class="card quiz-card mb-4 p-4 bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="text-primary font-weight-bold mb-0">Soal No. ${index + 1}</h5>
+                            <span class="badge badge-info px-3 py-2" style="font-size: 12px; border-radius: 20px;">${soal.jenis}</span>
+                        </div>
+                        <p class="font-weight-bold mt-2 text-dark" style="font-size: 1.05rem;">${soal.pertanyaan}</p>`;
 
-            htmlContent += `<button type="button" class="btn btn-success btn-custom btn-lg btn-block mt-4 shadow" onclick="kirimJawabanSiswa('${kelas}', '${mapel}', '${jenis}', '${nama}')">✨ Kirim Semua Jawaban</button>`;
-            kontainer.innerHTML = htmlContent;
+                    if (soal.jenis === "Pilihan Ganda") {
+                        htmlContent += `
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optA_${index}" name="jawaban_${index}" value="A"><label class="custom-control-label" for="optA_${index}">A. ${soal.opsiA}</label></div>
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optB_${index}" name="jawaban_${index}" value="B"><label class="custom-control-label" for="optB_${index}">B. ${soal.opsiB}</label></div>
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optC_${index}" name="jawaban_${index}" value="C"><label class="custom-control-label" for="optC_${index}">C. ${soal.opsiC}</label></div>
+                            <div class="custom-control custom-radio"><input class="custom-control-input" type="radio" id="optD_${index}" name="jawaban_${index}" value="D"><label class="custom-control-label" for="optD_${index}">D. ${soal.opsiD}</label></div>
+                        `;
+                    } else if (soal.jenis === "Essay / Uraian") {
+                        htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="3" placeholder="Tulis jawaban essay Anda..."></textarea></div>`;
+                    } else if (soal.jenis === "Mencocokkan Gambar") {
+                        htmlContent += `
+                            <div class="mb-3 text-center">${soal.gambar ? `<img src="${soal.gambar}" class="img-fluid rounded shadow-sm border mb-2" style="max-height: 220px;" alt="Gambar Soal">` : ''}</div>
+                            <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control" placeholder="Tulis jawaban atau pasangan..."></div>
+                        `;
+                    } else if (soal.jenis === "Puzzle Kata") {
+                        let hurufAcak = acakHuruf(soal.kunci);
+                        htmlContent += `
+                            <div class="puzzle-box text-center my-3">
+                                <span class="text-muted small d-block mb-1 font-weight-bold">SUSUNLAH HURUF BERIKUT:</span>
+                                <h3 class="text-danger font-weight-bold mb-0" style="letter-spacing: 6px;">${hurufAcak}</h3>
+                            </div>
+                            <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control font-weight-bold text-center text-uppercase" placeholder="Ketik kata yang benar..."></div>
+                        `;
+                    } else if (soal.jenis === "Menulis Ringkasan Materi") {
+                        htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tulis ringkasan materi (minimal 300 karakter)..."></textarea></div>`;
+                    }
+
+                    htmlContent += `</div>`;
+                });
+
+                htmlContent += `<button type="button" class="btn btn-success btn-custom btn-lg btn-block mt-4 shadow" onclick='kirimJawabanKeServer(${JSON.stringify(soalFilter)}, "${kelas}", "${mapel}", "${jenis}", "${nama}")'>✨ Kirim Semua Jawaban ke Server</button>`;
+                kontainer.innerHTML = htmlContent;
+
+            } catch (e) {
+                kontainer.innerHTML = `<div class="card card-filter text-center py-5"><h5 class="text-danger">Gagal memuat soal dari server. Periksa koneksi internet Anda.</h5></div>`;
+            }
         }
 
-        function kirimJawabanSiswa(kelas, mapel, jenis, nama) {
-            let dataSoal = JSON.parse(localStorage.getItem("dataSoal")) || [];
-            let soalFilter = dataSoal.filter(s => s.kelas === kelas && s.mapel === mapel && s.jenis === jenis);
-
-            // Khusus Essay: Catat sebagai menunggu koreksi guru
-            if (jenis === "Essay") {
+        function kirimJawabanKeServer(soalFilter, kelas, mapel, jenis, nama) {
+            if (jenis === "Essay / Uraian") {
                 let diisiSemua = true;
                 soalFilter.forEach((soal, index) => {
                     let inputTeks = document.getElementById(`jawaban_${index}`);
@@ -212,8 +194,8 @@
                     return;
                 }
 
-                let dataNilai = JSON.parse(localStorage.getItem("dataNilai")) || [];
-                dataNilai.push({
+                let dataKirim = {
+                    action: "simpanNilai",
                     tanggal: new Date().toLocaleDateString(),
                     nama: nama,
                     kelas: kelas,
@@ -221,11 +203,9 @@
                     jenis: jenis,
                     nilai: null,
                     keterangan: "Menunggu Koreksi Guru"
-                });
-                localStorage.setItem("dataNilai", JSON.stringify(dataNilai));
+                };
 
-                alert(`🎉 Jawaban Essay berhasil dikirim, ${nama}!\nStatus: Menunggu Koreksi Guru.`);
-                window.location.reload();
+                prosesKirimDataKeServer(dataKirim, nama);
                 return;
             }
 
@@ -243,7 +223,7 @@
                         diisi = true;
                         if (pilihan.value.trim().toUpperCase() === soal.kunci.trim().toUpperCase()) benar = true;
                     }
-                } else if (soal.jenis === "Puzzle") {
+                } else if (soal.jenis === "Puzzle Kata") {
                     let inputPuzzle = document.getElementById(`jawaban_${index}`);
                     if (inputPuzzle && inputPuzzle.value.trim() !== "") {
                         diisi = true;
@@ -284,8 +264,8 @@
 
             let nilaiAkhir = Math.round((jumlahBenar / totalDinilai) * 100);
 
-            let dataNilai = JSON.parse(localStorage.getItem("dataNilai")) || [];
-            dataNilai.push({
+            let dataKirim = {
+                action: "simpanNilai",
                 tanggal: new Date().toLocaleDateString(),
                 nama: nama,
                 kelas: kelas,
@@ -293,11 +273,32 @@
                 jenis: jenis,
                 nilai: nilaiAkhir,
                 keterangan: `${jumlahBenar}/${totalDinilai} benar`
-            });
-            localStorage.setItem("dataNilai", JSON.stringify(dataNilai));
+            };
 
-            alert(`🎉 Hore! Jawaban berhasil dikirim, ${nama}!\nNilai Akhir Anda: ${nilaiAkhir}`);
-            window.location.reload();
+            prosesKirimDataKeServer(dataKirim, nama, nilaiAkhir);
+        }
+
+        function prosesKirimDataKeServer(dataKirim, nama, nilaiAkhir = null) {
+            let btn = event.target;
+            btn.disabled = true;
+            btn.innerText = "Mengirim Nilai ke Server Cloud...";
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataKirim)
+            }).then(() => {
+                if (nilaiAkhir !== null) {
+                    alert(`🎉 Berhasil dikirim, ${nama}!\nNilai Akhir Anda: ${nilaiAkhir}`);
+                } else {
+                    alert(`🎉 Jawaban Essay berhasil dikirim, ${nama}!\nStatus: Menunggu Koreksi Guru.`);
+                }
+                window.location.reload();
+            }).catch(err => {
+                alert("Gagal mengirim jawaban: " + err);
+                btn.disabled = false;
+            });
         }
     </script>
 </body>
