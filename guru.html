@@ -7,48 +7,55 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
-        .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .card-custom { border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #ffffff; width: 100%; max-width: 550px; }
+        .btn-menu { border-radius: 12px; font-weight: 600; text-align: left; padding: 15px 20px; transition: all 0.2s ease-in-out; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .btn-menu:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.08); }
     </style>
     <script>
-        // Cek password saat halaman pertama kali dimuat
+        // Autentikasi Password Otomatis Saat Panel Guru Dibuka
         (function() {
             let passwordBenar = "240785";
-            let passwordUser = prompt("🔒 Masukkan Password Panel Guru:");
+            let passwordUser = prompt("🔒 Masukkan Password Akses Panel Guru:");
             
             if (passwordUser !== passwordBenar) {
                 alert("❌ Password salah atau akses dibatalkan!");
-                window.location.href = "index.html"; // Lempar kembali ke beranda jika salah
+                window.location.href = "index.html"; // Kembalikan ke beranda utama jika salah
             }
         })();
     </script>
 </head>
 <body>
-    <div class="container mt-5 mb-5" style="max-width: 600px;">
-        <div class="card card-custom p-4 bg-white">
-            <h3 class="text-info mb-3 text-center font-weight-bold">👨‍🏫 Dashboard Guru</h3>
-            <p class="text-muted text-center small">Kelola soal, daftar siswa, dan pantau rekap nilai dari halaman ini.</p>
+    <div class="container my-4">
+        <div class="card card-custom p-4 p-md-5 mx-auto">
+            <div class="text-center mb-4">
+                <h3 class="text-info font-weight-bold mb-1">👨‍🏫 Dashboard Guru</h3>
+                <p class="text-muted small">Pusat kendali ujian, tugas, manajemen siswa, dan materi pembelajaran.</p>
+            </div>
             
             <hr class="mb-4">
 
-            <!-- Tombol Navigasi Menu Guru -->
+            <!-- Daftar Menu Utama Panel Guru -->
             <div class="list-group">
-                <a href="kelola-soal.html" class="btn btn-info btn-lg btn-block mb-3 font-weight-bold text-left px-4 shadow-sm">
+                <a href="kelola-soal.html" class="btn btn-info btn-lg btn-menu mb-3 text-white">
                     📝 Input & Kelola Soal / Tugas
                 </a>
-                <a href="kelola-siswa.html" class="btn btn-warning btn-lg btn-block mb-3 font-weight-bold text-left px-4 text-white shadow-sm">
+                <a href="kelola-siswa.html" class="btn btn-warning btn-lg btn-menu mb-3 text-white">
                     👥 Kelola Data Siswa
                 </a>
-                <a href="rekap-nilai.html" class="btn btn-success btn-lg btn-block mb-3 font-weight-bold text-left px-4 shadow-sm">
+                <a href="rekap-nilai.html" class="btn btn-success btn-lg btn-menu mb-3 text-white">
                     📊 Lihat Rekap Nilai Siswa
+                </a>
+                <a href="administrasi.html" class="btn btn-primary btn-lg btn-menu mb-3 text-white">
+                    📚 Administrasi & Upload Materi PDF
                 </a>
             </div>
 
-            <hr class="mt-4 mb-3">
+            <hr class="mt-2 mb-4">
 
             <!-- Tombol Kembali ke Beranda -->
             <div class="text-center">
-                <a href="index.html" class="btn btn-outline-secondary btn-sm">&larr; Kembali ke Beranda Utama</a>
+                <a href="index.html" class="btn btn-outline-secondary btn-sm px-4 py-2 font-weight-bold" style="border-radius: 10px;">&larr; Kembali ke Beranda Utama</a>
             </div>
         </div>
     </div>
