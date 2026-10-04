@@ -18,23 +18,32 @@
     <div class="container py-5">
         <div class="header-box p-4 mb-4 text-center">
             <h2 class="font-weight-bold mb-2">🎓 Ruang Ujian & Tugas Siswa Online</h2>
-            <p class="mb-0 text-white-50">Silakan pilih nama Anda dan jenis kuis di bawah ini:</p>
+            <p class="mb-0 text-white-50">Silakan pilih kelas, nama, dan jenis kuis di bawah ini:</p>
         </div>
 
         <div class="card card-custom p-4 mb-4">
             <div class="form-row">
-                <!-- Pilihan Nama Siswa -->
-                <div class="form-group col-md-6">
-                    <label class="font-weight-bold small text-muted">Pilih Nama Siswa:</label>
-                    <select id="select-siswa" class="form-control" required>
-                        <option value="">-- Memuat Data Siswa... --</option>
+                <!-- Pilihan Kelas -->
+                <div class="form-group col-md-4">
+                    <label class="font-weight-bold small text-muted">Pilih Kelas:</label>
+                    <select id="select-kelas" class="form-control">
+                        <option value="">-- Pilih Kelas --</option>
                     </select>
                 </div>
 
-                <!-- Pilihan Jenis Kuis / Modul (5 Jenis) -->
-                <div class="form-group col-md-6">
+                <!-- Pilihan Nama Siswa -->
+                <div class="form-group col-md-4">
+                    <label class="font-weight-bold small text-muted">Pilih Nama Siswa:</label>
+                    <select id="select-siswa" class="form-control" disabled>
+                        <option value="">-- Pilih Kelas Dulu --</option>
+                    </select>
+                </div>
+
+                <!-- Pilihan Jenis Kuis / Modul (Default Kosong) -->
+                <div class="form-group col-md-4">
                     <label class="font-weight-bold small text-muted">Pilih Jenis Kuis / Modul:</label>
                     <select id="select-modul" class="form-control">
+                        <option value="">-- Pilih Jenis Kuis --</option>
                         <option value="Pilihan Ganda">1. Pilihan Ganda</option>
                         <option value="Essay / Uraian">2. Essay / Uraian</option>
                         <option value="Mencocokkan Gambar">3. Mencocokkan Gambar</option>
@@ -49,8 +58,7 @@
         <div class="card card-custom p-4 mb-4">
             <h4 class="font-weight-bold text-dark mb-3">📝 Lembar Soal Ujian</h4>
             <div id="container-soal">
-                <!-- Soal akan dimuat otomatis oleh JavaScript -->
-                <p class="text-center text-muted">Memuat soal...</p>
+                <p class="text-center text-muted">Silakan pilih jenis kuis terlebih dahulu untuk memuat soal.</p>
             </div>
         </div>
 
