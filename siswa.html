@@ -124,7 +124,13 @@
                 let response = await fetch(SCRIPT_URL + "?action=getSoal");
                 let dataSoal = await response.json();
                 
-                let soalFilter = dataSoal.filter(s => s.kelas === kelas && s.mapel === mapel && s.jenis === jenis);
+                // Filter ketat berdasarkan kelas, mapel, dan jenis soal yang dipilih
+                let soalFilter = dataSoal.filter(s => {
+                    let matchKelas = s.kelas && s.kelas.trim().toLowerCase() === kelas.trim().toLowerCase();
+                    let matchMapel = s.mapel && s.mapel.trim().toLowerCase() === mapel.trim().toLowerCase();
+                    let matchJenis = s.jenis && s.jenis.trim().toLowerCase() === jenis.trim().toLowerCase();
+                    return matchKelas && matchMapel && matchJenis;
+                });
 
                 if (soalFilter.length === 0) {
                     kontainer.innerHTML = `
@@ -136,28 +142,31 @@
 
                 let htmlContent = "";
                 soalFilter.forEach((soal, index) => {
+                    let jenisSoal = soal.jenis ? soal.jenis.trim() : "Pilihan Ganda";
+
                     htmlContent += `<div class="card quiz-card mb-4 p-4 bg-white">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 class="text-primary font-weight-bold mb-0">Soal No. ${index + 1}</h5>
-                            <span class="badge badge-info px-3 py-2" style="font-size: 12px; border-radius: 20px;">${soal.jenis}</span>
+                            <span class="badge badge-info px-3 py-2" style="font-size: 12px; border-radius: 20px;">${jenisSoal}</span>
                         </div>
                         <p class="font-weight-bold mt-2 text-dark" style="font-size: 1.05rem;">${soal.pertanyaan}</p>`;
 
-                    if (soal.jenis === "Pilihan Ganda") {
+                    // Pengecekan jenis soal agar render form-nya tidak salah lari ke Pilihan Ganda
+                    if (jenisSoal === "Pilihan Ganda") {
                         htmlContent += `
-                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optA_${index}" name="jawaban_${index}" value="A"><label class="custom-control-label" for="optA_${index}">A. ${soal.opsiA}</label></div>
-                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optB_${index}" name="jawaban_${index}" value="B"><label class="custom-control-label" for="optB_${index}">B. ${soal.opsiB}</label></div>
-                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optC_${index}" name="jawaban_${index}" value="C"><label class="custom-control-label" for="optC_${index}">C. ${soal.opsiC}</label></div>
-                            <div class="custom-control custom-radio"><input class="custom-control-input" type="radio" id="optD_${index}" name="jawaban_${index}" value="D"><label class="custom-control-label" for="optD_${index}">D. ${soal.opsiD}</label></div>
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optA_${index}" name="jawaban_${index}" value="A"><label class="custom-control-label" for="optA_${index}">A. ${soal.opsiA || ''}</label></div>
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optB_${index}" name="jawaban_${index}" value="B"><label class="custom-control-label" for="optB_${index}">B. ${soal.opsiB || ''}</label></div>
+                            <div class="custom-control custom-radio mb-2"><input class="custom-control-input" type="radio" id="optC_${index}" name="jawaban_${index}" value="C"><label class="custom-control-label" for="optC_${index}">C. ${soal.opsiC || ''}</label></div>
+                            <div class="custom-control custom-radio"><input class="custom-control-input" type="radio" id="optD_${index}" name="jawaban_${index}" value="D"><label class="custom-control-label" for="optD_${index}">D. ${soal.opsiD || ''}</label></div>
                         `;
-                    } else if (soal.jenis === "Essay / Uraian") {
+                    } else if (jenisSoal === "Essay / Uraian") {
                         htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="3" placeholder="Tulis jawaban essay Anda..."></textarea></div>`;
-                    } else if (soal.jenis === "Mencocokkan Gambar") {
+                    } else if (jenisSoal === "Mencocokkan Gambar") {
                         htmlContent += `
                             <div class="mb-3 text-center">${soal.gambar ? `<img src="${soal.gambar}" class="img-fluid rounded shadow-sm border mb-2" style="max-height: 220px;" alt="Gambar Soal">` : ''}</div>
                             <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control" placeholder="Tulis jawaban atau pasangan..."></div>
                         `;
-                    } else if (soal.jenis === "Puzzle Kata") {
+                    } else if (jenisSoal === "Puzzle Kata") {
                         let hurufAcak = acakHuruf(soal.kunci);
                         htmlContent += `
                             <div class="puzzle-box text-center my-3">
@@ -166,7 +175,7 @@
                             </div>
                             <div class="form-group"><input type="text" id="jawaban_${index}" class="form-control font-weight-bold text-center text-uppercase" placeholder="Ketik kata yang benar..."></div>
                         `;
-                    } else if (soal.jenis === "Menulis Ringkasan Materi") {
+                    } else if (jenisSoal === "Menulis Ringkasan Materi") {
                         htmlContent += `<div class="form-group mt-3"><textarea id="jawaban_${index}" class="form-control" rows="5" placeholder="Tulis ringkasan materi (minimal 300 karakter)..."></textarea></div>`;
                     }
 
@@ -182,7 +191,9 @@
         }
 
         function kirimJawabanKeServer(soalFilter, kelas, mapel, jenis, nama) {
-            if (jenis === "Essay / Uraian") {
+            let jenisTarget = jenis.trim();
+
+            if (jenisTarget === "Essay / Uraian") {
                 let diisiSemua = true;
                 soalFilter.forEach((soal, index) => {
                     let inputTeks = document.getElementById(`jawaban_${index}`);
@@ -200,7 +211,7 @@
                     nama: nama,
                     kelas: kelas,
                     mapel: mapel,
-                    jenis: jenis,
+                    jenis: jenisTarget,
                     nilai: null,
                     keterangan: "Menunggu Koreksi Guru"
                 };
@@ -217,19 +228,19 @@
                 let diisi = false;
                 let benar = false;
 
-                if (soal.jenis === "Pilihan Ganda") {
+                if (soal.jenis.trim() === "Pilihan Ganda") {
                     let pilihan = document.querySelector(`input[name="jawaban_${index}"]:checked`);
                     if (pilihan) {
                         diisi = true;
                         if (pilihan.value.trim().toUpperCase() === soal.kunci.trim().toUpperCase()) benar = true;
                     }
-                } else if (soal.jenis === "Puzzle Kata") {
+                } else if (soal.jenis.trim() === "Puzzle Kata") {
                     let inputPuzzle = document.getElementById(`jawaban_${index}`);
                     if (inputPuzzle && inputPuzzle.value.trim() !== "") {
                         diisi = true;
                         if (inputPuzzle.value.trim().toUpperCase() === soal.kunci.trim().toUpperCase()) benar = true;
                     }
-                } else if (soal.jenis === "Menulis Ringkasan Materi") {
+                } else if (soal.jenis.trim() === "Menulis Ringkasan Materi") {
                     let inputTeks = document.getElementById(`jawaban_${index}`);
                     if (inputTeks) {
                         let teksVal = inputTeks.value.trim();
@@ -270,7 +281,7 @@
                 nama: nama,
                 kelas: kelas,
                 mapel: mapel,
-                jenis: jenis,
+                jenis: jenisTarget,
                 nilai: nilaiAkhir,
                 keterangan: `${jumlahBenar}/${totalDinilai} benar`
             };
