@@ -3,82 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pusat Administrasi Guru</title>
-    <!-- CSS Bootstrap dll -->
+    <title>Administrasi & Materi Pembelajaran - Portal Pendidikan</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
+        .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
+        .form-control { border-radius: 10px; padding: 10px 15px; height: calc(1.5em + 1rem + 2px); }
+        .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+        .table th, .table td { vertical-align: middle !important; }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <!-- Header & Konten Anda -->
-        <div class="card p-4">
-            <h3>Pusat Administrasi Guru</h3>
-            <!-- Tombol Kelola Perangkat -->
-            <button id="btn-kelola-perangkat" class="btn btn-success mt-3">Kelola Perangkat</button>
+    <div class="container py-5">
+        <!-- Header Halaman -->
+        <div class="card card-custom p-4 mb-4 text-center bg-info text-white shadow-sm">
+            <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi Pembelajaran</h2>
+            <p class="mb-0 text-white-50">Pusat unggah modul/materi PDF oleh Guru dan referensi bacaan interaktif bagi Siswa.</p>
         </div>
 
-        <!-- Tabel Tempat Menampilkan Data Kurikulum -->
-        <div class="card p-4 mt-3">
-            <h5>Daftar Kurikulum & Perangkat</h5>
-            <table class="table table-bordered mt-2">
-                <thead>
-                    <tr>
-                        <th>Kelas</th>
-                        <th>Mapel</th>
-                        <th>Fase</th>
-                        <th>Capaian Pembelajaran (CP)</th>
-                    </tr>
-                </thead>
-                <tbody id="tabel-kurikulum-body">
-                    <tr>
-                        <td colspan="4" class="text-center text-muted">Klik "Kelola Perangkat" untuk memuat data dari Google Sheets.</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Bagian Khusus Guru (Upload Materi) -->
+        <div class="card card-custom p-4 mb-4 border-top border-primary" style="border-top-width: 5px !important;">
+            <h4 class="text-primary font-weight-bold mb-3">👨‍🏫 Panel Guru: Upload Materi / Modul PDF</h4>
+            <div class="form-row">
+                <div class="form-group col-md-3">
+                    <label class="small font-weight-bold">Kelas</label>
+                    <select id="upload-kelas" class="form-control">
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-3">
+                    <label class="small font-weight-bold">Mata Pelajaran</label>
+                    <select id="upload-mapel" class="form-control">
+                        <option value="PAIBP">PAIBP</option>
+                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="IPAS">IPAS</option>
+                        <option value="PJOK">PJOK</option>
+                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                        <option value="Bahasa Jawa">Bahasa Jawa</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label class="small font-weight-bold">Judul Materi / Bab</label>
+                    <input type="text" id="upload-judul" class="form-control" placeholder="Contoh: Modul Bab 1 Pecahan">
+                </div>
+                <div class="form-group col-md-2">
+                    <label class="small font-weight-bold">File PDF</label>
+                    <input type="file" id="upload-file" class="form-control-file pt-1" accept="application/pdf">
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-custom btn-block mt-2 shadow-sm" onclick="simpanMateriPDF()">
+                📤 Unggah & Simpan Materi PDF
+            </button>
+        </div>
+
+        <!-- Bagian Daftar Materi untuk Siswa & Guru -->
+        <div class="card card-custom p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                <h4 class="text-success font-weight-bold mb-0">📖 Daftar Materi & Bahan Bacaan</h4>
+                <div class="form-inline mt-2 mt-md-0">
+                    <label class="small font-weight-bold mr-2">Filter Kelas:</label>
+                    <select id="filter-kelas-materi" class="form-control form-control-sm" onchange="tampilkanDaftarMateri()">
+                        <option value="">-- Semua Kelas --</option>
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="15%">Kelas</th>
+                            <th width="20%">Mata Pelajaran</th>
+                            <th width="40%">Judul Materi</th>
+                            <th width="20%">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-materi-body">
+                        <!-- Data materi dirender otomatis -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tombol Navigasi Kembali -->
+        <div class="text-center">
+            <a href="index.html" class="btn btn-light btn-custom border text-muted shadow-sm">&larr; Kembali ke Beranda Utama</a>
         </div>
     </div>
 
-    <!-- TEMPAT MENARUH KODE JAVASCRIPT -->
     <script>
-        // Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda yang terbaru!
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5nkmrvSUusyiJ0qIYQYnXxroIWMQdHYWbKbTpM6X6VbQ1eyxZ-9EDNANANKeT6a2_YQ/exec";
-
-        document.getElementById('btn-kelola-perangkat').addEventListener('click', function() {
-            muatDataKurikulum();
+        document.addEventListener("DOMContentLoaded", function() {
+            tampilkanDaftarMateri();
         });
 
-        function muatDataKurikulum() {
-            const url = SCRIPT_URL + "?action=getKurikulum";
-            
-            // Tampilkan pesan loading
-            const tbody = document.getElementById('tabel-kurikulum-body');
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-info">Memuat data dari Google Sheets...</td></tr>`;
+        function simpanMateriPDF() {
+            let kelas = document.getElementById("upload-kelas").value;
+            let mapel = document.getElementById("upload-mapel").value;
+            let judul = document.getElementById("upload-judul").value.trim();
+            let fileInput = document.getElementById("upload-file");
 
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Data Kurikulum:", data);
-                    tbody.innerHTML = ""; // Kosongkan tabel
+            if (!judul || fileInput.files.length === 0) {
+                alert("Harap isi Judul Materi dan pilih file PDF terlebih dahulu!");
+                return;
+            }
 
-                    if (data.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Tidak ada data ditemukan di tab Kurikulum.</td></tr>`;
-                        return;
-                    }
+            let file = fileInput.files[0];
+            if (file.type !== "application/pdf") {
+                alert("Hanya file berformat PDF yang diizinkan!");
+                return;
+            }
 
-                    // Masukkan data ke dalam tabel secara otomatis
-                    data.forEach(item => {
-                        let row = `<tr>
-                            <td>${item.kelas}</td>
-                            <td>${item.mapel}</td>
-                            <td>${item.fase}</td>
-                            <td>${item.cp}</td>
-                        </tr>`;
-                        tbody.innerHTML += row;
-                    });
-                })
-                .catch(error => {
-                    console.error("Terjadi kesalahan:", error);
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Gagal memuat data dari Google Sheets. Periksa URL Apps Script Anda.</td></tr>`;
+            // Batasi ukuran file maksimal 2 MB agar aman di localStorage browser
+            if (file.size > 2 * 1024 * 1024) {
+                alert("Ukuran file terlalu besar! Maksimal ukuran file PDF adalah 2 MB.");
+                return;
+            }
+
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let base64PDF = e.target.result;
+
+                let dataMateri = JSON.parse(localStorage.getItem("dataMateriPDF")) || [];
+                dataMateri.push({
+                    tanggal: new Date().toLocaleDateString(),
+                    kelas: kelas,
+                    mapel: mapel,
+                    judul: judul,
+                    fileData: base64PDF,
+                    fileName: file.name
                 });
+
+                localStorage.setItem("dataMateriPDF", JSON.stringify(dataMateri));
+
+                alert("🎉 Materi PDF berhasil diunggah!");
+                document.getElementById("upload-judul").value = "";
+                document.getElementById("upload-file").value = "";
+                tampilkanDaftarMateri();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function tampilkanDaftarMateri() {
+            let dataMateri = JSON.parse(localStorage.getItem("dataMateriPDF")) || [];
+            let filterKelas = document.getElementById("filter-kelas-materi").value;
+            let tbody = document.getElementById("tabel-materi-body");
+            tbody.innerHTML = "";
+
+            let dataFiltered = dataMateri.filter(item => {
+                return filterKelas ? item.kelas === filterKelas : true;
+            });
+
+            if (dataFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi PDF yang diunggah.</td></tr>`;
+                return;
+            }
+
+            dataFiltered.forEach((materi, index) => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><b>${materi.kelas}</b></td>
+                    <td><span class="badge badge-secondary">${materi.mapel}</span></td>
+                    <td class="font-weight-bold text-left">${materi.judul} <br><small class="text-muted font-weight-normal">${materi.fileName}</small></td>
+                    <td>
+                        <a href="${materi.fileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Preview Materi</a>
+                        <button class="btn btn-sm btn-outline-danger ml-1" onclick="hapusMateri(${index})">🗑️ Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function hapusMateri(index) {
+            if (confirm("Apakah Anda yakin ingin menghapus materi PDF ini?")) {
+                let dataMateri = JSON.parse(localStorage.getItem("dataMateriPDF")) || [];
+                dataMateri.splice(index, 1);
+                localStorage.setItem("dataMateriPDF", JSON.stringify(dataMateri));
+                tampilkanDaftarMateri();
+            }
         }
     </script>
 </body>
