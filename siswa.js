@@ -263,7 +263,10 @@ async function kirimJawabanSiswa() {
         let val = "";
         if (inputRadio) val = inputRadio.value;
         else if (inputSelect) val = inputSelect.value;
-        else if (inputText) val = inputText.value;
+        else if (inputText) {
+            // Otomatis ubah teks input puzzle menjadi huruf kapital (uppercase)
+            val = inputText.value.trim().toUpperCase();
+        }
         else if (inputTextarea) val = inputTextarea.value;
 
         hasilJawaban[`Soal_${index + 1}`] = val || "Tidak Diisi";
