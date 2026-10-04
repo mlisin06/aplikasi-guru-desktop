@@ -229,12 +229,15 @@ async function muatDataSoal() {
     }
 }
 
-// 3. Mengirim Jawaban Siswa ke Google Sheets (Menggunakan format asli yang terbukti sukses)
+// 3. Mengirim Jawaban Siswa ke Google Sheets (Lengkap dengan action simpanNilai)
 async function kirimJawabanSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
+    const selectModul = document.getElementById("select-modul");
+    
     const kelasSiswa = selectKelas ? selectKelas.value : "";
     const namaSiswa = selectSiswa ? selectSiswa.value : "";
+    const jenisKuis = selectModul ? selectModul.value : "";
 
     if (!kelasSiswa) {
         alert("Silakan pilih Kelas terlebih dahulu!");
@@ -251,9 +254,14 @@ async function kirimJawabanSiswa() {
         return;
     }
 
-    const identitasLengkap = `${kelasSiswa} - ${namaSiswa}`;
+    // Format tanggal hari ini (DD/MM/YYYY)
+    const d = new Date();
+    const tglFormat = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
 
     let hasilJawaban = {};
+    let jumlahBenar = 0;
+    let totalSoal = soalTersaring.length;
+
     soalTersaring.forEach((soal, index) => {
         const inputRadio = document.querySelector(`input[name="soal_${index}"]:checked`);
         const inputSelect = document.querySelector(`select[name="soal_${index}"]`);
@@ -264,21 +272,36 @@ async function kirimJawabanSiswa() {
         if (inputRadio) val = inputRadio.value;
         else if (inputSelect) val = inputSelect.value;
         else if (inputText) {
-            // Otomatis ubah teks input puzzle menjadi huruf kapital (uppercase) agar sesuai kunci jawaban GS
-            val = inputText.value.trim().toUpperCase();
+            val = inputText.value.trim().toUpperCase(); // Otomatis uppercase untuk puzzle kata
         }
         else if (inputTextarea) val = inputTextarea.value;
 
         hasilJawaban[`Soal_${index + 1}`] = val || "Tidak Diisi";
+
+        // Cek jawaban benar jika ada kunci jawaban di soal
+        if (soal.kunci && val === String(soal.kunci).trim().toUpperCase()) {
+            jumlahBenar++;
+        }
     });
 
+    // Hitung nilai akhir (skala 100)
+    let nilaiAkhir = totalSoal > 0 ? Math.round((jumlahBenar / totalSoal) * 100) : 0;
+    let ket = `${jumlahBenar}/${totalSoal} benar`;
+
+    // Payload wajib membawa "action: simpanNilai" agar tertangkap oleh Google Apps Script
     const payload = {
-        nama: identitasLengkap,
-        jawaban: hasilJawaban
+        action: "simpanNilai",
+        tanggal: tglFormat,
+        nama: namaSiswa,
+        kelas: kelasSiswa,
+        mapel: "PAIBP",
+        jenis: jenisKuis,
+        nilai: nilaiAkhir,
+        keterangan: ket
     };
 
+    const btnKirim = document.querySelector('button[onclick="kirimJawabanSiswa()"]');
     try {
-        const btnKirim = document.querySelector('button[onclick="kirimJawabanSiswa()"]');
         if (btnKirim) {
             btnKirim.disabled = true;
             btnKirim.innerText = "Sedang Mengirim Jawaban...";
@@ -291,11 +314,15 @@ async function kirimJawabanSiswa() {
             body: JSON.stringify(payload)
         });
 
-        alert("Jawaban berhasil dikirim ke Google Sheets!");
+        alert(`Jawaban berhasil dikirim!\nPerkiraan Nilai: ${nilaiAkhir}`);
         location.reload();
 
     } catch (err) {
         console.error("Gagal mengirim jawaban:", err);
         alert("Gagal mengirim jawaban. Silakan coba lagi.");
+        if (btnKirim) {
+            btnKirim.disabled = false;
+            btnKirim.innerText = "Kirim Jawaban Ujian";
+        }
     }
 }
