@@ -11,20 +11,18 @@
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
         .form-control { border-radius: 10px; padding: 10px 15px; height: calc(1.5em + 1rem + 2px); }
         .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
-        .table th, .table td { vertical-align: middle !important; }
     </style>
 </head>
 <body>
     <div class="container py-5">
-        <!-- Header Halaman -->
         <div class="card card-custom p-4 mb-4 text-center bg-info text-white shadow-sm">
-            <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi Pembelajaran</h2>
-            <p class="mb-0 text-white-50">Pusat unggah modul/materi PDF oleh Guru dan referensi bacaan interaktif bagi Siswa.</p>
+            <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi PDF Online</h2>
+            <p class="mb-0 text-white-50">Upload modul/materi PDF agar bisa dibaca langsung secara preview oleh siswa di HP mereka.</p>
         </div>
 
-        <!-- Bagian Khusus Guru (Upload Materi) -->
+        <!-- Panel Guru Upload PDF -->
         <div class="card card-custom p-4 mb-4 border-top border-primary" style="border-top-width: 5px !important;">
-            <h4 class="text-primary font-weight-bold mb-3">👨‍🏫 Panel Guru: Upload Materi / Modul PDF</h4>
+            <h4 class="text-primary font-weight-bold mb-3">👨‍🏫 Upload Materi PDF ke Cloud</h4>
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Kelas</label>
@@ -59,15 +57,15 @@
                     <input type="file" id="upload-file" class="form-control-file pt-1" accept="application/pdf">
                 </div>
             </div>
-            <button type="button" class="btn btn-primary btn-custom btn-block mt-2 shadow-sm" onclick="simpanMateriPDF()">
-                📤 Unggah & Simpan Materi PDF
+            <button type="button" class="btn btn-primary btn-custom btn-block mt-2 shadow-sm" onclick="simpanMateriPDFKeServer()">
+                📤 Unggah & Simpan Materi ke Cloud
             </button>
         </div>
 
-        <!-- Bagian Daftar Materi untuk Siswa & Guru -->
+        <!-- Daftar Materi Siswa -->
         <div class="card card-custom p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-                <h4 class="text-success font-weight-bold mb-0">📖 Daftar Materi & Bahan Bacaan</h4>
+                <h4 class="text-success font-weight-bold mb-0">📖 Daftar Materi & Bahan Bacaan Online</h4>
                 <div class="form-inline mt-2 mt-md-0">
                     <label class="small font-weight-bold mr-2">Filter Kelas:</label>
                     <select id="filter-kelas-materi" class="form-control form-control-sm" onchange="tampilkanDaftarMateri()">
@@ -90,28 +88,29 @@
                             <th width="15%">Kelas</th>
                             <th width="20%">Mata Pelajaran</th>
                             <th width="40%">Judul Materi</th>
-                            <th width="20%">Aksi</th>
+                            <th width="20%">Aksi Preview</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-materi-body">
-                        <!-- Data materi dirender otomatis -->
+                        <tr><td colspan="5" class="text-center text-muted py-4">Memuat data materi dari server...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Tombol Navigasi Kembali -->
         <div class="text-center">
-            <a href="index.html" class="btn btn-light btn-custom border text-muted shadow-sm">&larr; Kembali ke Beranda Utama</a>
+            <a href="guru.html" class="btn btn-light btn-custom border text-muted shadow-sm">&larr; Kembali ke Dashboard Guru</a>
         </div>
     </div>
 
     <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
+
         document.addEventListener("DOMContentLoaded", function() {
             tampilkanDaftarMateri();
         });
 
-        function simpanMateriPDF() {
+        function simpanMateriPDFKeServer() {
             let kelas = document.getElementById("upload-kelas").value;
             let mapel = document.getElementById("upload-mapel").value;
             let judul = document.getElementById("upload-judul").value.trim();
@@ -128,73 +127,82 @@
                 return;
             }
 
-            // Batasi ukuran file maksimal 2 MB agar aman di localStorage browser
-            if (file.size > 2 * 1024 * 1024) {
-                alert("Ukuran file terlalu besar! Maksimal ukuran file PDF adalah 2 MB.");
+            if (file.size > 1.5 * 1024 * 1024) {
+                alert("Ukuran file terlalu besar! Maksimal ukuran file PDF adalah 1.5 MB untuk kestabilan Google Sheets.");
                 return;
             }
 
             let reader = new FileReader();
             reader.onload = function(e) {
                 let base64PDF = e.target.result;
-
-                let dataMateri = JSON.parse(localStorage.getItem("dataMateriPDF")) || [];
-                dataMateri.push({
+                let dataKirim = {
+                    action: "simpanMateri",
                     tanggal: new Date().toLocaleDateString(),
                     kelas: kelas,
                     mapel: mapel,
                     judul: judul,
                     fileData: base64PDF,
                     fileName: file.name
+                };
+
+                let btn = event.target;
+                btn.disabled = true;
+                btn.innerText = "Mengunggah PDF ke Cloud...";
+
+                fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dataKirim)
+                }).then(() => {
+                    alert("🎉 Materi PDF berhasil diunggah ke Google Sheets!");
+                    document.getElementById("upload-judul").value = "";
+                    document.getElementById("upload-file").value = "";
+                    btn.disabled = false;
+                    btn.innerText = "📤 Unggah & Simpan Materi ke Cloud";
+                    tampilkanDaftarMateri();
+                }).catch(err => {
+                    alert("Gagal mengunggah: " + err);
+                    btn.disabled = false;
+                    btn.innerText = "📤 Unggah & Simpan Materi ke Cloud";
                 });
-
-                localStorage.setItem("dataMateriPDF", JSON.stringify(dataMateri));
-
-                alert("🎉 Materi PDF berhasil diunggah!");
-                document.getElementById("upload-judul").value = "";
-                document.getElementById("upload-file").value = "";
-                tampilkanDaftarMateri();
             };
             reader.readAsDataURL(file);
         }
 
-        function tampilkanDaftarMateri() {
-            let dataMateri = JSON.parse(localStorage.getItem("dataMateriPDF")) || [];
-            let filterKelas = document.getElementById("filter-kelas-materi").value;
+        async function tampilkanDaftarMateri() {
             let tbody = document.getElementById("tabel-materi-body");
-            tbody.innerHTML = "";
+            let filterKelas = document.getElementById("filter-kelas-materi").value;
 
-            let dataFiltered = dataMateri.filter(item => {
-                return filterKelas ? item.kelas === filterKelas : true;
-            });
+            try {
+                let response = await fetch(SCRIPT_URL + "?action=getMateri");
+                let dataMateri = await response.json();
+                tbody.innerHTML = "";
 
-            if (dataFiltered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi PDF yang diunggah.</td></tr>`;
-                return;
-            }
+                let dataFiltered = dataMateri.filter(item => {
+                    return filterKelas ? item.kelas === filterKelas : true;
+                });
 
-            dataFiltered.forEach((materi, index) => {
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td><b>${materi.kelas}</b></td>
-                    <td><span class="badge badge-secondary">${materi.mapel}</span></td>
-                    <td class="font-weight-bold text-left">${materi.judul} <br><small class="text-muted font-weight-normal">${materi.fileName}</small></td>
-                    <td>
-                        <a href="${materi.fileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Preview Materi</a>
-                        <button class="btn btn-sm btn-outline-danger ml-1" onclick="hapusMateri(${index})">🗑️ Hapus</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+                if (dataFiltered.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi PDF di server.</td></tr>`;
+                    return;
+                }
 
-        function hapusMateri(index) {
-            if (confirm("Apakah Anda yakin ingin menghapus materi PDF ini?")) {
-                let dataMateri = JSON.parse(localStorage.getItem("dataMateriPDF")) || [];
-                dataMateri.splice(index, 1);
-                localStorage.setItem("dataMateriPDF", JSON.stringify(dataMateri));
-                tampilkanDaftarMateri();
+                dataFiltered.forEach((materi, index) => {
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td><b>${materi.kelas}</b></td>
+                        <td><span class="badge badge-secondary">${materi.mapel}</span></td>
+                        <td class="font-weight-bold text-left">${materi.judul} <br><small class="text-muted font-weight-normal">${materi.fileName}</small></td>
+                        <td>
+                            <a href="${materi.fileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Preview Materi</a>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data dari server. Periksa URL SCRIPT_URL Anda.</td></tr>`;
             }
         }
     </script>
