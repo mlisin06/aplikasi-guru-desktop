@@ -112,8 +112,8 @@ async function muatDataSoal() {
         const jenisLower = jenisDipilih.toLowerCase();
 
         soalTersaring = dataSoalList.filter(s => {
-            const j = String(s.jenis || "").trim().toLowerCase();
-            const kelasSoal = String(s.kelas || s.KELAS || "").trim().toLowerCase();
+            const j = String(s.jenis || s.Jenis || "").trim().toLowerCase();
+            const kelasSoal = String(s.kelas || s.Kelas || s.KELAS || "").trim().toLowerCase();
 
             let cocokKelas = true;
             if (kelasDipilih && kelasSoal) {
@@ -138,36 +138,43 @@ async function muatDataSoal() {
 
         let html = "";
         soalTersaring.forEach((soal, index) => {
+            let oA = soal.opsia || soal.opsiA || soal.OpsiA || soal.OPSIA || "-";
+            let oB = soal.opsib || soal.opsiB || soal.OpsiB || soal.OPSIB || "-";
+            let oC = soal.opsic || soal.opsiC || soal.OpsiC || soal.OPSIC || "-";
+            let oD = soal.opsid || soal.opsiD || soal.OpsiD || soal.OPSID || "-";
+            let pertanyaan = soal.pertanyaan || soal.Pertanyaan || soal.PERTANYAAN || "-";
+            let gambar = soal.gambar || soal.Gambar || soal.GAMBAR || "";
+
             if (jenisLower.includes("pilihan ganda")) {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                        <p style="font-weight:bold; margin-top:0;">${index + 1}. ${soal.pertanyaan}</p>
-                        <div><label><input type="radio" name="soal_${index}" value="A"> A. ${soal.opsiA || '-'}</label></div>
-                        <div><label><input type="radio" name="soal_${index}" value="B"> B. ${soal.opsiB || '-'}</label></div>
-                        <div><label><input type="radio" name="soal_${index}" value="C"> C. ${soal.opsiC || '-'}</label></div>
-                        <div><label><input type="radio" name="soal_${index}" value="D"> D. ${soal.opsiD || '-'}</label></div>
+                        <p style="font-weight:bold; margin-top:0;">${index + 1}. ${pertanyaan}</p>
+                        <div><label><input type="radio" name="soal_${index}" value="A"> A. ${oA}</label></div>
+                        <div><label><input type="radio" name="soal_${index}" value="B"> B. ${oB}</label></div>
+                        <div><label><input type="radio" name="soal_${index}" value="C"> C. ${oC}</label></div>
+                        <div><label><input type="radio" name="soal_${index}" value="D"> D. ${oD}</label></div>
                     </div>`;
             } else if (jenisLower.includes("essay") || jenisLower.includes("ringkasan")) {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                        <p style="font-weight:bold; margin-top:0;">${index + 1}. ${soal.pertanyaan}</p>
+                        <p style="font-weight:bold; margin-top:0;">${index + 1}. ${pertanyaan}</p>
                         <textarea name="soal_${index}" rows="4" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Tulis jawaban..."></textarea>
                     </div>`;
             } else if (jenisLower.includes("mencocokkan gambar")) {
                 html += `
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                        <p style="font-weight:bold;">${index + 1}. ${soal.pertanyaan}</p>
-                        <img src="${soal.gambar || ''}" style="max-width:150px; display:block; margin-bottom:8px;" onerror="this.style.display='none'">
+                        <p style="font-weight:bold;">${index + 1}. ${pertanyaan}</p>
+                        <img src="${gambar}" style="max-width:150px; display:block; margin-bottom:8px;" onerror="this.style.display='none'">
                         <select name="soal_${index}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
                             <option value="">-- Pilih Jawaban --</option>
-                            <option value="A">A. ${soal.opsiA || '-'}</option>
-                            <option value="B">B. ${soal.opsiB || '-'}</option>
-                            <option value="C">C. ${soal.opsiC || '-'}</option>
-                            <option value="D">D. ${soal.opsiD || '-'}</option>
+                            <option value="A">A. ${oA}</option>
+                            <option value="B">B. ${oB}</option>
+                            <option value="C">C. ${oC}</option>
+                            <option value="D">D. ${oD}</option>
                         </select>
                     </div>`;
             } else if (jenisLower.includes("puzzle kata")) {
-                let kataAsli = String(soal.pertanyaan || "").trim();
+                let kataAsli = String(pertanyaan).trim();
                 let hurufArray = kataAsli.split('');
                 for (let i = hurufArray.length - 1; i > 0; i--) {
                     let j = Math.floor(Math.random() * (i + 1));
@@ -189,7 +196,7 @@ async function muatDataSoal() {
     }
 }
 
-// 3. Mengirim Jawaban Siswa dengan Rekaman Detail Rinci Jawaban
+// 3. Mengirim Jawaban Siswa
 function kirimJawabanSiswa() {
     const selectKelas = document.getElementById("select-kelas");
     const selectSiswa = document.getElementById("select-siswa");
@@ -228,17 +235,15 @@ function kirimJawabanSiswa() {
         else if (inputText) val = inputText.value.trim().toUpperCase();
         else if (inputTextarea) val = inputTextarea.value;
 
-        if (soal.kunci && val === String(soal.kunci).trim().toUpperCase()) {
+        let kunciJawaban = String(soal.kunci || soal.Kunci || "").trim().toUpperCase();
+        if (kunciJawaban && val === kunciJawaban) {
             jumlahBenar++;
         }
 
-        // Simpan rincian jawaban per nomor soal
         hasilJawabanText.push(`S${index + 1}:${val || '-'}`);
     });
 
     let nilaiAkhir = totalSoal > 0 ? Math.round((jumlahBenar / totalSoal) * 100) : 0;
-    
-    // Gabungkan ringkasan skor dan detail jawaban anak ke dalam kolom keterangan
     let ket = `${jumlahBenar}/${totalSoal} benar | Detail: [${hasilJawabanText.join(", ")}]`;
 
     const params = new URLSearchParams({
@@ -270,7 +275,7 @@ function kirimJawabanSiswa() {
         });
 }
 
-// 4. Memuat Histori Nilai Siswa (Opsional jika ingin ditampilkan di halaman siswa)
+// 4. Memuat Histori Nilai Siswa
 async function muatHistoriSiswa() {
     const selectSiswa = document.getElementById("select-siswa");
     const wadahHistori = document.getElementById("container-histori");
