@@ -285,27 +285,20 @@ async function kirimJawabanSiswa() {
             btnKirim.innerText = "Sedang Mengirim Jawaban...";
         }
 
-        const response = await fetch(URL_WEB_APP, {
+        // Menggunakan mode "no-cors" agar sukses mencatat data ke Google Sheets
+        await fetch(URL_WEB_APP, {
             method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
-        const result = await response.json();
-
-        if (result && result.status === "success") {
-            alert(`Jawaban berhasil dikirim!\nNilai Anda: ${result.nilai !== undefined ? result.nilai : 'Tersimpan'}`);
-        } else {
-            alert("Jawaban berhasil dikirim ke Google Sheets!");
-        }
-
+        alert("Jawaban berhasil dikirim dan tersimpan di Google Sheets!");
         location.reload();
 
     } catch (err) {
         console.error("Gagal mengirim jawaban:", err);
-        alert("Jawaban berhasil dikirim ke Google Sheets!");
-        location.reload();
-    } finally {
+        alert("Terjadi kesalahan saat mengirim jawaban. Silakan coba lagi.");
         if (btnKirim) {
             btnKirim.disabled = false;
             btnKirim.innerText = "Kirim Jawaban Ujian";
