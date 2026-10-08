@@ -317,7 +317,6 @@
             });
 
             htmlContent += `</div>`;
-            areaSoal.htmlContent = htmlContent;
             document.getElementById("area-soal").innerHTML = htmlContent;
         }
 
@@ -355,8 +354,15 @@
             let mapel = parts[0];
             let jenis = parts.slice(1).join(" - ");
 
-            // Nilai otomatis sementara (bisa disesuaikan nanti dengan koreksi soal)
-            let nilaiAkhir = 85; 
+            // Atur nilai otomatis 100 untuk PG/Puzzle, atau "Menunggu Koreksi" untuk Essay/Merangkum
+            let nilaiAkhir = 100;
+            let keteranganStatus = "Selesai Mengerjakan";
+            let jenisLower = jenis.toLowerCase();
+
+            if (jenisLower.includes("essay") || jenisLower.includes("merangkum materi")) {
+                nilaiAkhir = "Menunggu Koreksi";
+                keteranganStatus = "Perlu Dinilai Guru";
+            }
 
             let dataKirim = {
                 action: "simpanNilaiGET",
@@ -366,7 +372,7 @@
                 mapel: mapel,
                 jenis: jenis,
                 nilai: nilaiAkhir,
-                keterangan: "Selesai Mengerjakan"
+                keterangan: keteranganStatus
             };
 
             let btn = event.target;
@@ -377,7 +383,7 @@
 
             try {
                 await fetch(SCRIPT_URL + "?" + params.toString(), { mode: "no-cors" });
-                alert("🎉 Berhasil! Jawaban dan nilai Anda telah tersimpan di sistem guru.");
+                alert("🎉 Berhasil! Jawaban Anda telah tersimpan di sistem guru.");
                 btn.disabled = false;
                 btn.innerText = "🚀 Selesai & Kirim Jawaban";
                 location.reload();
