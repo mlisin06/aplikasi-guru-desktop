@@ -102,8 +102,11 @@
                 tbody.innerHTML = "";
 
                 let dataFiltered = dataNilai.filter(item => {
-                    let matchKelas = filterKelas ? String(item.kelas || "").trim() === filterKelas : true;
-                    let matchMapel = filterMapel ? String(item.mapel || "").trim() === filterMapel : true;
+                    let kls = String(item.kelas || item.Kelas || "").trim();
+                    let mpl = String(item.mapel || item.Mata Pelajaran || item.Mapel || "").trim();
+                    
+                    let matchKelas = filterKelas ? kls === filterKelas : true;
+                    let matchMapel = filterMapel ? mpl === filterMapel : true;
                     return matchKelas && matchMapel;
                 });
 
@@ -114,9 +117,9 @@
 
                 let rekapMap = {};
                 dataFiltered.forEach(item => {
-                    let kls = String(item.kelas || "").trim();
-                    let nms = String(item.nama || "").trim();
-                    let mpl = String(item.mapel || "").trim();
+                    let kls = String(item.kelas || item.Kelas || "").trim();
+                    let nms = String(item.nama || item["Nama Siswa"] || item.Nama || "").trim();
+                    let mpl = String(item.mapel || item["Mata Pelajaran"] || item.Mapel || "").trim();
                     let key = `${kls}_${nms}_${mpl}`;
 
                     if (!rekapMap[key]) {
@@ -131,10 +134,11 @@
                         };
                     }
                     
-                    let jenisSoal = String(item.jenis || "").trim();
-                    let valNilai = Number(item.nilai);
+                    let jenisSoal = String(item.jenis || item["Jenis Kuis"] || item.Jenis || "").trim();
+                    let valNilai = item.nilai !== undefined ? item.nilai : item.Nilai;
+
                     if (rekapMap[key].hasOwnProperty(jenisSoal)) {
-                        rekapMap[key][jenisSoal] = isNaN(valNilai) ? item.nilai : valNilai;
+                        rekapMap[key][jenisSoal] = valNilai;
                     }
                 });
 
@@ -148,9 +152,12 @@
                     let jenisKuisList = ["Pilihan Ganda", "Puzzle Kata", "Essay", "Merangkum Materi"];
                     jenisKuisList.forEach(jenis => {
                         let val = row[jenis];
-                        if (val !== null && val !== undefined && typeof val === 'number') {
-                            totalNilai += val;
-                            jumlahDikerjakan++;
+                        if (val !== null && val !== undefined && val !== "") {
+                            let num = Number(val);
+                            if (!isNaN(num)) {
+                                totalNilai += num;
+                                jumlahDikerjakan++;
+                            }
                         }
                     });
 
@@ -158,10 +165,13 @@
                     let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
 
                     let renderKolom = (val) => {
-                        if (val === null || val === undefined) {
+                        if (val === null || val === undefined || val === "") {
                             return '<span class="badge badge-warning" style="font-size: 10px;">Belum Dikerjakan</span>';
-                        } else if (typeof val === 'number') {
-                            return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
+                        }
+                        let num = Number(val);
+                        if (isNaN(num)) {
+                            // Untuk Essay / Merangkum Materi yang statusnya teks (misal: "Menunggu Koreksi")
+                            return `<span class="badge badge-info px-2 py-1" style="font-size: 11px;">${val}</span>`;
                         }
                         return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
                     };
