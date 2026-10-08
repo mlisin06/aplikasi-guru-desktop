@@ -274,8 +274,14 @@
                 let jenisItem = String(item.jenis || item.Jenis || item.JENIS || "").trim();
                 let pertanyaan = item.pertanyaan || item.soal || item.PERTANYAAN || "";
 
-                htmlContent += `<div class="card p-3 mb-3 border shadow-sm">`;
-                htmlContent += `<p class="font-weight-bold"><b>Soal ${index + 1} (${jenisItem}):</b> ${pertanyaan}</p>`;
+              htmlContent += `<div class="card p-3 mb-3 border shadow-sm">`;
+                
+                // Jika jenisnya Puzzle Kata, sembunyikan kata aslinya dari judul
+                if (jenisItem.toLowerCase() === "puzzle kata") {
+                    htmlContent += `<p class="font-weight-bold text-primary"><b>Soal ${index + 1} (Puzzle Kata)</b></p>`;
+                } else {
+                    htmlContent += `<p class="font-weight-bold"><b>Soal ${index + 1} (${jenisItem}):</b> ${pertanyaan}</p>`;
+                }
 
                 if (jenisItem.toLowerCase() === "pilihan ganda") {
                     let optA = item.opsia || item.opsiA || item.OpsiA || "";
