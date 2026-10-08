@@ -18,6 +18,7 @@
     .match-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .match-item { flex: 1; text-align: center; }
     .match-item img { max-width: 100%; max-height: 120px; border-radius: 6px; }
+    .mt-3 { margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -25,36 +26,48 @@
   <div class="container">
     <h2>EduAdmin Pro - Panel Ujian Siswa</h2>
 
-    <!-- Identitas Siswa -->
+    <!-- Pilih Kelas -->
     <div class="form-group">
-      <label for="select-siswa">Pilih Nama Siswa:</label>
-      <select id="select-siswa">
-        <option value="">-- Memuat Data Siswa... --</option>
+      <label for="select-kelas">Pilih Kelas:</label>
+      <select id="select-kelas">
+        <option value="">-- Memuat Kelas... --</option>
       </select>
     </div>
 
-    <!-- Pilihan Jenis Kuis Interaktif -->
+    <!-- Pilih Nama Siswa -->
     <div class="form-group">
-      <label for="select-jenis">Pilih Jenis Kuis / Modul:</label>
-      <select id="select-jenis" onchange="muatDataSoal()">
-        <option value="pg">1. Soal PG & Essay</option>
-        <option value="gambar">2. Mencocokkan Gambar</option>
-        <option value="kata">3. Mencocokkan Kata</option>
-        <option value="rangkum">4. Merangkum Materi</option>
+      <label for="select-siswa">Pilih Nama Siswa:</label>
+      <select id="select-siswa" disabled>
+        <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
+      </select>
+    </div>
+
+    <!-- Pilihan Jenis Kuis / Modul -->
+    <div class="form-group">
+      <label for="select-modul">Pilih Jenis Kuis / Modul:</label>
+      <select id="select-modul">
+        <option value="pilihan ganda">1. Soal PG & Essay</option>
+        <option value="mencocokkan gambar">2. Mencocokkan Gambar</option>
+        <option value="puzzle kata">3. Puzzle Kata</option>
+        <option value="ringkasan">4. Merangkum Materi</option>
       </select>
     </div>
 
     <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;">
 
     <!-- Dynamic Container Tempat Soal Tampil Sesuai Mode -->
-    <div id="wadah-soal">
+    <div id="container-soal">
       <p style="text-align: center; color: #64748b;">Memuat kuis...</p>
     </div>
 
     <!-- Tombol Kirim -->
-    <button class="btn-kirim" onclick="kirimJawaban()">Selesai & Kirim Jawaban</button>
+    <button class="btn-kirim" onclick="kirimJawabanSiswa()">Selesai & Kirim Jawaban</button>
+
+    <!-- Wadah Histori Nilai Siswa -->
+    <div id="container-histori" class="mt-3"></div>
   </div>
 
+  <!-- Memanggil file script eksternal -->
   <script src="siswa.js"></script>
 </body>
 </html>
