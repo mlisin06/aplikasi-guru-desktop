@@ -143,7 +143,7 @@
                 dropdownNama.appendChild(opt);
             });
 
-            // 2. Ambil ulang data soal terbaru dari server setiap kali kelas dipilih agar selalu sinkron
+            // 2. Ambil ulang data soal terbaru dari server saat kelas dipilih
             let dropdownKuis = document.getElementById("pilih-jenis-kuis");
             dropdownKuis.innerHTML = `<option value="">-- Memuat soal dari server... --</option>`;
             
@@ -155,6 +155,7 @@
                     console.error("Gagal memuat soal:", e);
                 }
 
+                // Menggunakan properti huruf kecil karena getJsonData mengubah header menjadi lowercase
                 let soalKelasIni = semuaSoal.filter(s => {
                     let kSoal = String(s.kelas || s.Kelas || "").trim();
                     return kSoal.toLowerCase() === kelasDipilih.toLowerCase();
@@ -214,7 +215,6 @@
                 let dataMateri = await response.json();
                 tbody.innerHTML = "";
 
-                // Filter materi berdasarkan kelas siswa yang dipilih
                 let dataFiltered = dataMateri.filter(item => {
                     let mKelas = String(item.kelas || item.Kelas || "").trim();
                     return mKelas.toLowerCase() === kelasSiswa.toLowerCase();
