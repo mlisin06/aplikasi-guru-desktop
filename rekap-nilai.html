@@ -19,7 +19,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <div>
                     <h3 class="text-success font-weight-bold mb-1">📊 Rekap Nilai & Tugas Online</h3>
-                    <p class="text-muted small mb-0">Data nilai ditarik langsung secara real-time dari Google Sheets.</p>
+                    <p class="text-muted small mb-0">Data nilai & detail jawaban ditarik langsung secara real-time dari Google Sheets.</p>
                 </div>
                 <div class="mt-2 mt-md-0">
                     <button class="btn btn-outline-danger btn-sm font-weight-bold" onclick="hapusSemuaNilaiOnline()">🗑️ Kosongkan Data Nilai</button>
@@ -83,6 +83,34 @@
         </div>
     </div>
 
+    <!-- Modal Pop-up untuk Membaca Detail Jawaban Siswa -->
+    <div class="modal fade" id="modalDetailJawaban" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title font-weight-bold" id="modalLabel">📝 Rincian Detail Jawaban / Rangkuman Siswa</h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="info-siswa-detail" class="font-weight-bold text-secondary mb-3"></p>
+            <div class="p-3 bg-light border rounded" style="white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto;" id="isi-detail-jawaban">
+              -
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script jQuery, Popper, dan Bootstrap JS untuk Modal -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
 
@@ -128,22 +156,27 @@
                                 "Pilihan Ganda": null,
                                 "Puzzle Kata": null,
                                 "Essay": null,
-                                "Merangkum Materi": null
+                                "Merangkum Materi": null,
+                                detailJawabanMap: {}
                             };
                         }
                         
                         let jenisSoal = String(item.jenis || item["Jenis Kuis"] || item.Jenis || item.JENIS || "").trim().toLowerCase();
                         let valNilai = item.nilai !== undefined ? item.nilai : (item.Nilai !== undefined ? item.Nilai : "");
+                        let valDetail = item.detail || item["Detail Jawaban"] || item.DETAIL || "-";
 
-                        // Pencocokan jenis soal yang lebih akurat
                         if (jenisSoal.includes("pilihan ganda")) {
                             rekapMap[key]["Pilihan Ganda"] = valNilai;
+                            rekapMap[key].detailJawabanMap["Pilihan Ganda"] = valDetail;
                         } else if (jenisSoal.includes("puzzle")) {
                             rekapMap[key]["Puzzle Kata"] = valNilai;
+                            rekapMap[key].detailJawabanMap["Puzzle Kata"] = valDetail;
                         } else if (jenisSoal.includes("essay") || jenisSoal.includes("esai")) {
                             rekapMap[key]["Essay"] = valNilai;
+                            rekapMap[key].detailJawabanMap["Essay"] = valDetail;
                         } else if (jenisSoal.includes("merangkum") || jenisSoal.includes("materi")) {
                             rekapMap[key]["Merangkum Materi"] = valNilai;
+                            rekapMap[key].detailJawabanMap["Merangkum Materi"] = valDetail;
                         }
                     }
                 });
@@ -176,15 +209,28 @@
                     let nilaiAkhir = jumlahDikerjakan > 0 ? Math.round(totalNilai / jumlahDikerjakan) : 0;
                     let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
 
-                    let renderKolom = (val) => {
+                    let renderKolom = (jenisKuisName) => {
+                        let val = row[jenisKuisName];
+                        let detailTeks = row.detailJawabanMap[jenisKuisName] || "Tidak ada rincian detail.";
+
                         if (val === null || val === undefined || val === "") {
                             return '<span class="badge badge-warning" style="font-size: 10px;">Belum Dikerjakan</span>';
                         }
+                        
                         let num = Number(val);
+                        let safeDetail = encodeURIComponent(detailTeks);
+                        let safeInfo = encodeURIComponent(`${row.nama} (${row.kelas}) - ${row.mapel} [${jenisKuisName}]`);
+
                         if (isNaN(num)) {
-                            return `<span class="badge badge-info px-2 py-1" style="font-size: 11px;">${val}</span>`;
+                            return `
+                                <div class="mb-1"><span class="badge badge-info px-2 py-1" style="font-size: 11px;">${val}</span></div>
+                                <button class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 10px;" onclick="bukaModalDetail('${safeInfo}', '${safeDetail}')">👀 Lihat Detail</button>
+                            `;
                         }
-                        return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
+                        return `
+                            <div class="mb-1"><span class="badge badge-light border px-2 py-1 font-weight-bold">${val}</span></div>
+                            <button class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 9px;" onclick="bukaModalDetail('${safeInfo}', '${safeDetail}')">📁 Cek Jawaban</button>
+                        `;
                     };
 
                     let tr = document.createElement("tr");
@@ -193,10 +239,10 @@
                         <td><b>${row.kelas}</b></td>
                         <td class="font-weight-bold text-left">${row.nama}</td>
                         <td><span class="badge badge-secondary">${row.mapel}</span></td>
-                        <td>${renderKolom(row["Pilihan Ganda"])}</td>
-                        <td>${renderKolom(row["Puzzle Kata"])}</td>
-                        <td>${renderKolom(row["Essay"])}</td>
-                        <td>${renderKolom(row["Merangkum Materi"])}</td>
+                        <td>${renderKolom("Pilihan Ganda")}</td>
+                        <td>${renderKolom("Puzzle Kata")}</td>
+                        <td>${renderKolom("Essay")}</td>
+                        <td>${renderKolom("Merangkum Materi")}</td>
                         <td>${jumlahDikerjakan > 0 ? `<span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span>` : '<span class="text-muted">-</span>'}</td>
                     `;
                     tbody.appendChild(tr);
@@ -205,6 +251,16 @@
                 console.error(e);
                 tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal memuat rekap nilai dari server.</td></tr>`;
             }
+        }
+
+        function bukaModalDetail(infoSiswa, encodedDetail) {
+            let decodedInfo = decodeURIComponent(infoSiswa);
+            let decodedDetail = decodeURIComponent(encodedDetail);
+
+            document.getElementById("info-siswa-detail").textContent = decodedInfo;
+            document.getElementById("isi-detail-jawaban").textContent = decodedDetail;
+
+            $('#modalDetailJawaban').modal('show');
         }
 
         function hapusSemuaNilaiOnline() {
