@@ -290,15 +290,15 @@
                         <div class="custom-control custom-radio mb-2"><input type="radio" id="${idSoal}_D" name="${idSoal}" value="D" class="custom-control-input"><label class="custom-control-label" for="${idSoal}_D">D. ${optD}</label></div>
                     `;
                 } 
-                else if (jenisItem.toLowerCase() === "puzzle kata") {
+               else if (jenisItem.toLowerCase() === "puzzle kata") {
                     let kataAsli = pertanyaan.trim();
                     let kataAcak = acakKata(kataAsli);
                     htmlContent += `
-                        <p class="text-info small mb-1">🔤 Susunlah kata/kalimat acak berikut menjadi benar:</p>
-                        <div class="alert alert-secondary font-weight-bold text-center py-2 mb-2" style="letter-spacing: 2px;">${kataAcak}</div>
+                        <p class="text-info small mb-1">🔤 Susunlah huruf-huruf acak berikut menjadi kata yang benar:</p>
+                        <div class="alert alert-secondary font-weight-bold text-center py-2 mb-2" style="letter-spacing: 3px; font-size: 20px;">${kataAcak}</div>
                         <input type="text" class="form-control" name="${idSoal}" placeholder="Ketik susunan kata yang benar di sini...">
                     `;
-                } 
+                }
                 else if (jenisItem.toLowerCase() === "merangkum materi") {
                     htmlContent += `
                         <p class="text-muted small mb-1">✍️ Tuliskan rangkuman materi (minimal 300 karakter):</p>
