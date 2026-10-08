@@ -112,7 +112,6 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             ambilDataSiswaServer();
-            ambilDataSoalServer();
         });
 
         async function ambilDataSiswaServer() {
@@ -124,16 +123,7 @@
             }
         }
 
-        async function ambilDataSoalServer() {
-            try {
-                let response = await fetch(SCRIPT_URL + "?action=getSoal");
-                semuaSoal = await response.json();
-            } catch (e) {
-                console.error("Gagal memuat daftar soal:", e);
-            }
-        }
-
-        function pilihKelasAction() {
+        async function pilihKelasAction() {
             let kelasDipilih = document.getElementById("kelas-siswa").value.trim();
             
             // 1. Filter Nama Siswa berdasarkan Kelas
@@ -153,16 +143,24 @@
                 dropdownNama.appendChild(opt);
             });
 
-            // 2. Filter Dropdown Jenis Kuis berdasarkan Kelas
+            // 2. Ambil ulang data soal terbaru dari server setiap kali kelas dipilih agar selalu sinkron
             let dropdownKuis = document.getElementById("pilih-jenis-kuis");
-            dropdownKuis.innerHTML = `<option value="">-- Pilih Kuis / Mapel --</option>`;
+            dropdownKuis.innerHTML = `<option value="">-- Memuat soal dari server... --</option>`;
             
             if (kelasDipilih) {
+                try {
+                    let response = await fetch(SCRIPT_URL + "?action=getSoal");
+                    semuaSoal = await response.json();
+                } catch (e) {
+                    console.error("Gagal memuat soal:", e);
+                }
+
                 let soalKelasIni = semuaSoal.filter(s => {
                     let kSoal = String(s.kelas || s.Kelas || "").trim();
                     return kSoal.toLowerCase() === kelasDipilih.toLowerCase();
                 });
                 
+                dropdownKuis.innerHTML = `<option value="">-- Pilih Kuis / Mapel --</option>`;
                 let daftarUnikKuis = [];
                 
                 soalKelasIni.forEach(s => {
