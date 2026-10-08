@@ -83,21 +83,47 @@
         </div>
     </div>
 
-    <!-- Modal Pop-up untuk Membaca Detail Jawaban Siswa -->
+    <!-- Modal Pop-up untuk Membaca Detail Jawaban & Berikan Nilai Langsung -->
     <div class="modal fade" id="modalDetailJawaban" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header bg-success text-white">
-            <h5 class="modal-title font-weight-bold" id="modalLabel">📝 Rincian Detail Jawaban / Rangkuman Siswa</h5>
+            <h5 class="modal-title font-weight-bold" id="modalLabel">📝 Koreksi & Detail Jawaban Siswa</h5>
             <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
             <p id="info-siswa-detail" class="font-weight-bold text-secondary mb-3"></p>
-            <div class="p-3 bg-light border rounded" style="white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto;" id="isi-detail-jawaban">
-              -
+            
+            <div class="form-group mb-3">
+                <label class="small font-weight-bold text-dark">Rincian Jawaban/Ketikan Siswa:</label>
+                <div class="p-3 bg-light border rounded" style="white-space: pre-wrap; word-break: break-word; max-height: 250px; overflow-y: auto;" id="isi-detail-jawaban">
+                  -
+                </div>
             </div>
+
+            <hr>
+
+            <!-- Form Guru Memberikan Nilai Langsung -->
+            <div class="bg-info-soft p-3 border rounded bg-light">
+                <label class="font-weight-bold text-success mb-2">⭐ Berikan / Ubah Nilai Tugas Ini (Skor 0 - 100):</label>
+                <div class="form-row align-items-center">
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <input type="number" id="input-nilai-guru" class="form-control" placeholder="Contoh: 85" min="0" max="100">
+                        <input type="hidden" id="hidden-nama-siswa">
+                        <input type="hidden" id="hidden-kelas-siswa">
+                        <input type="hidden" id="hidden-mapel-siswa">
+                        <input type="hidden" id="hidden-jenis-kuis">
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-success font-weight-bold btn-block shadow-sm" onclick="simpanNilaiDariGuru()">
+                            💾 Simpan Nilai ke Server
+                        </button>
+                    </div>
+                </div>
+            </div>
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
@@ -219,17 +245,14 @@
                         
                         let num = Number(val);
                         let safeDetail = encodeURIComponent(detailTeks);
-                        let safeInfo = encodeURIComponent(`${row.nama} (${row.kelas}) - ${row.mapel} [${jenisKuisName}]`);
+                        let currentNilaiVal = isNaN(num) ? "" : val;
 
-                        if (isNaN(num)) {
-                            return `
-                                <div class="mb-1"><span class="badge badge-info px-2 py-1" style="font-size: 11px;">${val}</span></div>
-                                <button class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 10px;" onclick="bukaModalDetail('${safeInfo}', '${safeDetail}')">👀 Lihat Detail</button>
-                            `;
-                        }
+                        let btnLabel = isNaN(num) ? "👀 Periksa & Nilai" : "✏️ Ubah Nilai";
+                        let btnClass = isNaN(num) ? "btn-outline-primary" : "btn-outline-secondary";
+
                         return `
-                            <div class="mb-1"><span class="badge badge-light border px-2 py-1 font-weight-bold">${val}</span></div>
-                            <button class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 9px;" onclick="bukaModalDetail('${safeInfo}', '${safeDetail}')">📁 Cek Jawaban</button>
+                            <div class="mb-1"><span class="badge ${isNaN(num) ? 'badge-info' : 'badge-light border'} px-2 py-1">${val}</span></div>
+                            <button class="btn ${btnClass} btn-sm py-0 px-2" style="font-size: 10px;" onclick="bukaModalKoreksi('${row.nama}', '${row.kelas}', '${row.mapel}', '${jenisKuisName}', '${safeDetail}', '${currentNilaiVal}')">${btnLabel}</button>
                         `;
                     };
 
@@ -253,14 +276,57 @@
             }
         }
 
-        function bukaModalDetail(infoSiswa, encodedDetail) {
-            let decodedInfo = decodeURIComponent(infoSiswa);
+        function bukaModalKoreksi(nama, kelas, mapel, jenisKuis, encodedDetail, nilaiSekarang) {
             let decodedDetail = decodeURIComponent(encodedDetail);
 
-            document.getElementById("info-siswa-detail").textContent = decodedInfo;
+            document.getElementById("info-siswa-detail").textContent = `${nama} (${kelas}) - ${mapel} [${jenisKuis}]`;
             document.getElementById("isi-detail-jawaban").textContent = decodedDetail;
+            document.getElementById("input-nilai-guru").value = nilaiSekarang;
+
+            // Simpan data tersembunyi untuk referensi saat disimpan
+            document.getElementById("hidden-nama-siswa").value = nama;
+            document.getElementById("hidden-kelas-siswa").value = kelas;
+            document.getElementById("hidden-mapel-siswa").value = mapel;
+            document.getElementById("hidden-jenis-kuis").value = jenisKuis;
 
             $('#modalDetailJawaban').modal('show');
+        }
+
+        async function simpanNilaiDariGuru() {
+            let nama = document.getElementById("hidden-nama-siswa").value;
+            let kelas = document.getElementById("hidden-kelas-siswa").value;
+            let mapel = document.getElementById("hidden-mapel-siswa").value;
+            let jenis = document.getElementById("hidden-jenis-kuis").value;
+            let nilaiBaru = document.getElementById("input-nilai-guru").value.trim();
+
+            if (nilaiBaru === "" || isNaN(nilaiBaru) || Number(nilaiBaru) < 0 || Number(nilaiBaru) > 100) {
+                alert("Harap masukkan angka nilai yang valid antara 0 sampai 100!");
+                return;
+            }
+
+            let dataKirim = {
+                action: "simpanNilaiGET",
+                tanggal: new Date().toLocaleDateString("id-ID"),
+                nama: nama,
+                kelas: kelas,
+                mapel: mapel,
+                jenis: jenis,
+                nilai: Number(nilaiBaru),
+                keterangan: "Dinilai Guru",
+                detail: document.getElementById("isi-detail-jawaban").textContent
+            };
+
+            let params = new URLSearchParams(dataKirim);
+
+            try {
+                $('#modalDetailJawaban').modal('hide');
+                alert("⏳ Menyimpan nilai ke server Google Sheets...");
+                await fetch(SCRIPT_URL + "?" + params.toString(), { mode: "no-cors" });
+                alert("🎉 Berhasil! Nilai siswa telah diperbarui.");
+                tampilkanRekapNilaiOnline();
+            } catch (err) {
+                alert("Gagal menyimpan nilai: " + err);
+            }
         }
 
         function hapusSemuaNilaiOnline() {
