@@ -11,19 +11,20 @@
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
         .form-control { border-radius: 10px; padding: 10px 15px; height: calc(1.5em + 1rem + 2px); }
         .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+        .box-materi-info { background: #e8f4fd; border-left: 5px solid #17a2b8; border-radius: 10px; }
     </style>
 </head>
 <body>
     <div class="container py-5">
         <div class="card card-custom p-4 mb-4 text-center bg-primary text-white shadow-sm">
             <h2 class="font-weight-bold mb-2">🎓 EduAdmin Pro - Panel Siswa</h2>
-            <p class="mb-0 text-white-50">Silakan pilih kelas, nama, dan jenis menu yang ingin diakses.</p>
+            <p class="mb-0 text-white-50">Silakan pilih kelas dan nama Anda terlebih dahulu.</p>
         </div>
 
-        <!-- Form Identitas & Pilihan Menu -->
+        <!-- Form Identitas Siswa -->
         <div class="card card-custom p-4 mb-4">
             <div class="form-row">
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-6">
                     <label class="small font-weight-bold">Pilih Kelas:</label>
                     <select id="kelas-siswa" class="form-control" onchange="muatSiswaBerdasarkanKelas()">
                         <option value="">-- Pilih Kelas --</option>
@@ -35,51 +36,69 @@
                         <option value="Kelas 6">Kelas 6</option>
                     </select>
                 </div>
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-6">
                     <label class="small font-weight-bold">Pilih Nama Siswa:</label>
                     <select id="nama-siswa" class="form-control">
                         <option value="">-- Pilih Nama --</option>
                     </select>
                 </div>
-                <div class="form-group col-md-4">
-                    <label class="small font-weight-bold">Pilih Jenis Kuis / Modul:</label>
-                    <select id="pilih-jenis" class="form-control" onchange="cekPilihanMenu()">
-                        <option value="soal">📝 Soal PG & Essay</option>
-                        <option value="materi">📖 Baca Materi & Modul PDF</option>
-                    </select>
+            </div>
+        </div>
+
+        <!-- BOX KHUSUS BACA MATERI DULU (Petunjuk & Akses Materi PDF) -->
+        <div class="card card-custom p-4 mb-4 box-materi-info shadow-sm">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h5 class="font-weight-bold text-info mb-1">📚 Petunjuk Belajar & Modul Materi</h5>
+                    <p class="text-muted small mb-0"><b>Penting:</b> Silakan baca materi atau modul pembelajaran terlebih dahulu di bawah ini sebelum mulai mengerjakan soal ujian.</p>
+                </div>
+                <button type="button" class="btn btn-info btn-custom text-white mt-2 mt-md-0 shadow-sm" onclick="toggleBoxMateri()">
+                    📂 Buka / Sembunyikan Daftar Materi
+                </button>
+            </div>
+
+            <!-- Kontainer Daftar Materi (Bisa dibuka/tutup) -->
+            <div id="wrapper-materi-list" class="mt-3" style="display: none;">
+                <hr>
+                <h6 class="font-weight-bold text-dark mb-2">Daftar Modul / Bahan Bacaan Sesuai Kelas Anda:</h6>
+                <div class="table-responsive bg-white rounded p-2">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th width="5%">No</th>
+                                <th width="30%">Mata Pelajaran</th>
+                                <th width="45%">Judul Materi</th>
+                                <th width="20%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-materi-siswa-body">
+                            <tr><td colspan="4" class="text-center text-muted py-3">Silakan pilih kelas terlebih dahulu di atas.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Container Soal (PG & Essay) -->
+        <!-- Pilihan Jenis Kuis & Lembar Ujian -->
+        <div class="card card-custom p-4 mb-4">
+            <div class="form-group">
+                <label class="small font-weight-bold">Pilih Jenis Kuis / Mata Pelajaran Ujian:</label>
+                <select id="pilih-jenis-kuis" class="form-control">
+                    <option value="soal">📝 Soal Ujian (PG & Essay)</option>
+                    <!-- Anda bisa menambahkan opsi mapel spesifik lainnya di sini jika diperlukan -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Container Soal Ujian -->
         <div id="container-soal" class="card card-custom p-4 mb-4">
-            <h4 class="text-primary font-weight-bold mb-3">📝 Lembar Ujian / Kuis</h4>
+            <h4 class="text-success font-weight-bold mb-3">📝 Lembar Pengerjaan Soal</h4>
             <div id="area-soal" class="text-center text-muted py-4">
-                Silakan pilih kelas, nama siswa, dan pastikan soal tersedia.
+                Silakan pilih Kelas dan Nama siswa di atas untuk memuat soal ujian.
             </div>
             <button type="button" class="btn btn-success btn-custom btn-block mt-3 shadow-sm" onclick="kirimJawaban()">
                 🚀 Selesai & Kirim Jawaban
             </button>
-        </div>
-
-        <!-- Container Materi PDF (Terfilter Otomatis) -->
-        <div id="container-materi" class="card card-custom p-4 mb-4" style="display: none;">
-            <h4 class="text-success font-weight-bold mb-3">📖 Daftar Materi & Bahan Bacaan Sesuai Kelas</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th width="5%">No</th>
-                            <th width="25%">Mata Pelajaran</th>
-                            <th width="50%">Judul Materi</th>
-                            <th width="20%">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabel-materi-siswa-body">
-                        <tr><td colspan="4" class="text-center text-muted py-3">Memuat materi...</td></tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
 
         <div class="text-center">
@@ -109,33 +128,26 @@
             let dropdownNama = document.getElementById("nama-siswa");
             dropdownNama.innerHTML = `<option value="">-- Pilih Nama --</option>`;
 
-            let filterSiswa = semuaSiswa.filter(s => s.kelas === kelasDipilih);
+            let filterSiswa = semuaSiswa.filter(s => (s.kelas || s.Kelas) === kelasDipilih);
             filterSiswa.forEach(s => {
+                let namaVal = s.nama || s.Nama;
                 let opt = document.createElement("option");
-                opt.value = s.nama || s.Nama;
-                opt.textContent = s.nama || s.Nama;
+                opt.value = namaVal;
+                opt.textContent = namaVal;
                 dropdownNama.appendChild(opt);
             });
 
-            // Jika posisi menu sedang di tab materi, perbarui juga daftarnya
-            let jenis = document.getElementById("pilih-jenis").value;
-            if (jenis === "materi") {
-                muatMateriSiswa();
-            }
+            // Otomatis update daftar materi saat kelas berubah
+            muatMateriSiswa();
         }
 
-        function cekPilihanMenu() {
-            let jenis = document.getElementById("pilih-jenis").value;
-            let containerSoal = document.getElementById("container-soal");
-            let containerMateri = document.getElementById("container-materi");
-
-            if (jenis === "materi") {
-                containerSoal.style.display = "none";
-                containerMateri.style.display = "block";
+        function toggleBoxMateri() {
+            let wrapper = document.getElementById("wrapper-materi-list");
+            if (wrapper.style.display === "none") {
+                wrapper.style.display = "block";
                 muatMateriSiswa();
             } else {
-                containerSoal.style.display = "block";
-                containerMateri.style.display = "none";
+                wrapper.style.display = "none";
             }
         }
 
@@ -144,22 +156,22 @@
             let tbody = document.getElementById("tabel-materi-siswa-body");
             
             if (!kelasSiswa) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-warning py-3">Harap pilih Kelas terlebih dahulu di atas!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-warning py-3">Harap pilih Kelas terlebih dahulu di bagian atas!</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Memuat materi...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Memuat materi dari server...</td></tr>`;
 
             try {
                 let response = await fetch(SCRIPT_URL + "?action=getMateri");
                 let dataMateri = await response.json();
                 tbody.innerHTML = "";
 
-                // Filter materi berdasarkan kelas yang dipilih siswa
+                // Filter materi berdasarkan kelas siswa yang dipilih
                 let dataFiltered = dataMateri.filter(item => item.kelas === kelasSiswa);
 
                 if (dataFiltered.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Belum ada materi untuk ${kelasSiswa}.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Belum ada materi/modul PDF untuk ${kelasSiswa}.</td></tr>`;
                     return;
                 }
 
@@ -170,7 +182,7 @@
                         <td><span class="badge badge-secondary">${materi.mapel}</span></td>
                         <td class="font-weight-bold text-left">${materi.judul}</td>
                         <td>
-                            <a href="${materi.filedata || materi.fileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Buka Materi</a>
+                            <a href="${materi.filedata || materi.fileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Baca Materi</a>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -181,7 +193,13 @@
         }
 
         function kirimJawaban() {
-            alert("Fitur pengiriman kuis berjalan normal.");
+            let nama = document.getElementById("nama-siswa").value;
+            let kelas = document.getElementById("kelas-siswa").value;
+            if (!kelas || !nama) {
+                alert("Harap pilih Kelas dan Nama Siswa terlebih dahulu!");
+                return;
+            }
+            alert("Fitur pengiriman jawaban kuis siap.");
         }
     </script>
 </body>
