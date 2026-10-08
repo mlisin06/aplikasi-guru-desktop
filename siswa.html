@@ -364,7 +364,7 @@
                 keteranganStatus = "Perlu Dinilai Guru";
             }
 
-            // [BAGIAN UTAMA YANG DIPERBAIKI] Mengumpulkan detail rincian jawaban atau ketikan siswa secara akurat
+            // Mengumpulkan rincian jawaban atau ketikan siswa
             let listDetail = [];
             
             let semuaTextarea = document.querySelectorAll("#area-soal textarea");
@@ -388,6 +388,7 @@
 
             let stringDetailJawaban = listDetail.join(" | ") || "-";
 
+            // [PENTING] Properti 'detail' kini disertakan agar terkirim ke Google Sheets
             let dataKirim = {
                 action: "simpanNilaiGET",
                 tanggal: new Date().toLocaleDateString("id-ID"),
@@ -397,7 +398,7 @@
                 jenis: jenis,
                 nilai: nilaiAkhir,
                 keterangan: keteranganStatus,
-                detail: stringDetailJawaban // Mengirim rincian detail jawaban ke Google Sheets
+                detail: stringDetailJawaban 
             };
 
             let btn = event.target;
