@@ -26,7 +26,7 @@
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label class="small font-weight-bold">Pilih Kelas:</label>
-                    <select id="kelas-siswa" class="form-control" onchange="muatSiswaBerdasarkanKelas()">
+                    <select id="kelas-siswa" class="form-control" onchange="pilihKelasAction()">
                         <option value="">-- Pilih Kelas --</option>
                         <option value="Kelas 1">Kelas 1</option>
                         <option value="Kelas 2">Kelas 2</option>
@@ -79,13 +79,12 @@
             </div>
         </div>
 
-        <!-- Pilihan Jenis Kuis & Lembar Ujian -->
+        <!-- Pilihan Jenis Kuis & Lembar Ujian (Tersaring Otomatis Berdasarkan Kelas) -->
         <div class="card card-custom p-4 mb-4">
             <div class="form-group">
                 <label class="small font-weight-bold">Pilih Jenis Kuis / Mata Pelajaran Ujian:</label>
-                <select id="pilih-jenis-kuis" class="form-control">
-                    <option value="soal">📝 Soal Ujian (PG & Essay)</option>
-                    <!-- Anda bisa menambahkan opsi mapel spesifik lainnya di sini jika diperlukan -->
+                <select id="pilih-jenis-kuis" class="form-control" onchange="muatSoalUjian()">
+                    <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
                 </select>
             </div>
         </div>
@@ -94,7 +93,7 @@
         <div id="container-soal" class="card card-custom p-4 mb-4">
             <h4 class="text-success font-weight-bold mb-3">📝 Lembar Pengerjaan Soal</h4>
             <div id="area-soal" class="text-center text-muted py-4">
-                Silakan pilih Kelas dan Nama siswa di atas untuk memuat soal ujian.
+                Silakan pilih Kelas, Nama Siswa, dan Jenis Kuis di atas untuk memuat soal ujian.
             </div>
             <button type="button" class="btn btn-success btn-custom btn-block mt-3 shadow-sm" onclick="kirimJawaban()">
                 🚀 Selesai & Kirim Jawaban
@@ -109,9 +108,11 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
         let semuaSiswa = [];
+        let semuaSoal = [];
 
         document.addEventListener("DOMContentLoaded", function() {
             ambilDataSiswaServer();
+            ambilDataSoalServer();
         });
 
         async function ambilDataSiswaServer() {
@@ -123,11 +124,21 @@
             }
         }
 
-        function muatSiswaBerdasarkanKelas() {
+        async function ambilDataSoalServer() {
+            try {
+                let response = await fetch(SCRIPT_URL + "?action=getSoal");
+                semuaSoal = await response.json();
+            } catch (e) {
+                console.error("Gagal memuat daftar soal:", e);
+            }
+        }
+
+        function pilihKelasAction() {
             let kelasDipilih = document.getElementById("kelas-siswa").value;
+            
+            // 1. Filter Nama Siswa berdasarkan Kelas
             let dropdownNama = document.getElementById("nama-siswa");
             dropdownNama.innerHTML = `<option value="">-- Pilih Nama --</option>`;
-
             let filterSiswa = semuaSiswa.filter(s => (s.kelas || s.Kelas) === kelasDipilih);
             filterSiswa.forEach(s => {
                 let namaVal = s.nama || s.Nama;
@@ -137,7 +148,36 @@
                 dropdownNama.appendChild(opt);
             });
 
-            // Otomatis update daftar materi saat kelas berubah
+            // 2. Filter Dropdown Jenis Kuis/Mapel berdasarkan Kelas yang dipilih
+            let dropdownKuis = document.getElementById("pilih-jenis-kuis");
+            dropdownKuis.innerHTML = `<option value="">-- Pilih Kuis / Mapel --</option>`;
+            
+            if (kelasDipilih) {
+                let soalKelasIni = semuaSoal.filter(s => (s.kelas || s.Kelas) === kelasDipilih);
+                let daftarUnikKuis = [];
+                
+                soalKelasIni.forEach(s => {
+                    let jenisKuis = s.jenis || s.Jenis || "Ujian";
+                    let mapelKuis = s.mapel || s.Mapel || "Umum";
+                    let gabungKuis = mapelKuis + " - " + jenisKuis;
+                    
+                    if (!daftarUnikKuis.includes(gabungKuis)) {
+                        daftarUnikKuis.push(gabungKuis);
+                        let opt = document.createElement("option");
+                        opt.value = gabungKuis;
+                        opt.textContent = gabungKuis;
+                        dropdownKuis.appendChild(opt);
+                    }
+                });
+
+                if (daftarUnikKuis.length === 0) {
+                    dropdownKuis.innerHTML = `<option value="">-- Belum ada soal untuk ${kelasDipilih} --</option>`;
+                }
+            } else {
+                dropdownKuis.innerHTML = `<option value="">-- Pilih Kelas Terlebih Dahulu --</option>`;
+            }
+
+            // 3. Update daftar materi otomatis
             muatMateriSiswa();
         }
 
@@ -192,11 +232,25 @@
             }
         }
 
+        function muatSoalUjian() {
+            let pilihanKuis = document.getElementById("pilih-jenis-kuis").value;
+            let areaSoal = document.getElementById("area-soal");
+            
+            if (!pilihanKuis) {
+                areaSoal.innerHTML = `Silakan pilih jenis kuis atau mata pelajaran terlebih dahulu.`;
+                return;
+            }
+            
+            areaSoal.innerHTML = `<div class="text-success font-weight-bold">Kuis <b>${pilihanKuis}</b> dipilih. Lembar soal siap ditampilkan.</div>`;
+        }
+
         function kirimJawaban() {
             let nama = document.getElementById("nama-siswa").value;
             let kelas = document.getElementById("kelas-siswa").value;
-            if (!kelas || !nama) {
-                alert("Harap pilih Kelas dan Nama Siswa terlebih dahulu!");
+            let kuis = document.getElementById("pilih-jenis-kuis").value;
+            
+            if (!kelas || !nama || !kuis) {
+                alert("Harap lengkapi Kelas, Nama Siswa, dan Jenis Kuis terlebih dahulu!");
                 return;
             }
             alert("Fitur pengiriman jawaban kuis siap.");
