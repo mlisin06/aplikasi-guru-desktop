@@ -274,7 +274,6 @@
 
                 htmlContent += `<div class="card p-3 mb-3 border shadow-sm">`;
                 
-                // Sembunyikan kata asli dari judul jika tipe soal adalah Puzzle Kata
                 if (jenisItem.toLowerCase() === "puzzle kata") {
                     htmlContent += `<p class="font-weight-bold text-primary"><b>Soal ${index + 1} (Puzzle Kata)</b></p>`;
                 } else {
@@ -305,9 +304,8 @@
                 }
                 else if (jenisItem.toLowerCase() === "merangkum materi") {
                     htmlContent += `
-                        <p class="text-muted small mb-1">✍️ Tuliskan rangkuman materi (minimal 300 karakter):</p>
-                        <textarea class="form-control" name="${idSoal}" rows="4" placeholder="Tuliskan rangkuman lengkap di sini..." oninput="hitungKarakter(this, '${idSoal}_counter')"></textarea>
-                        <small id="${idSoal}_counter" class="text-danger font-weight-bold">Jumlah karakter: 0 / 300 minimal</small>
+                        <p class="text-muted small mb-1">✍️ Tuliskan rangkuman materi:</p>
+                        <textarea class="form-control" name="${idSoal}" rows="4" placeholder="Tuliskan rangkuman lengkap di sini..."></textarea>
                     `;
                 } 
                 else {
@@ -333,13 +331,6 @@
             return arrAcak.join(' ');
         }
 
-        function hitungKarakter(textarea, counterId) {
-            let panjang = textarea.value.length;
-            let counter = document.getElementById(counterId);
-            counter.textContent = `Jumlah karakter: ${panjang} / 300 minimal`;
-            counter.className = (panjang >= 300) ? "text-success font-weight-bold" : "text-danger font-weight-bold";
-        }
-
         async function kirimJawaban() {
             let nama = document.getElementById("nama-siswa").value.trim();
             let kelas = document.getElementById("kelas-siswa").value.trim();
@@ -354,7 +345,6 @@
             let mapel = parts[0];
             let jenis = parts.slice(1).join(" - ");
 
-            // Atur nilai otomatis 100 untuk PG/Puzzle, atau "Menunggu Koreksi" untuk Essay/Merangkum
             let nilaiAkhir = 100;
             let keteranganStatus = "Selesai Mengerjakan";
             let jenisLower = jenis.toLowerCase();
@@ -364,6 +354,23 @@
                 keteranganStatus = "Perlu Dinilai Guru";
             }
 
+            // Mengumpulkan detail rincian jawaban atau ketikan siswa secara otomatis
+            let listDetail = [];
+            let inputsText = document.querySelectorAll("#area-soal textarea, #area-soal input[type='text']");
+            let inputsRadio = document.querySelectorAll("#area-soal input[type='radio']:checked");
+            
+            inputsText.forEach((el, idx) => {
+                if (el.value && el.value.trim() !== "") {
+                    listDetail.push(`Teks/Jawaban ${idx+1}: ${el.value.trim()}`);
+                }
+            });
+
+            inputsRadio.forEach((el, idx) => {
+                listDetail.push(`Pilihan Soal ${idx+1}: ${el.value}`);
+            });
+
+            let stringDetailJawaban = listDetail.join(" | ") || "-";
+
             let dataKirim = {
                 action: "simpanNilaiGET",
                 tanggal: new Date().toLocaleDateString("id-ID"),
@@ -372,7 +379,8 @@
                 mapel: mapel,
                 jenis: jenis,
                 nilai: nilaiAkhir,
-                keterangan: keteranganStatus
+                keterangan: keteranganStatus,
+                detail: stringDetailJawaban // Mengirim detail rincian jawaban ke Google Sheets
             };
 
             let btn = event.target;
