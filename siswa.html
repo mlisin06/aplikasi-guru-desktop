@@ -1,76 +1,60 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruang Ujian & Tugas Siswa Online</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
-        .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
-        .header-box { background: linear-gradient(135deg, #007bff 0%, #6610f2 100%); color: white; border-radius: 15px; }
-        .form-control { border-radius: 10px; padding: 10px 15px; }
-        .btn-custom { border-radius: 10px; padding: 12px 20px; font-weight: 600; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduAdmin Pro - Panel Siswa</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    h2 { color: #1e293b; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+    .form-group { margin-bottom: 15px; }
+    label { font-weight: 600; display: block; margin-bottom: 6px; color: #334155; }
+    select, textarea, input[type="text"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; box-sizing: border-box; }
+    .btn-kirim { background-color: #0d9488; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
+    .btn-kirim:hover { background-color: #0f766e; }
+    
+    /* Layout khusus mencocokkan */
+    .match-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .match-item { flex: 1; text-align: center; }
+    .match-item img { max-width: 100%; max-height: 120px; border-radius: 6px; }
+  </style>
 </head>
 <body>
-    <div class="container py-5">
-        <div class="header-box p-4 mb-4 text-center">
-            <h2 class="font-weight-bold mb-2">🎓 Ruang Ujian & Tugas Siswa Online</h2>
-            <p class="mb-0 text-white-50">Silakan pilih kelas, nama, dan jenis kuis di bawah ini:</p>
-        </div>
 
-        <div class="card card-custom p-4 mb-4">
-            <div class="form-row">
-                <!-- Pilihan Kelas -->
-                <div class="form-group col-md-4">
-                    <label class="font-weight-bold small text-muted">Pilih Kelas:</label>
-                    <select id="select-kelas" class="form-control">
-                        <option value="">-- Pilih Kelas --</option>
-                    </select>
-                </div>
+  <div class="container">
+    <h2>EduAdmin Pro - Panel Ujian Siswa</h2>
 
-                <!-- Pilihan Nama Siswa -->
-                <div class="form-group col-md-4">
-                    <label class="font-weight-bold small text-muted">Pilih Nama Siswa:</label>
-                    <select id="select-siswa" class="form-control" disabled>
-                        <option value="">-- Pilih Kelas Dulu --</option>
-                    </select>
-                </div>
-
-                <!-- Pilihan Jenis Kuis / Modul -->
-                <div class="form-group col-md-4">
-                    <label class="font-weight-bold small text-muted">Pilih Jenis Kuis / Modul:</label>
-                    <select id="select-modul" class="form-control">
-                        <option value="">-- Pilih Jenis Kuis --</option>
-                        <option value="Pilihan Ganda">1. Pilihan Ganda</option>
-                        <option value="Essay / Uraian">2. Essay / Uraian</option>
-                        <option value="Mencocokkan Gambar">3. Mencocokkan Gambar</option>
-                        <option value="Puzzle Kata">4. Puzzle Kata</option>
-                        <option value="Menulis Ringkasan Materi">5. Menulis Ringkasan Materi</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Wadah Tempat Soal Muncul Dinamis -->
-        <div class="card card-custom p-4 mb-4">
-            <h4 class="font-weight-bold text-dark mb-3">📝 Lembar Soal Ujian</h4>
-            <div id="container-soal">
-                <p class="text-center text-muted">Silakan pilih jenis kuis terlebih dahulu untuk memuat soal.</p>
-            </div>
-        </div>
-
-        <!-- Tombol Kirim Jawaban -->
-        <button type="button" onclick="kirimJawabanSiswa()" class="btn btn-primary btn-custom btn-block mb-4 shadow">📤 Kirim Jawaban Ujian</button>
-
-        <div class="text-center">
-            <a href="index.html" class="btn btn-light btn-custom border text-muted">&larr; Kembali ke Beranda Utama</a>
-        </div>
+    <!-- Identitas Siswa -->
+    <div class="form-group">
+      <label for="select-siswa">Pilih Nama Siswa:</label>
+      <select id="select-siswa">
+        <option value="">-- Memuat Data Siswa... --</option>
+      </select>
     </div>
 
-    <!-- Menghubungkan ke file JavaScript Siswa -->
-    <script src="siswa.js"></script>
+    <!-- Pilihan Jenis Kuis Interaktif -->
+    <div class="form-group">
+      <label for="select-jenis">Pilih Jenis Kuis / Modul:</label>
+      <select id="select-jenis" onchange="muatDataSoal()">
+        <option value="pg">1. Soal PG & Essay</option>
+        <option value="gambar">2. Mencocokkan Gambar</option>
+        <option value="kata">3. Mencocokkan Kata</option>
+        <option value="rangkum">4. Merangkum Materi</option>
+      </select>
+    </div>
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;">
+
+    <!-- Dynamic Container Tempat Soal Tampil Sesuai Mode -->
+    <div id="wadah-soal">
+      <p style="text-align: center; color: #64748b;">Memuat kuis...</p>
+    </div>
+
+    <!-- Tombol Kirim -->
+    <button class="btn-kirim" onclick="kirimJawaban()">Selesai & Kirim Jawaban</button>
+  </div>
+
+  <script src="siswa.js"></script>
 </body>
 </html>
