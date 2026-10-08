@@ -305,7 +305,8 @@
                 else if (jenisItem.toLowerCase() === "merangkum materi") {
                     htmlContent += `
                         <p class="text-muted small mb-1">✍️ Tuliskan rangkuman materi:</p>
-                        <textarea class="form-control" name="${idSoal}" rows="4" placeholder="Tuliskan rangkuman lengkap di sini..."></textarea>
+                        <textarea class="form-control" name="${idSoal}" rows="4" placeholder="Tuliskan rangkuman lengkap di sini..." oninput="hitungKarakter(this, '${idSoal}_counter')"></textarea>
+                        <small id="${idSoal}_counter" class="text-danger font-weight-bold">Jumlah karakter: 0 / 300 minimal</small>
                     `;
                 } 
                 else {
@@ -331,6 +332,15 @@
             return arrAcak.join(' ');
         }
 
+        function hitungKarakter(textarea, counterId) {
+            let panjang = textarea.value.length;
+            let counter = document.getElementById(counterId);
+            if (counter) {
+                counter.textContent = `Jumlah karakter: ${panjang} / 300 minimal`;
+                counter.className = (panjang >= 300) ? "text-success font-weight-bold" : "text-danger font-weight-bold";
+            }
+        }
+
         async function kirimJawaban() {
             let nama = document.getElementById("nama-siswa").value.trim();
             let kelas = document.getElementById("kelas-siswa").value.trim();
@@ -354,19 +364,26 @@
                 keteranganStatus = "Perlu Dinilai Guru";
             }
 
-            // Mengumpulkan detail rincian jawaban atau ketikan siswa secara otomatis
+            // [BAGIAN UTAMA YANG DIPERBAIKI] Mengumpulkan detail rincian jawaban atau ketikan siswa secara akurat
             let listDetail = [];
-            let inputsText = document.querySelectorAll("#area-soal textarea, #area-soal input[type='text']");
-            let inputsRadio = document.querySelectorAll("#area-soal input[type='radio']:checked");
             
-            inputsText.forEach((el, idx) => {
-                if (el.value && el.value.trim() !== "") {
-                    listDetail.push(`Teks/Jawaban ${idx+1}: ${el.value.trim()}`);
+            let semuaTextarea = document.querySelectorAll("#area-soal textarea");
+            semuaTextarea.forEach((ta, idx) => {
+                if (ta.value && ta.value.trim() !== "") {
+                    listDetail.push(`Teks/Jawaban ${idx+1}: ${ta.value.trim()}`);
                 }
             });
 
-            inputsRadio.forEach((el, idx) => {
-                listDetail.push(`Pilihan Soal ${idx+1}: ${el.value}`);
+            let semuaInputText = document.querySelectorAll("#area-soal input[type='text']");
+            semuaInputText.forEach((inp, idx) => {
+                if (inp.value && inp.value.trim() !== "") {
+                    listDetail.push(`Isian/Puzzle ${idx+1}: ${inp.value.trim()}`);
+                }
+            });
+
+            let semuaRadioDipilih = document.querySelectorAll("#area-soal input[type='radio']:checked");
+            semuaRadioDipilih.forEach((radio, idx) => {
+                listDetail.push(`Pilihan Soal ${idx+1}: ${radio.value}`);
             });
 
             let stringDetailJawaban = listDetail.join(" | ") || "-";
@@ -380,7 +397,7 @@
                 jenis: jenis,
                 nilai: nilaiAkhir,
                 keterangan: keteranganStatus,
-                detail: stringDetailJawaban // Mengirim detail rincian jawaban ke Google Sheets
+                detail: stringDetailJawaban // Mengirim rincian detail jawaban ke Google Sheets
             };
 
             let btn = event.target;
