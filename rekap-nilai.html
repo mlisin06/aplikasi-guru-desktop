@@ -1,98 +1,6 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekap Nilai Siswa - Panel Guru</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
-        .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .table th, .table td { vertical-align: middle !important; text-align: center; }
-        .table th:nth-child(3), .table td:nth-child(3) { text-align: left; }
-    </style>
-</head>
-<body>
-    <div class="container-fluid mt-4 mb-5 px-4">
-        <div class="card card-custom p-4 bg-white">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                <div>
-                    <h3 class="text-success font-weight-bold mb-1">📊 Rekap Nilai & Tugas Online</h3>
-                    <p class="text-muted small mb-0">Data nilai ditarik langsung secara real-time dari Google Sheets.</p>
-                </div>
-                <div class="mt-2 mt-md-0">
-                    <button class="btn btn-outline-danger btn-sm font-weight-bold" onclick="hapusSemuaNilaiOnline()">🗑️ Kosongkan Data Nilai</button>
-                    <button class="btn btn-outline-primary btn-sm font-weight-bold ml-2" onclick="tampilkanRekapNilaiOnline()">🔄 Muat Ulang Data</button>
-                </div>
-            </div>
-
-            <div class="form-row mb-4 bg-light p-3 rounded">
-                <div class="form-group col-md-6 mb-2">
-                    <label class="small font-weight-bold">Filter Kelas:</label>
-                    <select id="filter-kelas" class="form-control form-control-sm" onchange="tampilkanRekapNilaiOnline()">
-                        <option value="">-- Semua Kelas --</option>
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6">Kelas 6</option>
-                    </select>
-                </div>
-                <div class="form-group col-md-6 mb-2">
-                    <label class="small font-weight-bold">Filter Mata Pelajaran:</label>
-                    <select id="filter-mapel" class="form-control form-control-sm" onchange="tampilkanRekapNilaiOnline()">
-                        <option value="">-- Semua Mata Pelajaran --</option>
-                        <option value="PAIBP">PAIBP</option>
-                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                        <option value="Matematika">Matematika</option>
-                        <option value="IPAS">IPAS</option>
-                        <option value="PJOK">PJOK</option>
-                        <option value="Bahasa Inggris">Bahasa Inggris</option>
-                        <option value="Bahasa Jawa">Bahasa Jawa</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>No</th>
-                            <th>Kelas</th>
-                            <th>Nama Siswa</th>
-                            <th>Mata Pelajaran</th>
-                            <th>Pilihan Ganda</th>
-                            <th>Puzzle Kata</th>
-                            <th>Essay</th>
-                            <th>Merangkum Materi</th>
-                            <th>Nilai Akhir (Rata-rata)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabel-nilai-body">
-                        <tr><td colspan="9" class="text-center text-muted py-4">Memuat data rekap dari server cloud...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-4">
-                <a href="guru.html" class="btn btn-secondary">&larr; Kembali ke Dashboard Guru</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
-
-        document.addEventListener("DOMContentLoaded", function() {
-            tampilkanRekapNilaiOnline();
-        });
-
-        async function tampilkanRekapNilaiOnline() {
-            let filterKelas = document.getElementById("filter-kelas").value;
-            let filterMapel = document.getElementById("filter-mapel").value;
+async function tampilkanRekapNilaiOnline() {
+            let filterKelas = document.getElementById("filter-kelas").value.trim();
+            let filterMapel = document.getElementById("filter-mapel").value.trim();
             let tbody = document.getElementById("tabel-nilai-body");
             tbody.innerHTML = `<tr><td colspan="9" class="text-center text-primary py-4">⏳ Mengambil rekap nilai dari Google Sheets...</td></tr>`;
 
@@ -101,49 +9,65 @@
                 let dataNilai = await response.json();
                 tbody.innerHTML = "";
 
-                let dataFiltered = dataNilai.filter(item => {
-                    let kls = String(item.kelas || item.Kelas || "").trim();
-                    let mpl = String(item.mapel || item.Mata Pelajaran || item.Mapel || "").trim();
-                    
-                    let matchKelas = filterKelas ? kls === filterKelas : true;
-                    let matchMapel = filterMapel ? mpl === filterMapel : true;
-                    return matchKelas && matchMapel;
-                });
-
-                if (dataFiltered.length === 0) {
+                if (!Array.isArray(dataNilai) || dataNilai.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di server.</td></tr>`;
                     return;
                 }
 
                 let rekapMap = {};
-                dataFiltered.forEach(item => {
-                    let kls = String(item.kelas || item.Kelas || "").trim();
-                    let nms = String(item.nama || item["Nama Siswa"] || item.Nama || "").trim();
-                    let mpl = String(item.mapel || item["Mata Pelajaran"] || item.Mapel || "").trim();
-                    let key = `${kls}_${nms}_${mpl}`;
-
-                    if (!rekapMap[key]) {
-                        rekapMap[key] = {
-                            kelas: kls,
-                            nama: nms,
-                            mapel: mpl,
-                            "Pilihan Ganda": null,
-                            "Puzzle Kata": null,
-                            "Essay": null,
-                            "Merangkum Materi": null
-                        };
-                    }
+                dataNilai.forEach(item => {
+                    // Ambil data dengan berbagai kemungkinan nama properti (antisipasi huruf besar/kecil)
+                    let kls = String(item.kelas || item.Kelas || item.KELAS || "").trim();
+                    let nms = String(item.nama || item["Nama Siswa"] || item.Nama || item.NAMA || "").trim();
+                    let mpl = String(item.mapel || item["Mata Pelajaran"] || item.Mapel || item.MAPEL || "").trim();
                     
-                    let jenisSoal = String(item.jenis || item["Jenis Kuis"] || item.Jenis || "").trim();
-                    let valNilai = item.nilai !== undefined ? item.nilai : item.Nilai;
+                    if (!nms) return; // Abaikan baris kosong
 
-                    if (rekapMap[key].hasOwnProperty(jenisSoal)) {
-                        rekapMap[key][jenisSoal] = valNilai;
+                    // Filter berdasarkan pilihan guru
+                    let matchKelas = filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+                    let matchMapel = filterMapel ? mpl.toLowerCase() === filterMapel.toLowerCase() : true;
+
+                    if (matchKelas && matchMapel) {
+                        let key = `${kls}_${nms}_${mpl}`;
+
+                        if (!rekapMap[key]) {
+                            rekapMap[key] = {
+                                kelas: kls,
+                                nama: nms,
+                                mapel: mpl,
+                                "Pilihan Ganda": null,
+                                "Puzzle Kata": null,
+                                "Essay": null,
+                                "Merangkum Materi": null
+                            };
+                        }
+                        
+                        let jenisSoal = String(item.jenis || item["Jenis Kuis"] || item.Jenis || item.JENIS || "").trim();
+                        let valNilai = item.nilai !== undefined ? item.nilai : item.Nilai;
+
+                        // Petetapan jenis soal ke kolom rekap yang sesuai
+                        if (jenisSoal.toLowerCase().includes("pilihan ganda")) {
+                            rekapMap[key]["Pilihan Ganda"] = valNilai;
+                        } else if (jenisSoal.toLowerCase().includes("puzzle")) {
+                            rekapMap[key]["Puzzle Kata"] = valNilai;
+                        } else if (jenisSoal.toLowerCase().includes("essay")) {
+                            rekapMap[key]["Essay"] = valNilai;
+                        } else if (jenisSoal.toLowerCase().includes("merangkum")) {
+                            rekapMap[key]["Merangkum Materi"] = valNilai;
+                        } else if (rekapMap[key].hasOwnProperty(jenisSoal)) {
+                            rekapMap[key][jenisSoal] = valNilai;
+                        }
                     }
                 });
 
+                let keys = Object.keys(rekapMap);
+                if (keys.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada data yang cocok dengan filter yang dipilih.</td></tr>`;
+                    return;
+                }
+
                 let index = 1;
-                for (let key in rekapMap) {
+                keys.forEach(key => {
                     let row = rekapMap[key];
                     
                     let totalNilai = 0;
@@ -170,7 +94,7 @@
                         }
                         let num = Number(val);
                         if (isNaN(num)) {
-                            // Untuk Essay / Merangkum Materi yang statusnya teks (misal: "Menunggu Koreksi")
+                            // Untuk teks seperti "Menunggu Koreksi"
                             return `<span class="badge badge-info px-2 py-1" style="font-size: 11px;">${val}</span>`;
                         }
                         return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
@@ -189,25 +113,9 @@
                         <td>${jumlahDikerjakan > 0 ? `<span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span>` : '<span class="text-muted">-</span>'}</td>
                     `;
                     tbody.appendChild(tr);
-                }
+                });
             } catch (e) {
+                console.error(e);
                 tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal memuat rekap nilai dari server.</td></tr>`;
             }
         }
-
-        function hapusSemuaNilaiOnline() {
-            if (confirm("Apakah Anda yakin ingin mengosongkan seluruh data nilai di server Google Sheets?")) {
-                fetch(SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "hapusNilai" })
-                }).then(() => {
-                    alert("Data nilai di server berhasil dikosongkan.");
-                    tampilkanRekapNilaiOnline();
-                });
-            }
-        }
-    </script>
-</body>
-</html>
