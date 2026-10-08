@@ -225,16 +225,19 @@
                 return;
             }
 
+            // Urutan parameter disesuaikan persis dengan kolom A sampai J di Google Sheets:
+            // A: Tanggal, B: Kelas, C: Mapel, D: Jenis, E: Pertanyaan, F: OpsiA, G: OpsiB, H: OpsiC, I: OpsiD, J: Kunci, K: Gambar
             let dataKirim = {
                 action: "simpanSoal",
+                tanggal: new Date().toLocaleDateString("id-ID"),
                 kelas: kelas,
                 mapel: mapel,
                 jenis: jenis,
                 pertanyaan: soal,
-                opsia: opsiA,
-                opsib: opsiB,
-                opsic: opsiC,
-                opsid: opsiD,
+                opsiA: opsiA,
+                opsiB: opsiB,
+                opsiC: opsiC,
+                opsiD: opsiD,
                 kunci: kunci,
                 gambar: gambar
             };
