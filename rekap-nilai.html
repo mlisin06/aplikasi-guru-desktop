@@ -28,7 +28,7 @@
             </div>
 
             <div class="form-row mb-4 bg-light p-3 rounded">
-                <div class="form-group col-md-4 mb-2">
+                <div class="form-group col-md-6 mb-2">
                     <label class="small font-weight-bold">Filter Kelas:</label>
                     <select id="filter-kelas" class="form-control form-control-sm" onchange="tampilkanRekapNilaiOnline()">
                         <option value="">-- Semua Kelas --</option>
@@ -40,7 +40,7 @@
                         <option value="Kelas 6">Kelas 6</option>
                     </select>
                 </div>
-                <div class="form-group col-md-4 mb-2">
+                <div class="form-group col-md-6 mb-2">
                     <label class="small font-weight-bold">Filter Mata Pelajaran:</label>
                     <select id="filter-mapel" class="form-control form-control-sm" onchange="tampilkanRekapNilaiOnline()">
                         <option value="">-- Semua Mata Pelajaran --</option>
@@ -65,15 +65,14 @@
                             <th>Nama Siswa</th>
                             <th>Mata Pelajaran</th>
                             <th>Pilihan Ganda</th>
-                            <th>Essay / Uraian</th>
-                            <th>Mencocokkan Gambar</th>
                             <th>Puzzle Kata</th>
-                            <th>Ringkasan Materi</th>
+                            <th>Essay</th>
+                            <th>Merangkum Materi</th>
                             <th>Nilai Akhir (Rata-rata)</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-nilai-body">
-                        <tr><td colspan="10" class="text-center text-muted py-4">Memuat data rekap dari server cloud...</td></tr>
+                        <tr><td colspan="9" class="text-center text-muted py-4">Memuat data rekap dari server cloud...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -95,7 +94,7 @@
             let filterKelas = document.getElementById("filter-kelas").value;
             let filterMapel = document.getElementById("filter-mapel").value;
             let tbody = document.getElementById("tabel-nilai-body");
-            tbody.innerHTML = `<tr><td colspan="10" class="text-center text-primary py-4">⏳ Mengambil rekap nilai dari Google Sheets...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center text-primary py-4">⏳ Mengambil rekap nilai dari Google Sheets...</td></tr>`;
 
             try {
                 let response = await fetch(SCRIPT_URL + "?action=getNilai");
@@ -103,32 +102,40 @@
                 tbody.innerHTML = "";
 
                 let dataFiltered = dataNilai.filter(item => {
-                    let matchKelas = filterKelas ? item.kelas === filterKelas : true;
-                    let matchMapel = filterMapel ? item.mapel === filterMapel : true;
+                    let matchKelas = filterKelas ? String(item.kelas || "").trim() === filterKelas : true;
+                    let matchMapel = filterMapel ? String(item.mapel || "").trim() === filterMapel : true;
                     return matchKelas && matchMapel;
                 });
 
                 if (dataFiltered.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">Belum ada data nilai di server.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di server.</td></tr>`;
                     return;
                 }
 
                 let rekapMap = {};
                 dataFiltered.forEach(item => {
-                    let key = `${item.kelas}_${item.nama}_${item.mapel}`;
+                    let kls = String(item.kelas || "").trim();
+                    let nms = String(item.nama || "").trim();
+                    let mpl = String(item.mapel || "").trim();
+                    let key = `${kls}_${nms}_${mpl}`;
+
                     if (!rekapMap[key]) {
                         rekapMap[key] = {
-                            kelas: item.kelas,
-                            nama: item.nama,
-                            mapel: item.mapel,
+                            kelas: kls,
+                            nama: nms,
+                            mapel: mpl,
                             "Pilihan Ganda": null,
-                            "Essay / Uraian": null,
-                            "Mencocokkan Gambar": null,
                             "Puzzle Kata": null,
-                            "Menulis Ringkasan Materi": null
+                            "Essay": null,
+                            "Merangkum Materi": null
                         };
                     }
-                    rekapMap[key][item.jenis] = item.nilai;
+                    
+                    let jenisSoal = String(item.jenis || "").trim();
+                    let valNilai = Number(item.nilai);
+                    if (rekapMap[key].hasOwnProperty(jenisSoal)) {
+                        rekapMap[key][jenisSoal] = isNaN(valNilai) ? item.nilai : valNilai;
+                    }
                 });
 
                 let index = 1;
@@ -138,10 +145,11 @@
                     let totalNilai = 0;
                     let jumlahDikerjakan = 0;
 
-                    let jenisKuisList = ["Pilihan Ganda", "Essay / Uraian", "Mencocokkan Gambar", "Puzzle Kata", "Menulis Ringkasan Materi"];
+                    let jenisKuisList = ["Pilihan Ganda", "Puzzle Kata", "Essay", "Merangkum Materi"];
                     jenisKuisList.forEach(jenis => {
-                        if (row[jenis] !== null && row[jenis] !== undefined && typeof row[jenis] === 'number') {
-                            totalNilai += row[jenis];
+                        let val = row[jenis];
+                        if (val !== null && val !== undefined && typeof val === 'number') {
+                            totalNilai += val;
                             jumlahDikerjakan++;
                         }
                     });
@@ -151,11 +159,11 @@
 
                     let renderKolom = (val) => {
                         if (val === null || val === undefined) {
-                            return '<span class="badge badge-warning" style="font-size: 10px;">Menunggu Koreksi</span>';
+                            return '<span class="badge badge-warning" style="font-size: 10px;">Belum Dikerjakan</span>';
                         } else if (typeof val === 'number') {
                             return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
                         }
-                        return '<span class="text-muted">-</span>';
+                        return `<span class="badge badge-light border px-2 py-1">${val}</span>`;
                     };
 
                     let tr = document.createElement("tr");
@@ -165,16 +173,15 @@
                         <td class="font-weight-bold text-left">${row.nama}</td>
                         <td><span class="badge badge-secondary">${row.mapel}</span></td>
                         <td>${renderKolom(row["Pilihan Ganda"])}</td>
-                        <td>${renderKolom(row["Essay / Uraian"])}</td>
-                        <td>${renderKolom(row["Mencocokkan Gambar"])}</td>
                         <td>${renderKolom(row["Puzzle Kata"])}</td>
-                        <td>${renderKolom(row["Menulis Ringkasan Materi"])}</td>
+                        <td>${renderKolom(row["Essay"])}</td>
+                        <td>${renderKolom(row["Merangkum Materi"])}</td>
                         <td>${jumlahDikerjakan > 0 ? `<span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span>` : '<span class="text-muted">-</span>'}</td>
                     `;
                     tbody.appendChild(tr);
                 }
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Gagal memuat rekap nilai dari server.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal memuat rekap nilai dari server.</td></tr>`;
             }
         }
 
