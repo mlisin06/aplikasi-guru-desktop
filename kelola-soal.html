@@ -21,9 +21,9 @@
             <p class="mb-0 text-white-50">Input dan atur bank soal atau tugas siswa secara online.</p>
         </div>
 
-        <!-- Form Input Soal -->
+        <!-- Form Input Soal Dinamis -->
         <div class="card card-custom p-4 mb-4">
-            <h4 class="text-primary font-weight-bold mb-3">➕ Tambah Soal Baru</h4>
+            <h4 class="text-primary font-weight-bold mb-3">➕ Tambah Soal / Tugas Baru</h4>
             <div class="form-row">
                 <div class="form-group col-md-4">
                     <label class="small font-weight-bold">Kelas</label>
@@ -51,7 +51,7 @@
                 </div>
                 <div class="form-group col-md-4">
                     <label class="small font-weight-bold">Jenis Soal / Tugas</label>
-                    <select id="input-jenis" class="form-control">
+                    <select id="input-jenis" class="form-control" onchange="sesuaikanFormInput()">
                         <option value="Pilihan Ganda">Pilihan Ganda</option>
                         <option value="Puzzle Kata">Puzzle Kata</option>
                         <option value="Essay">Essay</option>
@@ -60,54 +60,56 @@
                 </div>
             </div>
 
+            <!-- Area Label Pertanyaan Dinamis -->
             <div class="form-group">
-                <label class="small font-weight-bold">Pertanyaan / Soal / Instruksi Tugas</label>
-                <textarea id="input-soal" class="form-control" rows="3" placeholder="Tuliskan pertanyaan atau kalimat untuk puzzle/rangkuman di sini..."></textarea>
+                <label id="label-pertanyaan" class="small font-weight-bold">Pertanyaan / Soal</label>
+                <textarea id="input-soal" class="form-control" rows="3" placeholder="Tuliskan pertanyaan di sini..."></textarea>
             </div>
 
-            <div class="form-row">
-                <div class="form-group col-md-3">
-                    <label class="small font-weight-bold">Opsi A (Khusus PG)</label>
-                    <input type="text" id="input-opsia" class="form-control" placeholder="Pilihan A">
+            <!-- CONTAINER KHUSUS PILIHAN GANDA (Opsi A-D & Kunci) -->
+            <div id="container-pg">
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label class="small font-weight-bold">Opsi A</label>
+                        <input type="text" id="input-opsia" class="form-control" placeholder="Pilihan A">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="small font-weight-bold">Opsi B</label>
+                        <input type="text" id="input-opsib" class="form-control" placeholder="Pilihan B">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="small font-weight-bold">Opsi C</label>
+                        <input type="text" id="input-opsic" class="form-control" placeholder="Pilihan C">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="small font-weight-bold">Opsi D</label>
+                        <input type="text" id="input-opsid" class="form-control" placeholder="Pilihan D">
+                    </div>
                 </div>
-                <div class="form-group col-md-3">
-                    <label class="small font-weight-bold">Opsi B (Khusus PG)</label>
-                    <input type="text" id="input-opsib" class="form-control" placeholder="Pilihan B">
-                </div>
-                <div class="form-group col-md-3">
-                    <label class="small font-weight-bold">Opsi C (Khusus PG)</label>
-                    <input type="text" id="input-opsic" class="form-control" placeholder="Pilihan C">
-                </div>
-                <div class="form-group col-md-3">
-                    <label class="small font-weight-bold">Opsi D (Khusus PG)</label>
-                    <input type="text" id="input-opsid" class="form-control" placeholder="Pilihan D">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="small font-weight-bold">Kunci Jawaban (Contoh: A)</label>
+                        <input type="text" id="input-kunci" class="form-control" placeholder="Kunci jawaban benar">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="small font-weight-bold">Link Gambar (Opsional)</label>
+                        <input type="text" id="input-gambar" class="form-control" placeholder="URL gambar jika ada">
+                    </div>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label class="small font-weight-bold">Kunci Jawaban (Contoh: A)</label>
-                    <input type="text" id="input-kunci" class="form-control" placeholder="Kunci jawaban benar">
-                </div>
-                <div class="form-group col-md-6">
-                    <label class="small font-weight-bold">Link Gambar (Opsional)</label>
-                    <input type="text" id="input-gambar" class="form-control" placeholder="URL gambar jika ada">
-                </div>
-            </div>
-
-            <button type="button" class="btn btn-success btn-custom btn-block mt-2 shadow-sm" onclick="simpanSoalKeServer()">
+            <button type="button" class="btn btn-success btn-custom btn-block mt-3 shadow-sm" onclick="simpanSoalKeServer()">
                 💾 Simpan Soal ke Google Sheets
             </button>
         </div>
 
-        <!-- Daftar Soal Tersimpan dengan Filter Kelas, Mapel & Jenis -->
+        <!-- Daftar Soal Tersimpan dengan Filter -->
         <div class="card card-custom p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                 <h4 class="text-secondary font-weight-bold mb-2">📊 Daftar Soal di Cloud</h4>
                 <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="tampilkanDaftarSoal()">🔄 Refresh Data</button>
             </div>
 
-            <!-- Filter Berdasarkan Kelas, Mapel, dan Jenis Kuis -->
             <div class="form-row mb-3 bg-light p-3 rounded">
                 <div class="form-group col-md-4 mb-2">
                     <label class="small font-weight-bold">Filter Kelas:</label>
@@ -176,22 +178,50 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             tampilkanDaftarSoal();
+            sesuaikanFormInput();
         });
+
+        function sesuaikanFormInput() {
+            let jenis = document.getElementById("input-jenis").value;
+            let labelPertanyaan = document.getElementById("label-pertanyaan");
+            let inputSoal = document.getElementById("input-soal");
+            let containerPG = document.getElementById("container-pg");
+
+            if (jenis === "Puzzle Kata") {
+                labelPertanyaan.innerHTML = "🔤 Kalimat / Kata Benar (Akan diacak otomatis untuk siswa):";
+                inputSoal.placeholder = "Contoh: Pancasila adalah dasar negara Indonesia";
+                containerPG.style.display = "none";
+            } else if (jenis === "Merangkum Materi") {
+                labelPertanyaan.innerHTML = "✍️ Judul / Instruksi Tugas Ringkasan (Siswa wajib merangkum min. 300 karakter):";
+                inputSoal.placeholder = "Contoh: Buatlah ringkasan mengenai materi Bab 1 tentang ekosistem...";
+                containerPG.style.display = "none";
+            } else if (jenis === "Essay") {
+                labelPertanyaan.innerHTML = "📝 Pertanyaan Essay / Uraian:";
+                inputSoal.placeholder = "Tuliskan pertanyaan uraian di sini...";
+                containerPG.style.display = "none";
+            } else {
+                // Pilihan Ganda
+                labelPertanyaan.innerHTML = "❓ Pertanyaan / Soal Pilihan Ganda:";
+                inputSoal.placeholder = "Tuliskan pertanyaan soal di sini...";
+                containerPG.style.display = "block";
+            }
+        }
 
         function simpanSoalKeServer() {
             let kelas = document.getElementById("input-kelas").value;
             let mapel = document.getElementById("input-mapel").value;
             let jenis = document.getElementById("input-jenis").value;
             let soal = document.getElementById("input-soal").value.trim();
-            let opsiA = document.getElementById("input-opsia").value.trim();
-            let opsiB = document.getElementById("input-opsib").value.trim();
-            let opsiC = document.getElementById("input-opsic").value.trim();
-            let opsiD = document.getElementById("input-opsid").value.trim();
-            let kunci = document.getElementById("input-kunci").value.trim();
-            let gambar = document.getElementById("input-gambar").value.trim();
+            
+            let opsiA = jenis === "Pilihan Ganda" ? document.getElementById("input-opsia").value.trim() : "";
+            let opsiB = jenis === "Pilihan Ganda" ? document.getElementById("input-opsib").value.trim() : "";
+            let opsiC = jenis === "Pilihan Ganda" ? document.getElementById("input-opsic").value.trim() : "";
+            let opsiD = jenis === "Pilihan Ganda" ? document.getElementById("input-opsid").value.trim() : "";
+            let kunci = jenis === "Pilihan Ganda" ? document.getElementById("input-kunci").value.trim() : "";
+            let gambar = jenis === "Pilihan Ganda" ? document.getElementById("input-gambar").value.trim() : "";
 
             if (!soal) {
-                alert("Pertanyaan / tugas soal tidak boleh kosong!");
+                alert("Pertanyaan / tugas tidak boleh kosong!");
                 return;
             }
 
@@ -217,14 +247,16 @@
 
             fetch(SCRIPT_URL + "?" + params.toString(), { mode: "no-cors" })
                 .then(() => {
-                    alert("🎉 Soal berhasil disimpan ke sistem!");
+                    alert("🎉 Soal/Tugas berhasil disimpan ke sistem!");
                     document.getElementById("input-soal").value = "";
-                    document.getElementById("input-opsia").value = "";
-                    document.getElementById("input-opsib").value = "";
-                    document.getElementById("input-opsic").value = "";
-                    document.getElementById("input-opsid").value = "";
-                    document.getElementById("input-kunci").value = "";
-                    document.getElementById("input-gambar").value = "";
+                    if (jenis === "Pilihan Ganda") {
+                        document.getElementById("input-opsia").value = "";
+                        document.getElementById("input-opsib").value = "";
+                        document.getElementById("input-opsic").value = "";
+                        document.getElementById("input-opsid").value = "";
+                        document.getElementById("input-kunci").value = "";
+                        document.getElementById("input-gambar").value = "";
+                    }
                     btn.disabled = false;
                     btn.innerText = "💾 Simpan Soal ke Google Sheets";
                     setTimeout(tampilkanDaftarSoal, 1500);
@@ -261,7 +293,7 @@
                 });
 
                 if (dataFiltered.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang ditemukan untuk filter tersebut.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang ditemukan.</td></tr>`;
                     return;
                 }
 
