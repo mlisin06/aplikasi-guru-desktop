@@ -132,19 +132,18 @@
                             };
                         }
                         
-                        let jenisSoal = String(item.jenis || item["Jenis Kuis"] || item.Jenis || item.JENIS || "").trim();
-                        let valNilai = item.nilai !== undefined ? item.nilai : item.Nilai;
+                        let jenisSoal = String(item.jenis || item["Jenis Kuis"] || item.Jenis || item.JENIS || "").trim().toLowerCase();
+                        let valNilai = item.nilai !== undefined ? item.nilai : (item.Nilai !== undefined ? item.Nilai : "");
 
-                        if (jenisSoal.toLowerCase().includes("pilihan ganda")) {
+                        // Pencocokan jenis soal yang lebih akurat
+                        if (jenisSoal.includes("pilihan ganda")) {
                             rekapMap[key]["Pilihan Ganda"] = valNilai;
-                        } else if (jenisSoal.toLowerCase().includes("puzzle")) {
+                        } else if (jenisSoal.includes("puzzle")) {
                             rekapMap[key]["Puzzle Kata"] = valNilai;
-                        } else if (jenisSoal.toLowerCase().includes("essay")) {
+                        } else if (jenisSoal.includes("essay") || jenisSoal.includes("esai")) {
                             rekapMap[key]["Essay"] = valNilai;
-                        } else if (jenisSoal.toLowerCase().includes("merangkum")) {
+                        } else if (jenisSoal.includes("merangkum") || jenisSoal.includes("materi")) {
                             rekapMap[key]["Merangkum Materi"] = valNilai;
-                        } else if (rekapMap[key].hasOwnProperty(jenisSoal)) {
-                            rekapMap[key][jenisSoal] = valNilai;
                         }
                     }
                 });
