@@ -126,7 +126,6 @@
         async function pilihKelasAction() {
             let kelasDipilih = document.getElementById("kelas-siswa").value.trim();
             
-            // 1. Filter Nama Siswa berdasarkan Kelas
             let dropdownNama = document.getElementById("nama-siswa");
             dropdownNama.innerHTML = `<option value="">-- Pilih Nama --</option>`;
             
@@ -143,7 +142,6 @@
                 dropdownNama.appendChild(opt);
             });
 
-            // 2. Ambil data soal terbaru dari server dan tampilkan kuis yang sesuai
             let dropdownKuis = document.getElementById("pilih-jenis-kuis");
             dropdownKuis.innerHTML = `<option value="">-- Memuat soal dari server... --</option>`;
             
@@ -188,7 +186,6 @@
                 dropdownKuis.innerHTML = `<option value="">-- Pilih Kelas Terlebih Dahulu --</option>`;
             }
 
-            // Otomatis update daftar materi saat kelas berubah
             muatMateriSiswa();
         }
 
@@ -247,27 +244,32 @@
 
         function muatSoalUjian() {
             let pilihanKuis = document.getElementById("pilih-jenis-kuis").value;
+            let kelasDipilih = document.getElementById("kelas-siswa").value;
             let areaSoal = document.getElementById("area-soal");
             
             if (!pilihanKuis) {
                 areaSoal.innerHTML = `Silakan pilih jenis kuis atau mata pelajaran terlebih dahulu.`;
                 return;
             }
-            
-            areaSoal.innerHTML = `<div class="text-success font-weight-bold">Kuis <b>${pilihanKuis}</b> dipilih. Lembar soal siap ditampilkan.</div>`;
-        }
 
-        function kirimJawaban() {
-            let nama = document.getElementById("nama-siswa").value;
-            let kelas = document.getElementById("kelas-siswa").value;
-            let kuis = document.getElementById("pilih-jenis-kuis").value;
-            
-            if (!kelas || !nama || !kuis) {
-                alert("Harap lengkapi Kelas, Nama Siswa, dan Jenis Kuis terlebih dahulu!");
+            let parts = pilihanKuis.split(" - ");
+            let mapelTarget = parts[0];
+            let jenisTarget = parts.slice(1).join(" - ");
+
+            let soalFilter = semuaSoal.filter(s => {
+                let kSoal = String(s.kelas || s.Kelas || s.KELAS || "").trim();
+                let mSoal = String(s.mapel || s.Mapel || s.MAPEL || "").trim();
+                let jSoal = String(s.jenis || s.Jenis || s.JENIS || "").trim();
+
+                let matchKelas = (kSoal === "" || kSoal.toLowerCase() === kelasDipilih.toLowerCase());
+                let matchMapelJenis = (mSoal + " - " + jSoal === pilihanKuis || jSoal.toLowerCase() === jenisTarget.toLowerCase());
+                
+                return matchKelas && matchMapelJenis;
+            });
+
+            if (soalFilter.length === 0) {
+                areaSoal.innerHTML = `<div class="text-warning font-weight-bold py-3">Belum ada butir soal untuk kategori ini. Silakan input melalui panel guru atau Google Sheets.</div>`;
                 return;
             }
-            alert("Fitur pengiriman jawaban kuis siap.");
-        }
-    </script>
-</body>
-</html>
+
+            let htmlContent = `<div class="
