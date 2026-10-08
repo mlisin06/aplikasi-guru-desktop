@@ -131,19 +131,19 @@
             dropdownNama.innerHTML = `<option value="">-- Pilih Nama --</option>`;
             
             let filterSiswa = semuaSiswa.filter(s => {
-                let kSiswa = String(s.kelas || s.Kelas || "").trim();
+                let kSiswa = String(s.kelas || s.Kelas || s.KELAS || "").trim();
                 return kSiswa.toLowerCase() === kelasDipilih.toLowerCase();
             });
             
             filterSiswa.forEach(s => {
-                let namaVal = s.nama || s.Nama;
+                let namaVal = s.nama || s.Nama || s.NAMA;
                 let opt = document.createElement("option");
                 opt.value = namaVal;
                 opt.textContent = namaVal;
                 dropdownNama.appendChild(opt);
             });
 
-            // 2. Ambil ulang data soal terbaru dari server saat kelas dipilih
+            // 2. Ambil data soal terbaru dari server dan tampilkan kuis yang sesuai
             let dropdownKuis = document.getElementById("pilih-jenis-kuis");
             dropdownKuis.innerHTML = `<option value="">-- Memuat soal dari server... --</option>`;
             
@@ -155,26 +155,29 @@
                     console.error("Gagal memuat soal:", e);
                 }
 
-                // Menggunakan properti huruf kecil karena getJsonData mengubah header menjadi lowercase
-                let soalKelasIni = semuaSoal.filter(s => {
-                    let kSoal = String(s.kelas || s.Kelas || "").trim();
-                    return kSoal.toLowerCase() === kelasDipilih.toLowerCase();
-                });
-                
                 dropdownKuis.innerHTML = `<option value="">-- Pilih Kuis / Mapel --</option>`;
                 let daftarUnikKuis = [];
                 
-                soalKelasIni.forEach(s => {
-                    let jenisKuis = s.jenis || s.Jenis || "Ujian";
-                    let mapelKuis = s.mapel || s.Mapel || "Umum";
-                    let gabungKuis = mapelKuis + " - " + jenisKuis;
+                if (semuaSoal.length === 0) {
+                    dropdownKuis.innerHTML = `<option value="">-- Belum ada data soal di Spreadsheet --</option>`;
+                    return;
+                }
+
+                semuaSoal.forEach(s => {
+                    let kSoal = String(s.kelas || s.Kelas || s.KELAS || "").trim();
                     
-                    if (!daftarUnikKuis.includes(gabungKuis)) {
-                        daftarUnikKuis.push(gabungKuis);
-                        let opt = document.createElement("option");
-                        opt.value = gabungKuis;
-                        opt.textContent = gabungKuis;
-                        dropdownKuis.appendChild(opt);
+                    if (kSoal === "" || kSoal.toLowerCase() === kelasDipilih.toLowerCase()) {
+                        let jenisKuis = s.jenis || s.Jenis || s.JENIS || "Ujian";
+                        let mapelKuis = s.mapel || s.Mapel || s.MAPEL || "Umum";
+                        let gabungKuis = mapelKuis + " - " + jenisKuis;
+                        
+                        if (!daftarUnikKuis.includes(gabungKuis)) {
+                            daftarUnikKuis.push(gabungKuis);
+                            let opt = document.createElement("option");
+                            opt.value = gabungKuis;
+                            opt.textContent = gabungKuis;
+                            dropdownKuis.appendChild(opt);
+                        }
                     }
                 });
 
@@ -216,7 +219,7 @@
                 tbody.innerHTML = "";
 
                 let dataFiltered = dataMateri.filter(item => {
-                    let mKelas = String(item.kelas || item.Kelas || "").trim();
+                    let mKelas = String(item.kelas || item.Kelas || item.KELAS || "").trim();
                     return mKelas.toLowerCase() === kelasSiswa.toLowerCase();
                 });
 
@@ -229,10 +232,10 @@
                     let tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${index + 1}</td>
-                        <td><span class="badge badge-secondary">${materi.mapel || materi.Mapel}</span></td>
-                        <td class="font-weight-bold text-left">${materi.judul || materi.Judul}</td>
+                        <td><span class="badge badge-secondary">${materi.mapel || materi.Mapel || materi.MAPEL}</span></td>
+                        <td class="font-weight-bold text-left">${materi.judul || materi.Judul || materi.JUDUL}</td>
                         <td>
-                            <a href="${materi.filedata || materi.fileData || materi.FileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Baca Materi</a>
+                            <a href="${materi.filedata || materi.fileData || materi.FileData || materi.FILEDATA}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Baca Materi</a>
                         </td>
                     `;
                     tbody.appendChild(tr);
