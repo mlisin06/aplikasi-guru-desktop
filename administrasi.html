@@ -17,12 +17,12 @@
     <div class="container py-5">
         <div class="card card-custom p-4 mb-4 text-center bg-info text-white shadow-sm">
             <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi PDF Online</h2>
-            <p class="mb-0 text-white-50">Upload modul/materi PDF agar bisa dibaca langsung secara preview oleh siswa di HP mereka.</p>
+            <p class="mb-0 text-white-50">Upload modul/materi PDF via Google Drive agar bisa dibaca langsung oleh siswa.</p>
         </div>
 
-        <!-- Panel Guru Upload PDF -->
+        <!-- Panel Guru Upload Link PDF -->
         <div class="card card-custom p-4 mb-4 border-top border-primary" style="border-top-width: 5px !important;">
-            <h4 class="text-primary font-weight-bold mb-3">👨‍🏫 Upload Materi PDF ke Cloud</h4>
+            <h4 class="text-primary font-weight-bold mb-3">👨‍🏫 Simpan Materi & Link PDF</h4>
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Kelas</label>
@@ -48,17 +48,17 @@
                         <option value="Bahasa Jawa">Bahasa Jawa</option>
                     </select>
                 </div>
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Judul Materi / Bab</label>
                     <input type="text" id="upload-judul" class="form-control" placeholder="Contoh: Modul Bab 1 Pecahan">
                 </div>
-                <div class="form-group col-md-2">
-                    <label class="small font-weight-bold">File PDF</label>
-                    <input type="file" id="upload-file" class="form-control-file pt-1" accept="application/pdf">
+                <div class="form-group col-md-3">
+                    <label class="small font-weight-bold">Link Google Drive PDF</label>
+                    <input type="text" id="upload-link" class="form-control" placeholder="Paste Link Google Drive di sini">
                 </div>
             </div>
             <button type="button" class="btn btn-primary btn-custom btn-block mt-2 shadow-sm" onclick="simpanMateriPDFKeServer()">
-                📤 Unggah & Simpan Materi ke Cloud
+                📤 Simpan Materi ke Cloud
             </button>
         </div>
 
@@ -114,60 +114,43 @@
             let kelas = document.getElementById("upload-kelas").value;
             let mapel = document.getElementById("upload-mapel").value;
             let judul = document.getElementById("upload-judul").value.trim();
-            let fileInput = document.getElementById("upload-file");
+            let linkDrive = document.getElementById("upload-link").value.trim();
 
-            if (!judul || fileInput.files.length === 0) {
-                alert("Harap isi Judul Materi dan pilih file PDF terlebih dahulu!");
+            if (!judul || !linkDrive) {
+                alert("Harap isi Judul Materi dan Link Google Drive terlebih dahulu!");
                 return;
             }
 
-            let file = fileInput.files[0];
-            if (file.type !== "application/pdf") {
-                alert("Hanya file berformat PDF yang diizinkan!");
-                return;
-            }
-
-            if (file.size > 1.5 * 1024 * 1024) {
-                alert("Ukuran file terlalu besar! Maksimal ukuran file PDF adalah 1.5 MB untuk kestabilan Google Sheets.");
-                return;
-            }
-
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let base64PDF = e.target.result;
-                let dataKirim = {
-                    action: "simpanMateri",
-                    tanggal: new Date().toLocaleDateString(),
-                    kelas: kelas,
-                    mapel: mapel,
-                    judul: judul,
-                    fileData: base64PDF,
-                    fileName: file.name
-                };
-
-                let btn = event.target;
-                btn.disabled = true;
-                btn.innerText = "Mengunggah PDF ke Cloud...";
-
-                fetch(SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(dataKirim)
-                }).then(() => {
-                    alert("🎉 Materi PDF berhasil diunggah ke Google Sheets!");
-                    document.getElementById("upload-judul").value = "";
-                    document.getElementById("upload-file").value = "";
-                    btn.disabled = false;
-                    btn.innerText = "📤 Unggah & Simpan Materi ke Cloud";
-                    tampilkanDaftarMateri();
-                }).catch(err => {
-                    alert("Gagal mengunggah: " + err);
-                    btn.disabled = false;
-                    btn.innerText = "📤 Unggah & Simpan Materi ke Cloud";
-                });
+            let dataKirim = {
+                action: "simpanMateri",
+                tanggal: new Date().toLocaleDateString(),
+                kelas: kelas,
+                mapel: mapel,
+                judul: judul,
+                fileData: linkDrive,
+                fileName: "Dokumen PDF Drive"
             };
-            reader.readAsDataURL(file);
+
+            let btn = event.target;
+            btn.disabled = true;
+            btn.innerText = "Menyimpan ke Server...";
+
+            let params = new URLSearchParams(dataKirim);
+
+            fetch(SCRIPT_URL + "?" + params.toString(), { mode: "no-cors" })
+                .then(() => {
+                    alert("🎉 Materi berhasil disimpan ke sistem!");
+                    document.getElementById("upload-judul").value = "";
+                    document.getElementById("upload-link").value = "";
+                    btn.disabled = false;
+                    btn.innerText = "📤 Simpan Materi ke Cloud";
+                    setTimeout(tampilkanDaftarMateri, 1500);
+                })
+                .catch(err => {
+                    alert("Gagal menyimpan: " + err);
+                    btn.disabled = false;
+                    btn.innerText = "📤 Simpan Materi ke Cloud";
+                });
         }
 
         async function tampilkanDaftarMateri() {
@@ -184,7 +167,7 @@
                 });
 
                 if (dataFiltered.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi PDF di server.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi di server.</td></tr>`;
                     return;
                 }
 
@@ -194,15 +177,15 @@
                         <td>${index + 1}</td>
                         <td><b>${materi.kelas}</b></td>
                         <td><span class="badge badge-secondary">${materi.mapel}</span></td>
-                        <td class="font-weight-bold text-left">${materi.judul} <br><small class="text-muted font-weight-normal">${materi.fileName}</small></td>
+                        <td class="font-weight-bold text-left">${materi.judul}</td>
                         <td>
-                            <a href="${materi.fileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Preview Materi</a>
+                            <a href="${materi.filedata || materi.fileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Buka Materi</a>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data dari server. Periksa URL SCRIPT_URL Anda.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data dari server.</td></tr>`;
             }
         }
     </script>
