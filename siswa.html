@@ -12,6 +12,7 @@
         .form-control { border-radius: 10px; padding: 10px 15px; height: calc(1.5em + 1rem + 2px); }
         .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
         .box-materi-info { background: #e8f4fd; border-left: 5px solid #17a2b8; border-radius: 10px; }
+        .puzzle-box { background: #fff3cd; border: 2px dashed #ffc107; border-radius: 12px; }
     </style>
 </head>
 <body>
@@ -108,7 +109,7 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
         let semuaSiswa = [];
         let semuaSoal = [];
-        let soalAktif = []; // Menyimpan khusus daftar soal yang sedang dikerjakan
+        let soalAktif = [];
 
         document.addEventListener("DOMContentLoaded", function() {
             ambilDataSiswaServer();
@@ -273,11 +274,23 @@
                 let idSoal = "soal_" + index;
                 let jenisItem = String(item.jenis || item.Jenis || item.JENIS || "").trim();
                 let pertanyaan = item.pertanyaan || item.soal || item.PERTANYAAN || "";
+                let kunciResmi = item.kunci || item.kuncijawaban || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "";
 
                 htmlContent += `<div class="card p-3 mb-3 border shadow-sm">`;
                 
                 if (jenisItem.toLowerCase() === "puzzle kata") {
-                    htmlContent += `<p class="font-weight-bold text-primary"><b>Soal ${index + 1} (Puzzle Kata)</b></p>`;
+                    // Petunjuk diperjelas & diperbesar
+                    let kataAcak = acakKata(kunciResmi || pertanyaan);
+                    htmlContent += `
+                        <div class="puzzle-box p-3 mb-2">
+                            <h5 class="font-weight-bold text-dark mb-1">🔤 Soal ${index + 1}: Puzzle Kata</h5>
+                            <p class="text-muted small mb-2"><b>Petunjuk:</b> Susunlah huruf-huruf acak di bawah ini menjadi susunan kata yang benar sesuai petunjuk guru!</p>
+                            ${pertanyaan ? `<p class="mb-2 font-weight-bold text-primary">Petunjuk Soal: ${pertanyaan}</p>` : ''}
+                            <div class="alert alert-warning font-weight-bold text-center py-2 mb-2" style="letter-spacing: 4px; font-size: 22px;">${kataAcak}</div>
+                        </div>
+                        <label class="small font-weight-bold text-muted">Ketik Jawaban Susunan Kata yang Benar:</label>
+                        <input type="text" class="form-control" name="${idSoal}" autocomplete="off" placeholder="Ketik kata hasil susunan Anda di sini...">
+                    `;
                 } else {
                     htmlContent += `<p class="font-weight-bold"><b>Soal ${index + 1} (${jenisItem}):</b> ${pertanyaan}</p>`;
                 }
@@ -295,15 +308,6 @@
                         <div class="custom-control custom-radio mb-2"><input type="radio" id="${idSoal}_D" name="${idSoal}" value="D" class="custom-control-input"><label class="custom-control-label" for="${idSoal}_D">D. ${optD}</label></div>
                     `;
                 } 
-                else if (jenisItem.toLowerCase() === "puzzle kata") {
-                    let kataAsli = pertanyaan.trim();
-                    let kataAcak = acakKata(kataAsli);
-                    htmlContent += `
-                        <p class="text-info small mb-1">🔤 Susunlah huruf-huruf acak berikut menjadi kata yang benar:</p>
-                        <div class="alert alert-secondary font-weight-bold text-center py-2 mb-2" style="letter-spacing: 3px; font-size: 20px;">${kataAcak}</div>
-                        <input type="text" class="form-control" name="${idSoal}" placeholder="Ketik susunan kata yang benar di sini...">
-                    `;
-                }
                 else if (jenisItem.toLowerCase() === "merangkum materi") {
                     htmlContent += `
                         <p class="text-muted small mb-1">✍️ Tuliskan rangkuman materi:</p>
@@ -311,7 +315,7 @@
                         <small id="${idSoal}_counter" class="text-danger font-weight-bold">Jumlah karakter: 0 / 300 minimal</small>
                     `;
                 } 
-                else {
+                else if (jenisItem.toLowerCase() !== "puzzle kata") {
                     htmlContent += `<textarea class="form-control" name="${idSoal}" rows="3" placeholder="Tuliskan jawaban essay Anda di sini..."></textarea>`;
                 }
                 htmlContent += `</div>`;
@@ -322,7 +326,8 @@
         }
 
         function acakKata(str) {
-            let arr = str.split(' ');
+            if (!str) return "ACAK";
+            let arr = str.trim().split(' ');
             let arrAcak = arr.map(kata => {
                 let huruf = kata.split('');
                 for (let i = huruf.length - 1; i > 0; i--) {
@@ -367,17 +372,16 @@
             let nilaiAkhir = 0;
             let keteranganStatus = "Selesai Mengerjakan";
 
-            // LOGIKA HITUNG OTOMATIS BERDASARKAN SOAL AKTIF
-            if (jenisLower.includes("pilihan ganda")) {
-                let totalSoal = soalAktif.length;
-                let jumlahBenar = 0;
+            let totalSoal = soalAktif.length;
+            let jumlahBenar = 0;
 
+            // 1. LOGIKA PILIHAN GANDA
+            if (jenisLower.includes("pilihan ganda")) {
                 soalAktif.forEach((item, index) => {
                     let idSoal = "soal_" + index;
                     let radioDipilih = document.querySelector(`input[name="${idSoal}"]:checked`);
                     let jawabanSiswa = radioDipilih ? radioDipilih.value.trim().toUpperCase() : "-";
                     
-                    // Membaca kunci jawaban dengan berbagai nama header kolom di spreadsheet
                     let kunci = String(item.kunci || item.kuncijawaban || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "").trim().toUpperCase();
 
                     if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa === kunci) {
@@ -392,30 +396,49 @@
                 }
                 keteranganStatus = `Benar ${jumlahBenar} dari ${totalSoal} Soal`;
 
+            // 2. LOGIKA PUZZLE KATA (MENYESUAIKAN JAWABAN ANAK DENGAN KUNCI GURU)
+            } else if (jenisLower.includes("puzzle kata")) {
+                soalAktif.forEach((item, index) => {
+                    let idSoal = "soal_" + index;
+                    let inputEl = document.querySelector(`input[name="${idSoal}"]`);
+                    let jawabanSiswa = inputEl ? inputEl.value.trim() : "-";
+                    
+                    let kunci = String(item.kunci || item.kuncijawaban || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "").trim();
+
+                    // Pencocokan otomatis (mengabaikan kapital/spasi berlebih)
+                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa.toLowerCase() === kunci.toLowerCase()) {
+                        jumlahBenar++;
+                    }
+
+                    listDetail.push(`Puzzle ${index + 1}: ${jawabanSiswa} (Kunci: ${kunci || '-'})`);
+                });
+
+                if (totalSoal > 0) {
+                    nilaiAkhir = Math.round((jumlahBenar / totalSoal) * 100);
+                }
+                keteranganStatus = `Benar ${jumlahBenar} dari ${totalSoal} Soal`;
+
+            // 3. LOGIKA ESSAY & RANGKUMAN MATERI (KOREKSI MANUAL GURU)
             } else if (jenisLower.includes("essay") || jenisLower.includes("merangkum materi")) {
-                // Untuk Essay & Rangkuman: Nilai diatur 'Menunggu Koreksi' agar dapat diisi/diubah manual oleh Guru di Rekap Nilai
                 nilaiAkhir = "Menunggu Koreksi";
                 keteranganStatus = "Perlu Dinilai Guru";
 
                 let semuaTextarea = document.querySelectorAll("#area-soal textarea");
                 semuaTextarea.forEach((ta, idx) => {
                     if (ta.value && ta.value.trim() !== "") {
-                        listDetail.push(`Teks/Jawaban ${idx+1}: ${ta.value.trim()}`);
+                        listDetail.push(`Jawaban ${idx+1}: ${ta.value.trim()}`);
                     }
                 });
 
+            // 4. JENIS SOAL LAINNYA
             } else {
-                // Untuk Isian / Puzzle Kata
-                let totalSoal = soalAktif.length;
-                let jumlahBenar = 0;
-
                 soalAktif.forEach((item, index) => {
                     let idSoal = "soal_" + index;
                     let inputEl = document.querySelector(`input[name="${idSoal}"]`);
-                    let jawabanSiswa = inputEl ? inputEl.value.trim().toUpperCase() : "-";
-                    let kunci = String(item.kunci || item.jawaban || item.PERTANYAAN || "").trim().toUpperCase();
+                    let jawabanSiswa = inputEl ? inputEl.value.trim() : "-";
+                    let kunci = String(item.kunci || item.kuncijawaban || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "").trim();
 
-                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa === kunci) {
+                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa.toLowerCase() === kunci.toLowerCase()) {
                         jumlahBenar++;
                     }
 
@@ -425,6 +448,7 @@
                 if (totalSoal > 0) {
                     nilaiAkhir = Math.round((jumlahBenar / totalSoal) * 100);
                 }
+                keteranganStatus = `Benar ${jumlahBenar} dari ${totalSoal} Soal`;
             }
 
             let stringDetailJawaban = listDetail.join(" | ") || "-";
@@ -449,7 +473,7 @@
 
             try {
                 await fetch(SCRIPT_URL + "?" + params.toString(), { mode: "no-cors" });
-                alert(`🎉 Berhasil! Jawaban Anda telah tersimpan.\nNilai: ${nilaiAkhir}`);
+                alert(`🎉 Berhasil! Jawaban Anda telah tersimpan di sistem guru.\nNilai: ${nilaiAkhir}`);
                 btn.disabled = false;
                 btn.innerText = "🚀 Selesai & Kirim Jawaban";
                 location.reload();
