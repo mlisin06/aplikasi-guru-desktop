@@ -85,20 +85,21 @@
 
     <!-- Modal Pop-up untuk Membaca Detail Jawaban & Berikan Nilai Langsung -->
     <div class="modal fade" id="modalDetailJawaban" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header bg-success text-white">
+      <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius: 15px;">
+          <div class="modal-header bg-success text-white" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
             <h5 class="modal-title font-weight-bold" id="modalLabel">📝 Koreksi & Detail Jawaban Siswa</h5>
             <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body p-4">
             <p id="info-siswa-detail" class="font-weight-bold text-secondary mb-3"></p>
             
             <div class="form-group mb-3">
-                <label class="small font-weight-bold text-dark">Rincian Jawaban/Ketikan Siswa:</label>
-                <div class="p-3 bg-light border rounded" style="white-space: pre-wrap; word-break: break-word; max-height: 250px; overflow-y: auto;" id="isi-detail-jawaban">
+                <label class="small font-weight-bold text-dark">Rincian Jawaban / Ketikan Lengkap Siswa:</label>
+                <!-- Area scroll untuk teks panjang hingga ribuan karakter agar tidak berat -->
+                <div class="p-3 bg-light border rounded" style="white-space: pre-wrap; word-break: break-word; max-height: 350px; overflow-y: auto; font-size: 13px;" id="isi-detail-jawaban">
                   -
                 </div>
             </div>
@@ -106,7 +107,7 @@
             <hr>
 
             <!-- Form Guru Memberikan Nilai Langsung -->
-            <div class="bg-info-soft p-3 border rounded bg-light">
+            <div class="p-3 border rounded bg-light">
                 <label class="font-weight-bold text-success mb-2">⭐ Berikan / Ubah Nilai Tugas Ini (Skor 0 - 100):</label>
                 <div class="form-row align-items-center">
                     <div class="col-md-6 mb-2 mb-md-0">
@@ -126,7 +127,7 @@
 
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+            <button type="button" class="btn btn-secondary btn-sm px-4 font-weight-bold" data-dismiss="modal">Tutup</button>
           </div>
         </div>
       </div>
@@ -250,8 +251,11 @@
                         let btnLabel = isNaN(num) ? "👀 Periksa & Nilai" : "✏️ Ubah Nilai";
                         let btnClass = isNaN(num) ? "btn-outline-primary" : "btn-outline-secondary";
 
+                        // Tampilkan cuplikan teks singkat jika jawaban sangat panjang agar tabel tetap ringan & responsif
+                        let infoPanjangTeks = detailTeks.length > 100 ? ` <small class="text-muted">(${detailTeks.length} kar)</small>` : '';
+
                         return `
-                            <div class="mb-1"><span class="badge ${isNaN(num) ? 'badge-info' : 'badge-light border'} px-2 py-1">${val}</span></div>
+                            <div class="mb-1"><span class="badge ${isNaN(num) ? 'badge-info' : 'badge-light border'} px-2 py-1">${val}</span>${infoPanjangTeks}</div>
                             <button class="btn ${btnClass} btn-sm py-0 px-2" style="font-size: 10px;" onclick="bukaModalKoreksi('${row.nama}', '${row.kelas}', '${row.mapel}', '${jenisKuisName}', '${safeDetail}', '${currentNilaiVal}')">${btnLabel}</button>
                         `;
                     };
