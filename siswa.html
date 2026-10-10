@@ -355,40 +355,72 @@
             let mapel = parts[0];
             let jenis = parts.slice(1).join(" - ");
 
+            let jenisLower = jenis.toLowerCase();
+            let listDetail = [];
             let nilaiAkhir = 100;
             let keteranganStatus = "Selesai Mengerjakan";
-            let jenisLower = jenis.toLowerCase();
 
-            if (jenisLower.includes("essay") || jenisLower.includes("merangkum materi")) {
+            // Filter soal yang sedang dikerjakan
+            let soalFilter = semuaSoal.filter(s => {
+                let kSoal = String(s.kelas || s.Kelas || s.KELAS || "").trim();
+                let mSoal = String(s.mapel || s.Mapel || s.MAPEL || "").trim();
+                let jSoal = String(s.jenis || s.Jenis || s.JENIS || "").trim();
+
+                let matchKelas = (kSoal === "" || kSoal.toLowerCase() === kelas.toLowerCase());
+                let matchMapelJenis = (mSoal + " - " + jSoal === kuis || jSoal.toLowerCase() === jenis.toLowerCase());
+                
+                return matchKelas && matchMapelJenis;
+            });
+
+            // Hitung otomatis jika Pilihan Ganda
+            if (jenisLower.includes("pilihan ganda")) {
+                let jumlahSoal = soalFilter.length;
+                let jumlahBenar = 0;
+
+                soalFilter.forEach((item, index) => {
+                    let idSoal = "soal_" + index;
+                    let radioDipilih = document.querySelector(`input[name="${idSoal}"]:checked`);
+                    let jawabanSiswa = radioDipilih ? radioDipilih.value.trim().toUpperCase() : "-";
+                    
+                    let kunciJawaban = String(item.kunci || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "").trim().toUpperCase();
+
+                    if (jawabanSiswa !== "-" && kunciJawaban !== "" && jawabanSiswa === kunciJawaban) {
+                        jumlahBenar++;
+                    }
+
+                    listDetail.push(`Soal ${index + 1}: ${jawabanSiswa} (Kunci: ${kunciJawaban || '-'})`);
+                });
+
+                if (jumlahSoal > 0) {
+                    nilaiAkhir = Math.round((jumlahBenar / jumlahSoal) * 100);
+                } else {
+                    nilaiAkhir = 0;
+                }
+
+                keteranganStatus = `Benar ${jumlahBenar} dari ${jumlahSoal} Soal`;
+
+            } else if (jenisLower.includes("essay") || jenisLower.includes("merangkum materi")) {
                 nilaiAkhir = "Menunggu Koreksi";
                 keteranganStatus = "Perlu Dinilai Guru";
+
+                let semuaTextarea = document.querySelectorAll("#area-soal textarea");
+                semuaTextarea.forEach((ta, idx) => {
+                    if (ta.value && ta.value.trim() !== "") {
+                        listDetail.push(`Teks/Jawaban ${idx+1}: ${ta.value.trim()}`);
+                    }
+                });
+
+            } else {
+                let semuaInputText = document.querySelectorAll("#area-soal input[type='text']");
+                semuaInputText.forEach((inp, idx) => {
+                    if (inp.value && inp.value.trim() !== "") {
+                        listDetail.push(`Isian/Puzzle ${idx+1}: ${inp.value.trim()}`);
+                    }
+                });
             }
-
-            // Mengumpulkan rincian jawaban atau ketikan siswa
-            let listDetail = [];
-            
-            let semuaTextarea = document.querySelectorAll("#area-soal textarea");
-            semuaTextarea.forEach((ta, idx) => {
-                if (ta.value && ta.value.trim() !== "") {
-                    listDetail.push(`Teks/Jawaban ${idx+1}: ${ta.value.trim()}`);
-                }
-            });
-
-            let semuaInputText = document.querySelectorAll("#area-soal input[type='text']");
-            semuaInputText.forEach((inp, idx) => {
-                if (inp.value && inp.value.trim() !== "") {
-                    listDetail.push(`Isian/Puzzle ${idx+1}: ${inp.value.trim()}`);
-                }
-            });
-
-            let semuaRadioDipilih = document.querySelectorAll("#area-soal input[type='radio']:checked");
-            semuaRadioDipilih.forEach((radio, idx) => {
-                listDetail.push(`Pilihan Soal ${idx+1}: ${radio.value}`);
-            });
 
             let stringDetailJawaban = listDetail.join(" | ") || "-";
 
-            // [PENTING] Properti 'detail' kini disertakan agar terkirim ke Google Sheets
             let dataKirim = {
                 action: "simpanNilaiGET",
                 tanggal: new Date().toLocaleDateString("id-ID"),
@@ -409,7 +441,7 @@
 
             try {
                 await fetch(SCRIPT_URL + "?" + params.toString(), { mode: "no-cors" });
-                alert("🎉 Berhasil! Jawaban Anda telah tersimpan di sistem guru.");
+                alert(`🎉 Berhasil! Jawaban Anda telah tersimpan di sistem guru.\nNilai Anda: ${nilaiAkhir}`);
                 btn.disabled = false;
                 btn.innerText = "🚀 Selesai & Kirim Jawaban";
                 location.reload();
