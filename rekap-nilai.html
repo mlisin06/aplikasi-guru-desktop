@@ -97,8 +97,8 @@
             <p id="info-siswa-detail" class="font-weight-bold text-secondary mb-3"></p>
             
             <div class="form-group mb-3">
-                <label class="small font-weight-bold text-dark">Rincian Jawaban / Ketikan Lengkap Siswa:</label>
-                <!-- Area scroll untuk teks panjang hingga ribuan karakter agar tidak berat -->
+                <label class="small font-weight-bold text-dark">Rincian Jawaban / Ketikan Lengkap Siswa (<span id="info-jumlah-karakter">0</span> Karakter):</label>
+                <!-- Area scroll aman untuk teks hingga 5000+ karakter tanpa lag -->
                 <div class="p-3 bg-light border rounded" style="white-space: pre-wrap; word-break: break-word; max-height: 350px; overflow-y: auto; font-size: 13px;" id="isi-detail-jawaban">
                   -
                 </div>
@@ -140,6 +140,9 @@
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
+        
+        // Memori Penyimpanan Global agar teks 5000+ karakter tidak membebani render tombol HTML
+        let globalDetailCache = {};
 
         document.addEventListener("DOMContentLoaded", function() {
             tampilkanRekapNilaiOnline();
@@ -155,6 +158,7 @@
                 let response = await fetch(SCRIPT_URL + "?action=getNilai");
                 let dataNilai = await response.json();
                 tbody.innerHTML = "";
+                globalDetailCache = {}; // Reset memori cache
 
                 if (!Array.isArray(dataNilai) || dataNilai.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di server.</td></tr>`;
@@ -245,18 +249,20 @@
                         }
                         
                         let num = Number(val);
-                        let safeDetail = encodeURIComponent(detailTeks);
                         let currentNilaiVal = isNaN(num) ? "" : val;
 
                         let btnLabel = isNaN(num) ? "👀 Periksa & Nilai" : "✏️ Ubah Nilai";
                         let btnClass = isNaN(num) ? "btn-outline-primary" : "btn-outline-secondary";
 
-                        // Tampilkan cuplikan teks singkat jika jawaban sangat panjang agar tabel tetap ringan & responsif
-                        let infoPanjangTeks = detailTeks.length > 100 ? ` <small class="text-muted">(${detailTeks.length} kar)</small>` : '';
+                        // Buat ID unik untuk cache teks agar aman dari string raksasa
+                        let cacheId = "id_" + Math.random().toString(36).substr(2, 9);
+                        globalDetailCache[cacheId] = detailTeks;
+
+                        let infoPanjangTeks = detailTeks.length > 50 ? ` <small class="text-muted">(${detailTeks.length} kar)</small>` : '';
 
                         return `
                             <div class="mb-1"><span class="badge ${isNaN(num) ? 'badge-info' : 'badge-light border'} px-2 py-1">${val}</span>${infoPanjangTeks}</div>
-                            <button class="btn ${btnClass} btn-sm py-0 px-2" style="font-size: 10px;" onclick="bukaModalKoreksi('${row.nama}', '${row.kelas}', '${row.mapel}', '${jenisKuisName}', '${safeDetail}', '${currentNilaiVal}')">${btnLabel}</button>
+                            <button class="btn ${btnClass} btn-sm py-0 px-2" style="font-size: 10px;" onclick="bukaModalKoreksiCache('${row.nama}', '${row.kelas}', '${row.mapel}', '${jenisKuisName}', '${cacheId}', '${currentNilaiVal}')">${btnLabel}</button>
                         `;
                     };
 
@@ -280,14 +286,16 @@
             }
         }
 
-        function bukaModalKoreksi(nama, kelas, mapel, jenisKuis, encodedDetail, nilaiSekarang) {
-            let decodedDetail = decodeURIComponent(encodedDetail);
+        // Fungsi pembuka modal menggunakan ID Cache (Bebas lag meski teks mencapai ribuan karakter)
+        function bukaModalKoreksiCache(nama, kelas, mapel, jenisKuis, cacheId, nilaiSekarang) {
+            let detailTeks = globalDetailCache[cacheId] || "Tidak ada detail.";
 
             document.getElementById("info-siswa-detail").textContent = `${nama} (${kelas}) - ${mapel} [${jenisKuis}]`;
-            document.getElementById("isi-detail-jawaban").textContent = decodedDetail;
+            document.getElementById("isi-detail-jawaban").textContent = detailTeks;
+            document.getElementById("info-jumlah-karakter").textContent = detailTeks.length;
             document.getElementById("input-nilai-guru").value = nilaiSekarang;
 
-            // Simpan data tersembunyi untuk referensi saat disimpan
+            // Simpan referensi tersembunyi
             document.getElementById("hidden-nama-siswa").value = nama;
             document.getElementById("hidden-kelas-siswa").value = kelas;
             document.getElementById("hidden-mapel-siswa").value = mapel;
