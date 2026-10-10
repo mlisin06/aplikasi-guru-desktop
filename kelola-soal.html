@@ -188,8 +188,8 @@
             let containerPG = document.getElementById("container-pg");
 
             if (jenis === "Puzzle Kata") {
-                labelPertanyaan.innerHTML = "🔤 Kalimat / Kata Benar (Akan diacak otomatis untuk siswa):";
-                inputSoal.placeholder = "Contoh: Pancasila adalah dasar negara Indonesia";
+                labelPertanyaan.innerHTML = "🔤 Kata / Kalimat Benar (Akan diacak otomatis untuk siswa):";
+                inputSoal.placeholder = "Contoh: Pancasila";
                 containerPG.style.display = "none";
             } else if (jenis === "Merangkum Materi") {
                 labelPertanyaan.innerHTML = "✍️ Judul / Instruksi Tugas Ringkasan (Siswa wajib merangkum min. 300 karakter):";
@@ -225,7 +225,6 @@
                 return;
             }
 
-            // Parameter ini dipetakan pas dengan urutan appendRow di Code.gs:
             let dataKirim = {
                 action: "simpanSoal",
                 tanggal: new Date().toLocaleDateString("id-ID"),
@@ -283,7 +282,6 @@
                 tbody.innerHTML = "";
 
                 let dataFiltered = dataSoal.filter(item => {
-                    // Backend Code.gs sudah menyediakan huruf kecil & besar, kita ambil yang aman:
                     let kls = String(item.kelas || item.Kelas || "").trim();
                     let mpl = String(item.mapel || item.Mapel || "").trim();
                     let jns = String(item.jenis || item.Jenis || "").trim();
