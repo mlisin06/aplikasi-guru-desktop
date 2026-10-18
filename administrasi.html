@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administrasi & Materi Pembelajaran - Portal Pendidikan</title>
+    <title>Administrasi & Materi Pembelajaran - Portal Pendidikan (Firebase)</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase App & Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
@@ -16,13 +21,13 @@
 <body>
     <div class="container py-5">
         <div class="card card-custom p-4 mb-4 text-center bg-info text-white shadow-sm">
-            <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi PDF Online</h2>
-            <p class="mb-0 text-white-50">Upload modul/materi PDF via Google Drive agar bisa dibaca langsung oleh siswa.</p>
+            <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi PDF Online (Firebase)</h2>
+            <p class="mb-0 text-white-50">Upload modul/materi PDF via Google Drive agar bisa dibaca langsung oleh siswa secara real-time.</p>
         </div>
 
         <!-- Panel Guru Upload Link PDF -->
         <div class="card card-custom p-4 mb-4 border-top border-primary" style="border-top-width: 5px !important;">
-            <h4 class="text-primary font-weight-bold mb-3">👨‍🏫 Simpan Materi & Link PDF</h4>
+            <h4 class="text-primary font-weight-bold mb-3">👨‍🏫 Simpan Materi & Link PDF ke Firebase</h4>
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Kelas</label>
@@ -32,7 +37,7 @@
                         <option value="Kelas 3">Kelas 3</option>
                         <option value="Kelas 4">Kelas 4</option>
                         <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6">Kelas 6</option>
+                        <option value="Kelas 6" selected>Kelas 6</option>
                     </select>
                 </div>
                 <div class="form-group col-md-3">
@@ -57,18 +62,25 @@
                     <input type="text" id="upload-link" class="form-control" placeholder="Paste Link Google Drive di sini">
                 </div>
             </div>
-            <button type="button" class="btn btn-primary btn-custom btn-block mt-2 shadow-sm" onclick="simpanMateriPDFKeServer()">
-                📤 Simpan Materi ke Cloud
+            <button type="button" class="btn btn-primary btn-custom btn-block mt-2 shadow-sm" onclick="simpanMateriPDFKeFirebase()">
+                📤 Simpan Materi ke Firebase
             </button>
         </div>
 
-        <!-- Daftar Materi Siswa -->
+        <!-- Daftar Materi Siswa dengan Filter & Tombol Hapus -->
         <div class="card card-custom p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-                <h4 class="text-success font-weight-bold mb-0">📖 Daftar Materi & Bahan Bacaan Online</h4>
-                <div class="form-inline mt-2 mt-md-0">
-                    <label class="small font-weight-bold mr-2">Filter Kelas:</label>
-                    <select id="filter-kelas-materi" class="form-control form-control-sm" onchange="tampilkanDaftarMateri()">
+                <h4 class="text-success font-weight-bold mb-2">📖 Daftar Materi & Bahan Bacaan Online</h4>
+                <div>
+                    <button class="btn btn-outline-danger btn-sm font-weight-bold mr-2" onclick="hapusMateriKelompok()">🗑️ Hapus Sesuai Filter</button>
+                    <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="tampilkanDaftarMateriFirebase()">🔄 Refresh Data</button>
+                </div>
+            </div>
+
+            <div class="form-row mb-3 bg-light p-3 rounded">
+                <div class="form-group col-md-6 mb-0">
+                    <label class="small font-weight-bold">Filter Sesuai Kelas:</label>
+                    <select id="filter-kelas-materi" class="form-control form-control-sm" onchange="tampilkanDaftarMateriFirebase()">
                         <option value="">-- Semua Kelas --</option>
                         <option value="Kelas 1">Kelas 1</option>
                         <option value="Kelas 2">Kelas 2</option>
@@ -82,17 +94,17 @@
 
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
-                    <thead class="thead-dark">
+                    <thead class="thead-dark text-center">
                         <tr>
                             <th width="5%">No</th>
                             <th width="15%">Kelas</th>
                             <th width="20%">Mata Pelajaran</th>
                             <th width="40%">Judul Materi</th>
-                            <th width="20%">Aksi Preview</th>
+                            <th width="20%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-materi-body">
-                        <tr><td colspan="5" class="text-center text-muted py-4">Memuat data materi dari server...</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">Memuat data materi dari Firebase...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -104,13 +116,27 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
+        // Konfigurasi Firebase Realtime Database
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgwdiryHd1TqpKdNiV_KXK-leSl3sOW8g",
+            authDomain: "eduadmin-pro-88cd6.firebaseapp.com",
+            databaseURL: "https://eduadmin-pro-88cd6-default-rtdb.firebaseio.com/",
+            projectId: "eduadmin-pro-88cd6",
+            storageBucket: "eduadmin-pro-88cd6.firebasestorage.app",
+            messagingSenderId: "223595774231",
+            appId: "1:223595774231:web:707feff9094f18d839b752"
+        };
+
+        // Inisialisasi Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         document.addEventListener("DOMContentLoaded", function() {
-            tampilkanDaftarMateri();
+            tampilkanDaftarMateriFirebase();
         });
 
-        function simpanMateriPDFKeServer() {
+        // 1. Simpan Materi ke Firebase node 'materi/'
+        function simpanMateriPDFKeFirebase() {
             let kelas = document.getElementById("upload-kelas").value;
             let mapel = document.getElementById("upload-mapel").value;
             let judul = document.getElementById("upload-judul").value.trim();
@@ -122,70 +148,135 @@
             }
 
             let dataKirim = {
-                action: "simpanMateri",
-                tanggal: new Date().toLocaleDateString(),
+                tanggal: new Date().toLocaleDateString("id-ID"),
                 kelas: kelas,
                 mapel: mapel,
                 judul: judul,
-                fileData: linkDrive,
+                filedata: linkDrive,
                 fileName: "Dokumen PDF Drive"
             };
 
             let btn = event.target;
             btn.disabled = true;
-            btn.innerText = "Menyimpan ke Server...";
+            btn.innerText = "Menyimpan ke Firebase...";
 
-            let params = new URLSearchParams(dataKirim);
-
-            fetch(SCRIPT_URL + "?" + params.toString(), { mode: "no-cors" })
+            db.ref('materi/').push(dataKirim)
                 .then(() => {
-                    alert("🎉 Materi berhasil disimpan ke sistem!");
+                    alert("🎉 Materi berhasil disimpan ke Firebase!");
                     document.getElementById("upload-judul").value = "";
                     document.getElementById("upload-link").value = "";
                     btn.disabled = false;
-                    btn.innerText = "📤 Simpan Materi ke Cloud";
-                    setTimeout(tampilkanDaftarMateri, 1500);
+                    btn.innerText = "📤 Simpan Materi ke Firebase";
+                    tampilkanDaftarMateriFirebase();
                 })
                 .catch(err => {
-                    alert("Gagal menyimpan: " + err);
+                    alert("Gagal menyimpan: " + err.message);
                     btn.disabled = false;
-                    btn.innerText = "📤 Simpan Materi ke Cloud";
+                    btn.innerText = "📤 Simpan Materi ke Firebase";
                 });
         }
 
-        async function tampilkanDaftarMateri() {
+        // 2. Tampilkan Daftar Materi dari Firebase dengan Filter Kelas
+        function tampilkanDaftarMateriFirebase() {
             let tbody = document.getElementById("tabel-materi-body");
-            let filterKelas = document.getElementById("filter-kelas-materi").value;
+            let filterKelas = document.getElementById("filter-kelas-materi").value.trim();
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-primary py-4">⏳ Memuat data materi dari Firebase...</td></tr>`;
 
-            try {
-                let response = await fetch(SCRIPT_URL + "?action=getMateri");
-                let dataMateri = await response.json();
-                tbody.innerHTML = "";
+            db.ref('materi/').once('value')
+                .then((snapshot) => {
+                    tbody.innerHTML = "";
+                    const data = snapshot.val();
 
-                let dataFiltered = dataMateri.filter(item => {
-                    return filterKelas ? item.kelas === filterKelas : true;
+                    if (!data) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi tersimpan di Firebase.</td></tr>`;
+                        return;
+                    }
+
+                    let dataMateriArr = [];
+                    Object.keys(data).forEach(key => {
+                        let item = data[key];
+                        item.firebaseKey = key; // Simpan key unik untuk hapus
+                        dataMateriArr.push(item);
+                    });
+
+                    let dataFiltered = dataMateriArr.filter(item => {
+                        let kls = String(item.kelas || "").trim();
+                        return filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+                    });
+
+                    if (dataFiltered.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada materi yang cocok dengan filter kelas ini.</td></tr>`;
+                        return;
+                    }
+
+                    dataFiltered.forEach((materi, index) => {
+                        let fKey = materi.firebaseKey;
+                        let tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td class="text-center">${index + 1}</td>
+                            <td class="text-center"><b>${materi.kelas || '-'}</b></td>
+                            <td class="text-center"><span class="badge badge-secondary">${materi.mapel || '-'}</span></td>
+                            <td class="font-weight-bold text-left">${materi.judul || '-'}</td>
+                            <td class="text-center">
+                                <a href="${materi.filedata || '#'}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-2 py-1 mr-1">👀 Buka</a>
+                                <button class="btn btn-sm btn-danger font-weight-bold px-2 py-1" onclick="hapusMateriSatu('${fKey}')">🗑️ Hapus</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(e => {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data dari Firebase: ${e.message}</td></tr>`;
                 });
+        }
 
-                if (dataFiltered.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi di server.</td></tr>`;
-                    return;
+        // 3. Hapus Satuan (Satu Materi)
+        function hapusMateriSatu(firebaseKey) {
+            if (confirm("Apakah Anda yakin ingin menghapus materi ini dari Firebase?")) {
+                db.ref('materi/' + firebaseKey).remove()
+                    .then(() => {
+                        alert("Materi berhasil dihapus!");
+                        tampilkanDaftarMateriFirebase();
+                    })
+                    .catch(err => {
+                        alert("Gagal menghapus materi: " + err.message);
+                    });
+            }
+        }
+
+        // 4. Hapus Kelompok (Berdasarkan Filter Kelas)
+        async function hapusMateriKelompok() {
+            let filterKelas = document.getElementById("filter-kelas-materi").value.trim();
+
+            let pesanKonfirmasi = filterKelas 
+                ? `Apakah Anda yakin ingin menghapus SELURUH materi pada ${filterKelas}?`
+                : "PERINGATAN: Filter kelas kosong. Ini akan menghapus SELURUH MATERI di database. Yakin ingin melanjutkan?";
+
+            if (confirm(pesanKonfirmasi)) {
+                try {
+                    let snapshot = await db.ref('materi/').once('value');
+                    let data = snapshot.val();
+                    if (!data) {
+                        alert("Tidak ada data materi untuk dihapus.");
+                        return;
+                    }
+
+                    let updatePromises = [];
+                    Object.keys(data).forEach(key => {
+                        let item = data[key];
+                        let kls = String(item.kelas || "").trim();
+
+                        if (!filterKelas || kls.toLowerCase() === filterKelas.toLowerCase()) {
+                            updatePromises.push(db.ref('materi/' + key).remove());
+                        }
+                    });
+
+                    await Promise.all(updatePromises);
+                    alert("🎉 Berhasil menghapus kelompok materi yang dipilih!");
+                    tampilkanDaftarMateriFirebase();
+                } catch (err) {
+                    alert("Gagal menghapus kelompok materi: " + err.message);
                 }
-
-                dataFiltered.forEach((materi, index) => {
-                    let tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td><b>${materi.kelas}</b></td>
-                        <td><span class="badge badge-secondary">${materi.mapel}</span></td>
-                        <td class="font-weight-bold text-left">${materi.judul}</td>
-                        <td>
-                            <a href="${materi.filedata || materi.fileData}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Buka Materi</a>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data dari server.</td></tr>`;
             }
         }
     </script>
