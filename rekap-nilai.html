@@ -178,13 +178,15 @@
                 globalDetailCache = {};
 
                 if (!dataObj) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di Firebase.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di Firebase. (Siswa belum mengirim jawaban ujian)</td></tr>`;
                     return;
                 }
 
                 let rekapMap = {};
                 Object.keys(dataObj).forEach(dbKey => {
                     let item = dataObj[dbKey];
+                    if (!item) return;
+
                     let kls = String(item.kelas || "").trim();
                     let nms = String(item.nama || "").trim();
                     let mpl = String(item.mapel || "").trim();
@@ -231,13 +233,18 @@
                             rekapMap[key]["Merangkum Materi"] = valNilai;
                             rekapMap[key].detailJawabanMap["Merangkum Materi"] = valDetail;
                             rekapMap[key].keyFirebaseMap["Merangkum Materi"] = dbKey;
+                        } else {
+                            // Default masukkan ke Pilihan Ganda jika jenis tidak terdeteksi spesifik
+                            rekapMap[key]["Pilihan Ganda"] = valNilai;
+                            rekapMap[key].detailJawabanMap["Pilihan Ganda"] = valDetail;
+                            rekapMap[key].keyFirebaseMap["Pilihan Ganda"] = dbKey;
                         }
                     }
                 });
 
                 let keys = Object.keys(rekapMap);
                 if (keys.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada data yang cocok dengan filter.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada data rekap yang cocok dengan filter.</td></tr>`;
                     return;
                 }
 
@@ -305,7 +312,7 @@
                 });
             } catch (e) {
                 console.error(e);
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal memuat rekap nilai dari Firebase.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal memuat rekap nilai: ${e.message}</td></tr>`;
             }
         }
 
@@ -343,13 +350,11 @@
                 $('#modalDetailJawaban').modal('hide');
                 
                 if (firebaseKey) {
-                    // Update data nilai yang sudah ada di Firebase berdasarkan key uniknya
                     await db.ref('nilai/' + firebaseKey).update({
                         nilai: Number(nilaiBaru),
                         keterangan: "Dinilai Guru"
                     });
                 } else {
-                    // Jika data belum ada, buat baru
                     await db.ref('nilai/').push({
                         tanggal: new Date().toLocaleDateString("id-ID"),
                         nama: nama,
@@ -364,7 +369,7 @@
 
                 alert("🎉 Berhasil! Nilai siswa telah diperbarui di Firebase.");
                 tampilkanRekapNilaiFirebase();
-            }[cite: 5]catch (err) {
+            } catch (err) {
                 alert("Gagal menyimpan nilai: " + err.message);
             }
         }
