@@ -23,7 +23,7 @@
     <div class="container py-5">
         <div class="card card-custom p-4 mb-4 text-center bg-primary text-white shadow-sm">
             <h2 class="font-weight-bold mb-2">📝 Kelola Soal & Kuis (Firebase)</h2>
-            <p class="mb-0 text-white-50">Input dan atur bank soal atau tugas siswa secara online melalui Firebase.</p>
+            <p class="mb-0 text-white-50">Input, atur, dan hapus bank soal atau tugas siswa secara online melalui Firebase.</p>
         </div>
 
         <!-- Form Input Soal Dinamis -->
@@ -108,11 +108,14 @@
             </button>
         </div>
 
-        <!-- Daftar Soal Tersimpan dengan Filter -->
+        <!-- Daftar Soal Tersimpan dengan Filter & Fitur Hapus -->
         <div class="card card-custom p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                 <h4 class="text-secondary font-weight-bold mb-2">📊 Daftar Soal di Firebase</h4>
-                <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="tampilkanDaftarSoalFirebase()">🔄 Refresh Data</button>
+                <div>
+                    <button class="btn btn-outline-danger btn-sm font-weight-bold mr-2" onclick="hapusSoalKelompok()">🗑️ Hapus Sesuai Filter</button>
+                    <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="tampilkanDaftarSoalFirebase()">🔄 Refresh Data</button>
+                </div>
             </div>
 
             <div class="form-row mb-3 bg-light p-3 rounded">
@@ -156,14 +159,14 @@
 
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
-                    <thead class="thead-dark">
+                    <thead class="thead-dark text-center">
                         <tr>
                             <th width="5%">No</th>
-                            <th width="15%">Kelas</th>
+                            <th width="12%">Kelas</th>
                             <th width="15%">Mapel</th>
                             <th width="15%">Jenis</th>
-                            <th width="40%">Pertanyaan / Tugas</th>
-                            <th width="10%">Status</th>
+                            <th width="38%">Pertanyaan / Tugas</th>
+                            <th width="15%">Aksi Hapus</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-soal-body">
@@ -194,6 +197,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let cacheKeySoalMap = {}; // Menyimpan relasi index baris ke database key unik Firebase
+
         document.addEventListener("DOMContentLoaded", function() {
             tampilkanDaftarSoalFirebase();
             sesuaikanFormInput();
@@ -218,7 +223,6 @@
                 inputSoal.placeholder = "Tuliskan pertanyaan uraian di sini...";
                 containerPG.style.display = "none";
             } else {
-                // Pilihan Ganda
                 labelPertanyaan.innerHTML = "❓ Pertanyaan / Soal Pilihan Ganda:";
                 inputSoal.placeholder = "Tuliskan pertanyaan soal di sini...";
                 containerPG.style.display = "block";
@@ -295,18 +299,21 @@
                 .then((snapshot) => {
                     tbody.innerHTML = "";
                     const data = snapshot.val();
+                    cacheKeySoalMap = {};
 
                     if (!data) {
                         tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang ditemukan di Firebase.</td></tr>`;
                         return;
                     }
 
-                    let dataSoal = [];
+                    let dataSoalArr = [];
                     Object.keys(data).forEach(key => {
-                        dataSoal.push(data[key]);
+                        let item = data[key];
+                        item.firebaseKey = key; // Simpan key unik Firebase
+                        dataSoalArr.push(item);
                     });
 
-                    let dataFiltered = dataSoal.filter(item => {
+                    let dataFiltered = dataSoalArr.filter(item => {
                         let kls = String(item.kelas || "").trim();
                         let mpl = String(item.mapel || "").trim();
                         let jns = String(item.jenis || "").trim();
@@ -328,15 +335,18 @@
                         let mpl = item.mapel || '-';
                         let jns = item.jenis || '-';
                         let prt = item.pertanyaan || '-';
+                        let fKey = item.firebaseKey;
 
                         let tr = document.createElement("tr");
                         tr.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td><b>${kls}</b></td>
-                            <td><span class="badge badge-secondary">${mpl}</span></td>
-                            <td><span class="badge badge-info">${jns}</span></td>
+                            <td class="text-center">${index + 1}</td>
+                            <td class="text-center"><b>${kls}</b></td>
+                            <td class="text-center"><span class="badge badge-secondary">${mpl}</span></td>
+                            <td class="text-center"><span class="badge badge-info">${jns}</span></td>
                             <td class="text-left font-weight-bold">${prt}</td>
-                            <td><span class="badge badge-success">Aktif</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-danger btn-sm font-weight-bold px-2 py-1" onclick="hapusSoalSatu('${fKey}')">🗑️ Hapus</button>
+                            </td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -344,6 +354,65 @@
                 .catch(e => {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat daftar soal: ${e.message}</td></tr>`;
                 });
+        }
+
+        // Fungsi Hapus Satuan (Satu Soal)
+        function hapusSoalSatu(firebaseKey) {
+            if (confirm("Apakah Anda yakin ingin menghapus soal ini dari Firebase?")) {
+                db.ref('soal/' + firebaseKey).remove()
+                    .then(() => {
+                        alert("Soal berhasil dihapus!");
+                        tampilkanDaftarSoalFirebase();
+                    })
+                    .catch(err => {
+                        alert("Gagal menghapus soal: " + err.message);
+                    });
+            }
+        }
+
+        // Fungsi Hapus Kelompok (Berdasarkan Filter yang Sedang Dipilih)
+        async function hapusSoalKelompok() {
+            let filterKelas = document.getElementById("filter-kelas").value;
+            let filterMapel = document.getElementById("filter-mapel").value;
+            let filterJenis = document.getElementById("filter-jenis").value;
+
+            let pesanKonfirmasi = "Apakah Anda yakin ingin menghapus SEMUA soal yang tampil berdasarkan filter saat ini?";
+            if (!filterKelas && !filterMapel && !filterJenis) {
+                pesanKonfirmasi = "PERINGATAN: Anda tidak memilih filter (semua kosong). Ini akan menghapus SELURUH BANK SOAL di database. Yakin ingin melanjutkan?";
+            }
+
+            if (confirm(pesanKonfirmasi)) {
+                try {
+                    let snapshot = await db.ref('soal/').once('value');
+                    let data = snapshot.val();
+                    if (!data) {
+                        alert("Tidak ada data soal untuk dihapus.");
+                        return;
+                    }
+
+                    let updatePromises = [];
+                    Object.keys(data).forEach(key => {
+                        let item = data[key];
+                        let kls = String(item.kelas || "").trim();
+                        let mpl = String(item.mapel || "").trim();
+                        let jns = String(item.jenis || "").trim();
+
+                        let matchKelas = filterKelas ? kls === filterKelas : true;
+                        let matchMapel = filterMapel ? mpl === filterMapel : true;
+                        let matchJenis = filterJenis ? jns === filterJenis : true;
+
+                        if (matchKelas && matchMapel && matchJenis) {
+                            updatePromises.push(db.ref('soal/' + key).remove());
+                        }
+                    });
+
+                    await Promise.all(updatePromises);
+                    alert("🎉 Berhasil menghapus kelompok soal yang dipilih!");
+                    tampilkanDaftarSoalFirebase();
+                } catch (err) {
+                    alert("Gagal menghapus kelompok soal: " + err.message);
+                }
+            }
         }
     </script>
 </body>
