@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduAdmin Pro - Panel Ujian Siswa</title>
+    <title>EduAdmin Pro - Panel Ujian Siswa (Firebase)</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase App & Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
@@ -18,8 +23,8 @@
 <body>
     <div class="container py-5">
         <div class="card card-custom p-4 mb-4 text-center bg-primary text-white shadow-sm">
-            <h2 class="font-weight-bold mb-2">🎓 EduAdmin Pro - Panel Siswa</h2>
-            <p class="mb-0 text-white-50">Silakan pilih kelas dan nama Anda terlebih dahulu.</p>
+            <h2 class="font-weight-bold mb-2">🎓 EduAdmin Pro - Panel Siswa (Firebase)</h2>
+            <p class="mb-0 text-white-50">Silakan pilih kelas dan nama Anda terlebih dahulu untuk mulai ujian.</p>
         </div>
 
         <!-- Form Identitas Siswa -->
@@ -51,7 +56,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
                     <h5 class="font-weight-bold text-info mb-1">📚 Petunjuk Belajar & Modul Materi</h5>
-                    <p class="text-muted small mb-0"><b>Penting:</b> Silakan baca materi atau modul pembelajaran terlebih dahulu di bawah ini sebelum mulai mengerjakan soal ujian.</p>
+                    <p class="text-muted small mb-0"><b>Penting:</b> Silakan baca materi pembelajaran terlebih dahulu sebelum mengerjakan ujian.</p>
                 </div>
                 <button type="button" class="btn btn-info btn-custom text-white mt-2 mt-md-0 shadow-sm" onclick="toggleBoxMateri()">
                     📂 Buka / Sembunyikan Daftar Materi
@@ -60,7 +65,7 @@
 
             <div id="wrapper-materi-list" class="mt-3" style="display: none;">
                 <hr>
-                <h6 class="font-weight-bold text-dark mb-2">Daftar Modul / Bahan Bacaan Sesuai Kelas Anda:</h6>
+                <h6 class="font-weight-bold text-dark mb-2">Daftar Modul / Bahan Bacaan Sesuai Kelas:</h6>
                 <div class="table-responsive bg-white rounded p-2">
                     <table class="table table-bordered table-striped mb-0">
                         <thead class="thead-dark">
@@ -72,7 +77,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabel-materi-siswa-body">
-                            <tr><td colspan="4" class="text-center text-muted py-3">Silakan pilih kelas terlebih dahulu di atas.</td></tr>
+                            <tr><td colspan="4" class="text-center text-muted py-3">Silakan pilih kelas terlebih dahulu.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -95,7 +100,7 @@
             <div id="area-soal" class="text-center text-muted py-4">
                 Silakan pilih Kelas, Nama Siswa, dan Jenis Kuis di atas untuk memuat soal ujian.
             </div>
-            <button type="button" class="btn btn-success btn-custom btn-block mt-3 shadow-sm" onclick="kirimJawaban()">
+            <button type="button" class="btn btn-success btn-custom btn-block mt-3 shadow-sm" onclick="kirimJawabanFirebase()">
                 🚀 Selesai & Kirim Jawaban
             </button>
         </div>
@@ -106,19 +111,40 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
+        // Konfigurasi Firebase Realtime Database
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgwdiryHd1TqpKdNiV_KXK-leSl3sOW8g",
+            authDomain: "eduadmin-pro-88cd6.firebaseapp.com",
+            databaseURL: "https://eduadmin-pro-88cd6-default-rtdb.firebaseio.com/",
+            projectId: "eduadmin-pro-88cd6",
+            storageBucket: "eduadmin-pro-88cd6.firebasestorage.app",
+            messagingSenderId: "223595774231",
+            appId: "1:223595774231:web:707feff9094f18d839b752"
+        };
+
+        // Inisialisasi Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         let semuaSiswa = [];
         let semuaSoal = [];
         let soalAktif = [];
 
         document.addEventListener("DOMContentLoaded", function() {
-            ambilDataSiswaServer();
+            ambilDataSiswaFirebase();
         });
 
-        async function ambilDataSiswaServer() {
+        // Ambil data siswa dari Firebase node 'siswa/'
+        async function ambilDataSiswaFirebase() {
             try {
-                let response = await fetch(SCRIPT_URL + "?action=getSiswa");
-                semuaSiswa = await response.json();
+                let snapshot = await db.ref('siswa/').once('value');
+                let data = snapshot.val();
+                semuaSiswa = [];
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        semuaSiswa.push(data[key]);
+                    });
+                }
             } catch (e) {
                 console.error("Gagal memuat data siswa:", e);
             }
@@ -136,21 +162,21 @@
             }
 
             if (semuaSiswa.length === 0) {
-                await ambilDataSiswaServer();
+                await ambilDataSiswaFirebase();
             }
 
             let filterSiswa = semuaSiswa.filter(s => {
-                let kSiswa = String(s.kelas || s.Kelas || s.KELAS || "").trim();
+                let kSiswa = String(s.kelas || "").trim();
                 return kSiswa.toLowerCase() === kelasDipilih.toLowerCase();
             });
 
             dropdownNama.innerHTML = `<option value="">-- Pilih Nama Siswa --</option>`;
             
             if (filterSiswa.length === 0) {
-                dropdownNama.innerHTML = `<option value="">-- Tidak ada siswa di ${kelasDipilih} --</option>`;
+                dropdownNama.innerHTML = `<option value="">-- Tidak ada siswa terdaftar di ${kelasDipilih} --</option>`;
             } else {
                 filterSiswa.forEach(s => {
-                    let namaVal = s.nama || s.Nama || s.NAMA || "";
+                    let namaVal = s.nama || "";
                     if (namaVal) {
                         let opt = document.createElement("option");
                         opt.value = namaVal;
@@ -161,11 +187,17 @@
             }
 
             let dropdownKuis = document.getElementById("pilih-jenis-kuis");
-            dropdownKuis.innerHTML = `<option value="">-- Memuat soal dari server... --</option>`;
+            dropdownKuis.innerHTML = `<option value="">-- Memuat soal dari Firebase... --</option>`;
             
             try {
-                let response = await fetch(SCRIPT_URL + "?action=getSoal");
-                semuaSoal = await response.json();
+                let snapshotSoal = await db.ref('soal/').once('value');
+                let dataSoalObj = snapshotSoal.val();
+                semuaSoal = [];
+                if (dataSoalObj) {
+                    Object.keys(dataSoalObj).forEach(key => {
+                        semuaSoal.push(dataSoalObj[key]);
+                    });
+                }
             } catch (e) {
                 console.error("Gagal memuat soal:", e);
             }
@@ -174,10 +206,10 @@
             let daftarUnikKuis = [];
             
             semuaSoal.forEach(s => {
-                let kSoal = String(s.kelas || s.Kelas || s.KELAS || "").trim();
+                let kSoal = String(s.kelas || "").trim();
                 if (kSoal === "" || kSoal.toLowerCase() === kelasDipilih.toLowerCase()) {
-                    let jenisKuis = s.jenis || s.Jenis || s.JENIS || "Ujian";
-                    let mapelKuis = s.mapel || s.Mapel || s.MAPEL || "Umum";
+                    let jenisKuis = s.jenis || "Ujian";
+                    let mapelKuis = s.mapel || "Umum";
                     let gabungKuis = mapelKuis + " - " + jenisKuis;
                     
                     if (!daftarUnikKuis.includes(gabungKuis)) {
@@ -194,7 +226,7 @@
                 dropdownKuis.innerHTML = `<option value="">-- Belum ada soal untuk ${kelasDipilih} --</option>`;
             }
 
-            muatMateriSiswa();
+            muatMateriFirebase();
         }
 
         function toggleBoxMateri() {
@@ -202,18 +234,26 @@
             wrapper.style.display = (wrapper.style.display === "none") ? "block" : "none";
         }
 
-        async function muatMateriSiswa() {
+        async function muatMateriFirebase() {
             let kelasSiswa = document.getElementById("kelas-siswa").value.trim();
             let tbody = document.getElementById("tabel-materi-siswa-body");
             if (!kelasSiswa) return;
 
             try {
-                let response = await fetch(SCRIPT_URL + "?action=getMateri");
-                let dataMateri = await response.json();
+                let snapshot = await db.ref('materi/').once('value');
+                let dataMateriObj = snapshot.val();
                 tbody.innerHTML = "";
 
+                if (!dataMateriObj) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Belum ada materi tersimpan.</td></tr>`;
+                    return;
+                }
+
+                let dataMateri = [];
+                Object.keys(dataMateriObj).forEach(k => dataMateri.push(dataMateriObj[k]));
+
                 let dataFiltered = dataMateri.filter(item => {
-                    let mKelas = String(item.kelas || item.Kelas || item.KELAS || "").trim();
+                    let mKelas = String(item.kelas || "").trim();
                     return mKelas.toLowerCase() === kelasSiswa.toLowerCase();
                 });
 
@@ -226,9 +266,9 @@
                     let tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${index + 1}</td>
-                        <td><span class="badge badge-secondary">${materi.mapel || materi.Mapel || materi.MAPEL}</span></td>
-                        <td class="font-weight-bold text-left">${materi.judul || materi.Judul || materi.JUDUL}</td>
-                        <td><a href="${materi.filedata || materi.fileData || materi.FileData || materi.FILEDATA}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Baca Materi</a></td>
+                        <td><span class="badge badge-secondary">${materi.mapel || '-'}</span></td>
+                        <td class="font-weight-bold text-left">${materi.judul || '-'}</td>
+                        <td><a href="${materi.filedata || '#'}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-3">👀 Baca Materi</a></td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -253,9 +293,9 @@
             let jenisTarget = parts.slice(1).join(" - ");
 
             soalAktif = semuaSoal.filter(s => {
-                let kSoal = String(s.kelas || s.Kelas || s.KELAS || "").trim();
-                let mSoal = String(s.mapel || s.Mapel || s.MAPEL || "").trim();
-                let jSoal = String(s.jenis || s.Jenis || s.JENIS || "").trim();
+                let kSoal = String(s.kelas || "").trim();
+                let mSoal = String(s.mapel || "").trim();
+                let jSoal = String(s.jenis || "").trim();
 
                 let matchKelas = (kSoal === "" || kSoal.toLowerCase() === kelasDipilih.toLowerCase());
                 let matchMapelJenis = (mSoal + " - " + jSoal === pilihanKuis || jSoal.toLowerCase() === jenisTarget.toLowerCase());
@@ -272,23 +312,22 @@
             
             soalAktif.forEach((item, index) => {
                 let idSoal = "soal_" + index;
-                let jenisItem = String(item.jenis || item.Jenis || item.JENIS || "").trim();
-                let pertanyaan = item.pertanyaan || item.soal || item.PERTANYAAN || "";
-                let kunciResmi = item.kunci || item.kuncijawaban || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "";
+                let jenisItem = String(item.jenis || "").trim();
+                let pertanyaan = item.pertanyaan || "";
+                let kunciResmi = item.kunci || "";
 
                 htmlContent += `<div class="card p-3 mb-3 border shadow-sm">`;
                 
                 if (jenisItem.toLowerCase() === "puzzle kata") {
-                    // Petunjuk diperjelas & diperbesar
                     let kataAcak = acakKata(kunciResmi || pertanyaan);
                     htmlContent += `
                         <div class="puzzle-box p-3 mb-2">
                             <h5 class="font-weight-bold text-dark mb-1">🔤 Soal ${index + 1}: Puzzle Kata</h5>
-                            <p class="text-muted small mb-2"><b>Petunjuk:</b> Susunlah huruf-huruf acak di bawah ini menjadi susunan kata yang benar sesuai petunjuk guru!</p>
+                            <p class="text-muted small mb-2"><b>Petunjuk:</b> Susunlah huruf-huruf acak di bawah ini menjadi kata yang benar!</p>
                             ${pertanyaan ? `<p class="mb-2 font-weight-bold text-primary">Petunjuk Soal: ${pertanyaan}</p>` : ''}
                             <div class="alert alert-warning font-weight-bold text-center py-2 mb-2" style="letter-spacing: 4px; font-size: 22px;">${kataAcak}</div>
                         </div>
-                        <label class="small font-weight-bold text-muted">Ketik Jawaban Susunan Kata yang Benar:</label>
+                        <label class="small font-weight-bold text-muted">Ketik Susunan Kata yang Benar:</label>
                         <input type="text" class="form-control" name="${idSoal}" autocomplete="off" placeholder="Ketik kata hasil susunan Anda di sini...">
                     `;
                 } else {
@@ -296,10 +335,10 @@
                 }
 
                 if (jenisItem.toLowerCase() === "pilihan ganda") {
-                    let optA = item.opsia || item.opsiA || item.OpsiA || "";
-                    let optB = item.opsib || item.opsiB || item.OpsiB || "";
-                    let optC = item.opsic || item.opsiC || item.OpsiC || "";
-                    let optD = item.opsid || item.opsiD || item.OpsiD || "";
+                    let optA = item.opsiA || "";
+                    let optB = item.opsiB || "";
+                    let optC = item.opsiC || "";
+                    let optD = item.opsiD || "";
 
                     htmlContent += `
                         <div class="custom-control custom-radio mb-2"><input type="radio" id="${idSoal}_A" name="${idSoal}" value="A" class="custom-control-input"><label class="custom-control-label" for="${idSoal}_A">A. ${optA}</label></div>
@@ -348,7 +387,7 @@
             }
         }
 
-        async function kirimJawaban() {
+        async function kirimJawabanFirebase() {
             let nama = document.getElementById("nama-siswa").value.trim();
             let kelas = document.getElementById("kelas-siswa").value.trim();
             let kuis = document.getElementById("pilih-jenis-kuis").value.trim();
@@ -375,19 +414,16 @@
             let totalSoal = soalAktif.length;
             let jumlahBenar = 0;
 
-            // 1. LOGIKA PILIHAN GANDA
             if (jenisLower.includes("pilihan ganda")) {
                 soalAktif.forEach((item, index) => {
                     let idSoal = "soal_" + index;
                     let radioDipilih = document.querySelector(`input[name="${idSoal}"]:checked`);
                     let jawabanSiswa = radioDipilih ? radioDipilih.value.trim().toUpperCase() : "-";
-                    
-                    let kunci = String(item.kunci || item.kuncijawaban || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "").trim().toUpperCase();
+                    let kunci = String(item.kunci || "").trim().toUpperCase();
 
                     if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa === kunci) {
                         jumlahBenar++;
                     }
-
                     listDetail.push(`Soal ${index + 1}: ${jawabanSiswa} (Kunci: ${kunci || '-'})`);
                 });
 
@@ -396,20 +432,16 @@
                 }
                 keteranganStatus = `Benar ${jumlahBenar} dari ${totalSoal} Soal`;
 
-            // 2. LOGIKA PUZZLE KATA (MENYESUAIKAN JAWABAN ANAK DENGAN KUNCI GURU)
             } else if (jenisLower.includes("puzzle kata")) {
                 soalAktif.forEach((item, index) => {
                     let idSoal = "soal_" + index;
                     let inputEl = document.querySelector(`input[name="${idSoal}"]`);
                     let jawabanSiswa = inputEl ? inputEl.value.trim() : "-";
-                    
-                    let kunci = String(item.kunci || item.kuncijawaban || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "").trim();
+                    let kunci = String(item.kunci || "").trim();
 
-                    // Pencocokan otomatis (mengabaikan kapital/spasi berlebih)
                     if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa.toLowerCase() === kunci.toLowerCase()) {
                         jumlahBenar++;
                     }
-
                     listDetail.push(`Puzzle ${index + 1}: ${jawabanSiswa} (Kunci: ${kunci || '-'})`);
                 });
 
@@ -418,7 +450,6 @@
                 }
                 keteranganStatus = `Benar ${jumlahBenar} dari ${totalSoal} Soal`;
 
-            // 3. LOGIKA ESSAY & RANGKUMAN MATERI (KOREKSI MANUAL GURU)
             } else if (jenisLower.includes("essay") || jenisLower.includes("merangkum materi")) {
                 nilaiAkhir = "Menunggu Koreksi";
                 keteranganStatus = "Perlu Dinilai Guru";
@@ -429,19 +460,16 @@
                         listDetail.push(`Jawaban ${idx+1}: ${ta.value.trim()}`);
                     }
                 });
-
-            // 4. JENIS SOAL LAINNYA
             } else {
                 soalAktif.forEach((item, index) => {
                     let idSoal = "soal_" + index;
                     let inputEl = document.querySelector(`input[name="${idSoal}"]`);
                     let jawabanSiswa = inputEl ? inputEl.value.trim() : "-";
-                    let kunci = String(item.kunci || item.kuncijawaban || item.kunciJawaban || item.Kunci || item.jawaban || item.Jawaban || "").trim();
+                    let kunci = String(item.kunci || "").trim();
 
                     if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa.toLowerCase() === kunci.toLowerCase()) {
                         jumlahBenar++;
                     }
-
                     listDetail.push(`Soal ${index + 1}: ${jawabanSiswa}`);
                 });
 
@@ -454,7 +482,6 @@
             let stringDetailJawaban = listDetail.join(" | ") || "-";
 
             let dataKirim = {
-                action: "simpanNilaiGET",
                 tanggal: new Date().toLocaleDateString("id-ID"),
                 nama: nama,
                 kelas: kelas,
@@ -467,18 +494,17 @@
 
             let btn = event.target;
             btn.disabled = true;
-            btn.innerText = "Mengirim Jawaban ke Server...";
-
-            let params = new URLSearchParams(dataKirim);
+            btn.innerText = "Mengirim Jawaban ke Firebase...";
 
             try {
-                await fetch(SCRIPT_URL + "?" + params.toString(), { mode: "no-cors" });
-                alert(`🎉 Berhasil! Jawaban Anda telah tersimpan di sistem guru.\nNilai: ${nilaiAkhir}`);
+                // Simpan rekap nilai ke node 'nilai/' di Firebase
+                await db.ref('nilai/').push(dataKirim);
+                alert(`🎉 Berhasil! Jawaban Anda telah tersimpan di sistem.\nNilai: ${nilaiAkhir}`);
                 btn.disabled = false;
                 btn.innerText = "🚀 Selesai & Kirim Jawaban";
                 location.reload();
             } catch (err) {
-                alert("Gagal mengirim jawaban: " + err);
+                alert("Gagal mengirim jawaban: " + err.message);
                 btn.disabled = false;
                 btn.innerText = "🚀 Selesai & Kirim Jawaban";
             }
