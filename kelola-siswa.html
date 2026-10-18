@@ -7,11 +7,11 @@
 
     <!-- Favicon & Metadata WhatsApp -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
-    <meta property="og:title" content="EduAdmin Pro - Dashboard Guru">
-    <meta property="og:description" content="Panel kontrol guru untuk mengelola soal, data siswa, administrasi, dan rekap nilai secara real-time.">
+    <meta property="og:title" content="EduAdmin Pro - Kelola Data Siswa">
+    <meta property="og:description" content="Manajemen data siswa sekolah, tambah manual maupun impor massal dari template Excel/CSV secara real-time.">
     <meta property="og:image" content="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:type" content="website">
-    
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -25,15 +25,41 @@
         .form-control { border-radius: 10px; padding: 10px 15px; }
         .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
         .table th, .table td { vertical-align: middle !important; }
+        .box-import { background: #eef9f1; border: 2px dashed #28a745; border-radius: 12px; }
     </style>
 </head>
 <body>
     <div class="container py-5">
-        <!-- Form Tambah Siswa Baru -->
+        <!-- Card Header & Fitur Import Massal Siswa -->
         <div class="card card-custom p-4 bg-white mb-4">
             <h3 class="text-success font-weight-bold mb-1">👨‍🎓 Kelola Data Siswa (Firebase Realtime Database)</h3>
-            <p class="text-muted small mb-4">Tambah, edit, dan kelola daftar nama siswa per kelas secara real-time.</p>
+            <p class="text-muted small mb-3">Tambah, edit, dan kelola daftar nama siswa per kelas secara real-time.</p>
 
+            <!-- Box Unduh & Import Massal -->
+            <div class="box-import p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                    <h6 class="font-weight-bold text-success mb-2 mb-md-0">📥 Impor Banyak Siswa Sekaligus (Import CSV)</h6>
+                    <button type="button" class="btn btn-outline-success btn-sm font-weight-bold" onclick="unduhTemplateCSV()">
+                        📄 Unduh Template CSV
+                    </button>
+                </div>
+                <div class="form-row align-items-center">
+                    <div class="col-md-8 mb-2 mb-md-0">
+                        <input type="file" id="file-csv-siswa" class="form-control-file p-1 bg-white border rounded" accept=".csv">
+                        <small class="text-muted">Gunakan file CSV sesuai contoh template (Kolom: <b>Kelas, NIS, Nama</b>).</small>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="btn-upload-csv" class="btn btn-success btn-block font-weight-bold shadow-sm" onclick="uploadSiswaMassalCSV()">
+                            📤 Upload & Import ke Firebase
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-0 mb-4">
+
+            <!-- Form Tambah Siswa Satu per Satu -->
+            <h5 class="font-weight-bold text-dark mb-3">➕ Tambah Siswa Satu Per Satu</h5>
             <form id="form-siswa" onsubmit="tambahSiswaFirebase(event)">
                 <div class="form-row">
                     <div class="form-group col-md-3">
@@ -149,7 +175,7 @@
       </div>
     </div>
 
-    <!-- Script jQuery, Popper, dan Bootstrap JS untuk Modal Pop-up -->
+    <!-- Script jQuery, Popper, dan Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -176,7 +202,87 @@
             muatDataSiswaFirebase();
         });
 
-        // 1. Memuat Data Siswa dengan Filter
+        // 1. Fungsi Unduh Template CSV
+        function unduhTemplateCSV() {
+            let isiCSV = "Kelas,NIS,Nama\nKelas 6,1001,Ahmad Subagja\nKelas 6,1002,Budi Santoso\nKelas 6,1003,Citra Dewi";
+            let blob = new Blob([isiCSV], { type: "text/csv;charset=utf-8;" });
+            let url = URL.createObjectURL(blob);
+            let link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "template_data_siswa.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 2. Fungsi Upload / Import Massal Siswa dari CSV
+        async function uploadSiswaMassalCSV() {
+            let fileInput = document.getElementById("file-csv-siswa");
+            let file = fileInput.files[0];
+
+            if (!file) {
+                alert("Harap pilih file CSV terlebih dahulu!");
+                return;
+            }
+
+            let btn = document.getElementById("btn-upload-csv");
+            btn.disabled = true;
+            btn.innerText = "Mengimpor Data...";
+
+            let reader = new FileReader();
+            reader.onload = async function(e) {
+                let teks = e.target.result;
+                let baris = teks.split(/\r\n|\n/);
+                
+                let dataPush = [];
+                let tgl = new Date().toLocaleDateString("id-ID");
+
+                for (let i = 1; i < baris.length; i++) {
+                    let item = baris[i].trim();
+                    if (!item) continue;
+
+                    let kolom = item.split(",");
+                    if (kolom.length >= 3) {
+                        let kls = kolom[0].trim();
+                        let nis = kolom[1].trim();
+                        let nms = kolom[2].trim();
+
+                        if (nms) {
+                            dataPush.push({
+                                kelas: kls || "Kelas 6",
+                                nis: nis || "-",
+                                nama: nms,
+                                tanggal: tgl
+                            });
+                        }
+                    }
+                }
+
+                if (dataPush.length === 0) {
+                    alert("Tidak ada data siswa yang valid dalam file CSV tersebut.");
+                    btn.disabled = false;
+                    btn.innerText = "📤 Upload & Import ke Firebase";
+                    return;
+                }
+
+                try {
+                    let promises = dataPush.map(s => db.ref('siswa/').push(s));
+                    await Promise.all(promises);
+                    alert(`🎉 Berhasil mengimpor ${dataPush.length} data siswa ke Firebase!`);
+                    fileInput.value = "";
+                    muatDataSiswaFirebase();
+                } catch (err) {
+                    alert("Gagal mengimpor data: " + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "📤 Upload & Import ke Firebase";
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        // 3. Memuat Data Siswa dengan Filter
         function muatDataSiswaFirebase() {
             let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
             let tbody = document.getElementById("tabel-siswa-body");
@@ -234,7 +340,7 @@
                 });
         }
 
-        // 2. Tambah Data Siswa Baru
+        // 4. Tambah Data Siswa Baru (Manual)
         function tambahSiswaFirebase(event) {
             event.preventDefault();
             let kelas = document.getElementById("kelas-siswa").value;
@@ -263,7 +369,7 @@
             });
         }
 
-        // 3. Buka Modal Pop-up Edit Siswa
+        // 5. Buka Modal Pop-up Edit Siswa
         function bukaModalEdit(firebaseKey) {
             let siswa = globalSiswaCache[firebaseKey];
             if (!siswa) return;
@@ -276,7 +382,7 @@
             $('#modalEditSiswa').modal('show');
         }
 
-        // 4. Simpan Perubahan Edit Siswa ke Firebase
+        // 6. Simpan Perubahan Edit Siswa ke Firebase
         function simpanPerubahanSiswaFirebase(event) {
             event.preventDefault();
             let key = document.getElementById("edit-firebase-key").value;
@@ -297,7 +403,7 @@
             });
         }
 
-        // 5. Hapus Data Siswa Satuan
+        // 7. Hapus Data Siswa Satuan
         function hapusSiswaSatu(firebaseKey) {
             let siswa = globalSiswaCache[firebaseKey];
             let namaSiswa = siswa ? siswa.nama : "siswa ini";
@@ -314,7 +420,7 @@
             }
         }
 
-        // 6. Hapus Data Siswa Massal Berdasarkan Filter
+        // 8. Hapus Data Siswa Massal Berdasarkan Filter
         async function hapusSiswaKelompok() {
             let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
 
