@@ -96,12 +96,12 @@
 
         <!-- Container Soal Ujian -->
         <div id="container-soal" class="card card-custom p-4 mb-4">
-            <h4 class="text-success font-weight-bold mb-3">📝 Lembar Pengerjaan Soal</h4>
+            <h4 class="text-success font-weight-bold mb-3">📝 Lembar Pengerjaan Soal (Murni Firebase)</h4>
             <div id="area-soal" class="text-center text-muted py-4">
-                Silakan pilih Kelas, Nama Siswa, dan Jenis Kuis di atas untuk memuat soal ujian.
+                Silakan pilih Kelas, Nama Siswa, dan Jenis Kuis di atas untuk memuat soal ujian dari Firebase.
             </div>
             <button type="button" class="btn btn-success btn-custom btn-block mt-3 shadow-sm" onclick="kirimJawabanFirebase()">
-                🚀 Selesai & Kirim Jawaban
+                🚀 Selesai & Kirim Jawaban ke Firebase
             </button>
         </div>
 
@@ -132,9 +132,10 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             ambilDataSiswaFirebase();
+            ambilDataSoalFirebaseGlobal();
         });
 
-        // Ambil data siswa dari Firebase node 'siswa/'
+        // 1. Ambil data siswa murni dari Firebase node 'siswa/'
         async function ambilDataSiswaFirebase() {
             try {
                 let snapshot = await db.ref('siswa/').once('value');
@@ -147,6 +148,22 @@
                 }
             } catch (e) {
                 console.error("Gagal memuat data siswa:", e);
+            }
+        }
+
+        // 2. Ambil data soal murni dari Firebase node 'soal/'
+        async function ambilDataSoalFirebaseGlobal() {
+            try {
+                let snapshotSoal = await db.ref('soal/').once('value');
+                let dataSoalObj = snapshotSoal.val();
+                semuaSoal = [];
+                if (dataSoalObj) {
+                    Object.keys(dataSoalObj).forEach(key => {
+                        semuaSoal.push(dataSoalObj[key]);
+                    });
+                }
+            } catch (e) {
+                console.error("Gagal memuat soal dari Firebase:", e);
             }
         }
 
@@ -189,25 +206,16 @@
             let dropdownKuis = document.getElementById("pilih-jenis-kuis");
             dropdownKuis.innerHTML = `<option value="">-- Memuat soal dari Firebase... --</option>`;
             
-            try {
-                let snapshotSoal = await db.ref('soal/').once('value');
-                let dataSoalObj = snapshotSoal.val();
-                semuaSoal = [];
-                if (dataSoalObj) {
-                    Object.keys(dataSoalObj).forEach(key => {
-                        semuaSoal.push(dataSoalObj[key]);
-                    });
-                }
-            } catch (e) {
-                console.error("Gagal memuat soal:", e);
-            }
+            // Pastikan data soal diperbarui dari Firebase
+            await ambilDataSoalFirebaseGlobal();
 
             dropdownKuis.innerHTML = `<option value="">-- Pilih Kuis / Mapel --</option>`;
             let daftarUnikKuis = [];
             
             semuaSoal.forEach(s => {
                 let kSoal = String(s.kelas || "").trim();
-                if (kSoal === "" || kSoal.toLowerCase() === kelasDipilih.toLowerCase()) {
+                // Cocokkan jika kelasnya sama persis
+                if (kSoal.toLowerCase() === kelasDipilih.toLowerCase()) {
                     let jenisKuis = s.jenis || "Ujian";
                     let mapelKuis = s.mapel || "Umum";
                     let gabungKuis = mapelKuis + " - " + jenisKuis;
@@ -297,14 +305,14 @@
                 let mSoal = String(s.mapel || "").trim();
                 let jSoal = String(s.jenis || "").trim();
 
-                let matchKelas = (kSoal === "" || kSoal.toLowerCase() === kelasDipilih.toLowerCase());
+                let matchKelas = (kSoal.toLowerCase() === kelasDipilih.toLowerCase());
                 let matchMapelJenis = (mSoal + " - " + jSoal === pilihanKuis || jSoal.toLowerCase() === jenisTarget.toLowerCase());
                 
                 return matchKelas && matchMapelJenis;
             });
 
             if (soalAktif.length === 0) {
-                areaSoal.innerHTML = `<div class="text-warning font-weight-bold py-3">Belum ada butir soal untuk kategori ini.</div>`;
+                areaSoal.innerHTML = `<div class="text-warning font-weight-bold py-3">Belum ada butir soal dari Firebase untuk kategori ini.</div>`;
                 return;
             }
 
@@ -497,16 +505,15 @@
             btn.innerText = "Mengirim Jawaban ke Firebase...";
 
             try {
-                // Simpan rekap nilai ke node 'nilai/' di Firebase
                 await db.ref('nilai/').push(dataKirim);
-                alert(`🎉 Berhasil! Jawaban Anda telah tersimpan di sistem.\nNilai: ${nilaiAkhir}`);
+                alert(`🎉 Berhasil! Jawaban Anda telah tersimpan di Firebase.\nNilai: ${nilaiAkhir}`);
                 btn.disabled = false;
-                btn.innerText = "🚀 Selesai & Kirim Jawaban";
+                btn.innerText = "🚀 Selesai & Kirim Jawaban ke Firebase";
                 location.reload();
             } catch (err) {
                 alert("Gagal mengirim jawaban: " + err.message);
                 btn.disabled = false;
-                btn.innerText = "🚀 Selesai & Kirim Jawaban";
+                btn.innerText = "🚀 Selesai & Kirim Jawaban ke Firebase";
             }
         }
     </script>
