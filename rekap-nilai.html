@@ -7,17 +7,20 @@
 
     <!-- Favicon & Metadata WhatsApp -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
-    <meta property="og:title" content="EduAdmin Pro - Dashboard Guru">
-    <meta property="og:description" content="Panel kontrol guru untuk mengelola soal, data siswa, administrasi, dan rekap nilai secara real-time.">
+    <meta property="og:title" content="EduAdmin Pro - Rekap Nilai Siswa">
+    <meta property="og:description" content="Rekapitulasi nilai siswa real-time dari Firebase, lengkap dengan fitur ekspor ke Excel.">
     <meta property="og:image" content="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:type" content="website">
-    
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Firebase App & Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- SheetJS (XLSX) Library untuk Ekspor Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
@@ -35,8 +38,9 @@
                     <p class="text-muted small mb-0">Data nilai & detail jawaban ditarik langsung secara real-time dari Firebase Database.</p>
                 </div>
                 <div class="mt-2 mt-md-0">
-                    <button class="btn btn-outline-danger btn-sm font-weight-bold" onclick="hapusSemuaNilaiFirebase()">🗑️ Kosongkan Data Nilai</button>
-                    <button class="btn btn-outline-primary btn-sm font-weight-bold ml-2" onclick="tampilkanRekapNilaiFirebase()">🔄 Muat Ulang Data</button>
+                    <button class="btn btn-success btn-sm font-weight-bold mr-2 shadow-sm" onclick="unduhRekapNilaiExcel()">📥 Download Excel (.xlsx)</button>
+                    <button class="btn btn-outline-danger btn-sm font-weight-bold mr-2" onclick="hapusSemuaNilaiFirebase()">🗑️ Kosongkan Data Nilai</button>
+                    <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="tampilkanRekapNilaiFirebase()">🔄 Muat Ulang Data</button>
                 </div>
             </div>
 
@@ -70,7 +74,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover">
+                <table class="table table-bordered table-striped table-hover" id="tabel-rekap-nilai">
                     <thead class="thead-dark">
                         <tr>
                             <th>No</th>
@@ -168,6 +172,7 @@
         const db = firebase.database();
         
         let globalDetailCache = {};
+        let rekapDataForExcel = []; // Menyimpan array data bersih khusus ekspor Excel
 
         document.addEventListener("DOMContentLoaded", function() {
             tampilkanRekapNilaiFirebase();
@@ -184,9 +189,10 @@
                 let dataObj = snapshot.val();
                 tbody.innerHTML = "";
                 globalDetailCache = {};
+                rekapDataForExcel = [];
 
                 if (!dataObj) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di Firebase. (Siswa belum mengirim jawaban ujian)</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di Firebase.</td></tr>`;
                     return;
                 }
 
@@ -242,7 +248,6 @@
                             rekapMap[key].detailJawabanMap["Merangkum Materi"] = valDetail;
                             rekapMap[key].keyFirebaseMap["Merangkum Materi"] = dbKey;
                         } else {
-                            // Default masukkan ke Pilihan Ganda jika jenis tidak terdeteksi spesifik
                             rekapMap[key]["Pilihan Ganda"] = valNilai;
                             rekapMap[key].detailJawabanMap["Pilihan Ganda"] = valDetail;
                             rekapMap[key].keyFirebaseMap["Pilihan Ganda"] = dbKey;
@@ -277,6 +282,19 @@
 
                     let nilaiAkhir = jumlahDikerjakan > 0 ? Math.round(totalNilai / jumlahDikerjakan) : 0;
                     let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
+
+                    // Simpan data bersih untuk diekspor ke Excel
+                    rekapDataForExcel.push({
+                        "No": index,
+                        "Kelas": row.kelas,
+                        "Nama Siswa": row.nama,
+                        "Mata Pelajaran": row.mapel,
+                        "Pilihan Ganda": row["Pilihan Ganda"] !== null ? row["Pilihan Ganda"] : "-",
+                        "Puzzle Kata": row["Puzzle Kata"] !== null ? row["Puzzle Kata"] : "-",
+                        "Essay": row["Essay"] !== null ? row["Essay"] : "-",
+                        "Merangkum Materi": row["Merangkum Materi"] !== null ? row["Merangkum Materi"] : "-",
+                        "Nilai Akhir": jumlahDikerjakan > 0 ? nilaiAkhir : "-"
+                    });
 
                     let renderKolom = (jenisKuisName) => {
                         let val = row[jenisKuisName];
@@ -322,6 +340,32 @@
                 console.error(e);
                 tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal memuat rekap nilai: ${e.message}</td></tr>`;
             }
+        }
+
+        // Fungsi Ekspor Data ke Excel (.xlsx)
+        function unduhRekapNilaiExcel() {
+            if (rekapDataForExcel.length === 0) {
+                alert("Tidak ada data rekap nilai untuk diunduh!");
+                return;
+            }
+
+            let filterKelas = document.getElementById("filter-kelas").value.trim();
+            let filterMapel = document.getElementById("filter-mapel").value.trim();
+
+            // Buat worksheet dari array data
+            let worksheet = XLSX.utils.json_to_sheet(rekapDataForExcel);
+
+            // Buat workbook baru
+            let workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Nilai");
+
+            // Format nama file dinamis berdasarkan filter
+            let namaKelas = filterKelas ? filterKelas.replace(/\s+/g, '_') : "Semua_Kelas";
+            let namaMapel = filterMapel ? filterMapel.replace(/\s+/g, '_') : "Semua_Mapel";
+            let namaFile = `Rekap_Nilai_${namaKelas}_${namaMapel}.xlsx`;
+
+            // Proses download file Excel
+            XLSX.writeFile(workbook, namaFile);
         }
 
         function bukaModalKoreksiCache(nama, kelas, mapel, jenisKuis, cacheId, nilaiSekarang, firebaseKey) {
