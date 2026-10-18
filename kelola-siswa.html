@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Data Siswa - Panel Guru</title>
+    <title>Kelola Data Siswa - Panel Guru (Firebase)</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase App & Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
@@ -17,10 +22,10 @@
 <body>
     <div class="container py-5">
         <div class="card card-custom p-4 bg-white mb-4">
-            <h3 class="text-success font-weight-bold mb-1">👨‍🎓 Kelola Data Siswa (Cloud Server)</h3>
-            <p class="text-muted small mb-4">Tambah dan kelola daftar nama siswa per kelas agar tersimpan di Google Sheets.</p>
+            <h3 class="text-success font-weight-bold mb-1">👨‍🎓 Kelola Data Siswa (Firebase Realtime Database)</h3>
+            <p class="text-muted small mb-4">Tambah dan kelola daftar nama siswa per kelas secara real-time.</p>
 
-            <form id="form-siswa" onsubmit="tambahSiswa(event)">
+            <form id="form-siswa" onsubmit="tambahSiswaFirebase(event)">
                 <div class="form-row">
                     <div class="form-group col-md-3">
                         <label class="font-weight-bold small text-muted">Pilih Kelas</label>
@@ -43,14 +48,14 @@
                         <input type="text" id="nama-siswa" class="form-control" placeholder="Ketik nama lengkap siswa..." required>
                     </div>
                 </div>
-                <button type="submit" id="btn-simpan" class="btn btn-success btn-custom">➕ Simpan Data Siswa ke Server</button>
+                <button type="submit" id="btn-simpan" class="btn btn-success btn-custom">➕ Simpan Data Siswa ke Firebase</button>
             </form>
         </div>
 
         <div class="card card-custom p-4 bg-white">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="font-weight-bold text-dark mb-0">📋 Daftar Siswa Terdaftar</h5>
-                <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="muatDataSiswa()">🔄 Muat Ulang Data</button>
+                <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="muatDataSiswaFirebase()">🔄 Muat Ulang Data</button>
             </div>
 
             <div class="table-responsive">
@@ -64,7 +69,7 @@
                         </tr>
                     </thead>
                     <tbody id="tabel-siswa-body">
-                        <tr><td colspan="4" class="text-center text-muted py-4">Memuat data siswa dari server cloud...</td></tr>
+                        <tr><td colspan="4" class="text-center text-muted py-4">Memuat data siswa dari Firebase...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -76,42 +81,61 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
+        // Konfigurasi Firebase Realtime Database
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgwdiryHd1TqpKdNiV_KXK-leSl3sOW8g",
+            authDomain: "eduadmin-pro-88cd6.firebaseapp.com",
+            databaseURL: "https://eduadmin-pro-88cd6-default-rtdb.firebaseio.com",
+            projectId: "eduadmin-pro-88cd6",
+            storageBucket: "eduadmin-pro-88cd6.firebasestorage.app",
+            messagingSenderId: "223595774231",
+            appId: "1:223595774231:web:707feff9094f18d839b752"
+        };
+
+        // Inisialisasi Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         document.addEventListener("DOMContentLoaded", function() {
-            muatDataSiswa();
+            muatDataSiswaFirebase();
         });
 
-        async function muatDataSiswa() {
+        // Fungsi Mengambil Data dari Firebase secara Real-time
+        function muatDataSiswaFirebase() {
             let tbody = document.getElementById("tabel-siswa-body");
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-primary py-4">⏳ Mengambil data siswa dari Google Sheets...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-primary py-4">⏳ Mengambil data dari Firebase...</td></tr>`;
 
-            try {
-                let response = await fetch(SCRIPT_URL + "?action=getSiswa");
-                let dataSiswa = await response.json();
-                tbody.innerHTML = "";
+            db.ref('siswa/').once('value')
+                .then((snapshot) => {
+                    tbody.innerHTML = "";
+                    const data = snapshot.val();
 
-                if (dataSiswa.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Belum ada data siswa di server.</td></tr>`;
-                    return;
-                }
+                    if (!data) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Belum ada data siswa di Firebase.</td></tr>`;
+                        return;
+                    }
 
-                dataSiswa.forEach((siswa, index) => {
-                    let tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="text-center">${index + 1}</td>
-                        <td class="text-center"><b>${siswa.kelas}</b></td>
-                        <td class="text-center">${siswa.nis || '-'}</td>
-                        <td>${siswa.nama}</td>
-                    `;
-                    tbody.appendChild(tr);
+                    let index = 1;
+                    Object.keys(data).forEach((key) => {
+                        let siswa = data[key];
+                        let tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td class="text-center">${index++}</td>
+                            <td class="text-center"><b>${siswa.kelas || '-'}</b></td>
+                            <td class="text-center">${siswa.nis || '-'}</td>
+                            <td>${siswa.nama || '-'}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Gagal memuat data: ${error.message}</td></tr>`;
                 });
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Gagal memuat data siswa dari server.</td></tr>`;
-            }
         }
 
-        function tambahSiswa(event) {
+        // Fungsi Menyimpan Data ke Firebase
+        function tambahSiswaFirebase(event) {
             event.preventDefault();
             let kelas = document.getElementById("kelas-siswa").value;
             let nis = document.getElementById("nis-siswa").value.trim();
@@ -119,30 +143,23 @@
             let btn = document.getElementById("btn-simpan");
 
             btn.disabled = true;
-            btn.innerText = "Menyimpan ke Cloud...";
+            btn.innerText = "Menyimpan ke Firebase...";
 
-            let dataKirim = {
-                action: "simpanSiswa",
+            db.ref('siswa/').push({
                 kelas: kelas,
                 nis: nis,
-                nama: nama
-            };
-
-            fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dataKirim)
+                nama: nama,
+                tanggal: new Date().toLocaleDateString("id-ID")
             }).then(() => {
-                alert("🎉 Data siswa berhasil disimpan ke server cloud!");
+                alert("🎉 Data siswa berhasil disimpan ke Firebase!");
                 document.getElementById("form-siswa").reset();
                 btn.disabled = false;
-                btn.innerText = "➕ Simpan Data Siswa ke Server";
-                setTimeout(muatDataSiswa, 1500); // Refresh tabel otomatis
-            }).catch(err => {
-                alert("Gagal menyimpan data: " + err);
+                btn.innerText = "➕ Simpan Data Siswa ke Firebase";
+                muatDataSiswaFirebase();
+            }).catch((err) => {
+                alert("Gagal menyimpan data: " + err.message);
                 btn.disabled = false;
-                btn.innerText = "➕ Simpan Data Siswa ke Server";
+                btn.innerText = "➕ Simpan Data Siswa ke Firebase";
             });
         }
     </script>
