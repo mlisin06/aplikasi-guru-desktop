@@ -7,11 +7,11 @@
 
     <!-- Favicon & Metadata WhatsApp -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
-    <meta property="og:title" content="EduAdmin Pro - Dashboard Guru">
-    <meta property="og:description" content="Panel kontrol guru untuk mengelola soal, data siswa, administrasi, dan rekap nilai secara real-time.">
+    <meta property="og:title" content="EduAdmin Pro - Panel Ujian Siswa">
+    <meta property="og:description" content="Ruang ujian dan tugas online siswa terintegrasi secara real-time dengan Firebase.">
     <meta property="og:image" content="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:type" content="website">
-    
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -143,7 +143,6 @@
             ambilDataSoalFirebaseGlobal();
         });
 
-        // 1. Ambil data siswa murni dari Firebase node 'siswa/'
         async function ambilDataSiswaFirebase() {
             try {
                 let snapshot = await db.ref('siswa/').once('value');
@@ -159,7 +158,6 @@
             }
         }
 
-        // 2. Ambil data soal murni dari Firebase node 'soal/'
         async function ambilDataSoalFirebaseGlobal() {
             try {
                 let snapshotSoal = await db.ref('soal/').once('value');
@@ -214,7 +212,6 @@
             let dropdownKuis = document.getElementById("pilih-jenis-kuis");
             dropdownKuis.innerHTML = `<option value="">-- Memuat soal dari Firebase... --</option>`;
             
-            // Pastikan data soal diperbarui dari Firebase
             await ambilDataSoalFirebaseGlobal();
 
             dropdownKuis.innerHTML = `<option value="">-- Pilih Kuis / Mapel --</option>`;
@@ -222,7 +219,6 @@
             
             semuaSoal.forEach(s => {
                 let kSoal = String(s.kelas || "").trim();
-                // Cocokkan jika kelasnya sama persis
                 if (kSoal.toLowerCase() === kelasDipilih.toLowerCase()) {
                     let jenisKuis = s.jenis || "Ujian";
                     let mapelKuis = s.mapel || "Umum";
@@ -335,12 +331,12 @@
                 htmlContent += `<div class="card p-3 mb-3 border shadow-sm">`;
                 
                 if (jenisItem.toLowerCase() === "puzzle kata") {
+                    // Petunjuk soal ditiadakan, langsung tampilkan kotak huruf acak dari kunci/pertanyaan
                     let kataAcak = acakKata(kunciResmi || pertanyaan);
                     htmlContent += `
                         <div class="puzzle-box p-3 mb-2">
                             <h5 class="font-weight-bold text-dark mb-1">🔤 Soal ${index + 1}: Puzzle Kata</h5>
                             <p class="text-muted small mb-2"><b>Petunjuk:</b> Susunlah huruf-huruf acak di bawah ini menjadi kata yang benar!</p>
-                            ${pertanyaan ? `<p class="mb-2 font-weight-bold text-primary">Petunjuk Soal: ${pertanyaan}</p>` : ''}
                             <div class="alert alert-warning font-weight-bold text-center py-2 mb-2" style="letter-spacing: 4px; font-size: 22px;">${kataAcak}</div>
                         </div>
                         <label class="small font-weight-bold text-muted">Ketik Susunan Kata yang Benar:</label>
