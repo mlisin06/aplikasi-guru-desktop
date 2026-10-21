@@ -7,11 +7,11 @@
 
     <!-- Favicon & Metadata WhatsApp -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
-    <meta property="og:title" content="EduAdmin Pro - Dashboard Guru">
-    <meta property="og:description" content="Panel kontrol guru untuk mengelola soal, data siswa, administrasi, dan rekap nilai secara real-time.">
+    <meta property="og:title" content="EduAdmin Pro - Kelola Soal & Kuis">
+    <meta property="og:description" content="Panel guru untuk menambah dan mengatur bank soal ujian secara real-time.">
     <meta property="og:image" content="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:type" content="website">
-    
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -73,10 +73,19 @@
                 </div>
             </div>
 
-            <!-- Area Label Pertanyaan Dinamis -->
-            <div class="form-group">
+            <!-- Area Label Pertanyaan Dinamis (Bisa disembunyikan untuk Puzzle Kata) -->
+            <div class="form-group" id="group-pertanyaan">
                 <label id="label-pertanyaan" class="small font-weight-bold">Pertanyaan / Soal</label>
                 <textarea id="input-soal" class="form-control" rows="3" placeholder="Tuliskan pertanyaan di sini..."></textarea>
+            </div>
+
+            <!-- CONTAINER KHUSUS PUZZLE KATA (Hanya Input Kata Kunci) -->
+            <div id="container-puzzle" style="display: none;">
+                <div class="form-group bg-light p-3 rounded border">
+                    <label class="small font-weight-bold text-success">🔤 Kata/Kalimat yang akan diacak otomatis untuk siswa:</label>
+                    <input type="text" id="input-puzzle-kata" class="form-control" placeholder="Contoh: Pancasila">
+                    <small class="text-muted">Siswa nantinya bertugas menyusun huruf-huruf acak dari kata ini.</small>
+                </div>
             </div>
 
             <!-- CONTAINER KHUSUS PILIHAN GANDA (Opsi A-D & Kunci) -->
@@ -173,7 +182,7 @@
                             <th width="12%">Kelas</th>
                             <th width="15%">Mapel</th>
                             <th width="15%">Jenis</th>
-                            <th width="38%">Pertanyaan / Tugas</th>
+                            <th width="38%">Pertanyaan / Tugas / Kata Kunci</th>
                             <th width="15%">Aksi Hapus</th>
                         </tr>
                     </thead>
@@ -205,8 +214,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let cacheKeySoalMap = {}; // Menyimpan relasi index baris ke database key unik Firebase
-
         document.addEventListener("DOMContentLoaded", function() {
             tampilkanDaftarSoalFirebase();
             sesuaikanFormInput();
@@ -214,26 +221,33 @@
 
         function sesuaikanFormInput() {
             let jenis = document.getElementById("input-jenis").value;
+            let groupPertanyaan = document.getElementById("group-pertanyaan");
             let labelPertanyaan = document.getElementById("label-pertanyaan");
             let inputSoal = document.getElementById("input-soal");
             let containerPG = document.getElementById("container-pg");
+            let containerPuzzle = document.getElementById("container-puzzle");
 
             if (jenis === "Puzzle Kata") {
-                labelPertanyaan.innerHTML = "🔤 Kata / Kalimat Benar (Akan diacak otomatis untuk siswa):";
-                inputSoal.placeholder = "Contoh: Pancasila";
-                containerPG.style.display = "none";
-            } else if (jenis === "Merangkum Materi") {
-                labelPertanyaan.innerHTML = "✍️ Judul / Instruksi Tugas Ringkasan (Siswa wajib merangkum min. 300 karakter):";
-                inputSoal.placeholder = "Contoh: Buatlah ringkasan mengenai materi Bab 1 tentang ekosistem...";
-                containerPG.style.display = "none";
-            } else if (jenis === "Essay") {
-                labelPertanyaan.innerHTML = "📝 Pertanyaan Essay / Uraian:";
-                inputSoal.placeholder = "Tuliskan pertanyaan uraian di sini...";
+                groupPertanyaan.style.display = "none";
+                containerPuzzle.style.display = "block";
                 containerPG.style.display = "none";
             } else {
-                labelPertanyaan.innerHTML = "❓ Pertanyaan / Soal Pilihan Ganda:";
-                inputSoal.placeholder = "Tuliskan pertanyaan soal di sini...";
-                containerPG.style.display = "block";
+                groupPertanyaan.style.display = "block";
+                containerPuzzle.style.display = "none";
+
+                if (jenis === "Merangkum Materi") {
+                    labelPertanyaan.innerHTML = "✍️ Judul / Instruksi Tugas Ringkasan (Siswa wajib merangkum min. 300 karakter):";
+                    inputSoal.placeholder = "Contoh: Buatlah ringkasan mengenai materi Bab 1 tentang ekosistem...";
+                    containerPG.style.display = "none";
+                } else if (jenis === "Essay") {
+                    labelPertanyaan.innerHTML = "📝 Pertanyaan Essay / Uraian:";
+                    inputSoal.placeholder = "Tuliskan pertanyaan uraian di sini...";
+                    containerPG.style.display = "none";
+                } else {
+                    labelPertanyaan.innerHTML = "❓ Pertanyaan / Soal Pilihan Ganda:";
+                    inputSoal.placeholder = "Tuliskan pertanyaan soal di sini...";
+                    containerPG.style.display = "block";
+                }
             }
         }
 
@@ -241,19 +255,32 @@
             let kelas = document.getElementById("input-kelas").value;
             let mapel = document.getElementById("input-mapel").value;
             let jenis = document.getElementById("input-jenis").value;
-            let soal = document.getElementById("input-soal").value.trim();
+            
+            let soal = "";
+            let kunciVal = "";
+
+            if (jenis === "Puzzle Kata") {
+                let kataPuzzle = document.getElementById("input-puzzle-kata").value.trim();
+                if (!kataPuzzle) {
+                    alert("Kata untuk puzzle tidak boleh kosong!");
+                    return;
+                }
+                soal = kataPuzzle; // Disimpan sebagai teks utama/kunci
+                kunciVal = kataPuzzle;
+            } else {
+                soal = document.getElementById("input-soal").value.trim();
+                if (!soal) {
+                    alert("Pertanyaan / tugas tidak boleh kosong!");
+                    return;
+                }
+                kunciVal = jenis === "Pilihan Ganda" ? document.getElementById("input-kunci").value.trim() : "";
+            }
             
             let opsiA = jenis === "Pilihan Ganda" ? document.getElementById("input-opsia").value.trim() : "";
             let opsiB = jenis === "Pilihan Ganda" ? document.getElementById("input-opsib").value.trim() : "";
             let opsiC = jenis === "Pilihan Ganda" ? document.getElementById("input-opsic").value.trim() : "";
             let opsiD = jenis === "Pilihan Ganda" ? document.getElementById("input-opsid").value.trim() : "";
-            let kunci = jenis === "Pilihan Ganda" ? document.getElementById("input-kunci").value.trim() : "";
             let gambar = jenis === "Pilihan Ganda" ? document.getElementById("input-gambar").value.trim() : "";
-
-            if (!soal) {
-                alert("Pertanyaan / tugas tidak boleh kosong!");
-                return;
-            }
 
             let dataKirim = {
                 tanggal: new Date().toLocaleDateString("id-ID"),
@@ -265,7 +292,7 @@
                 opsiB: opsiB,
                 opsiC: opsiC,
                 opsiD: opsiD,
-                kunci: kunci,
+                kunci: kunciVal,
                 gambar: gambar
             };
 
@@ -276,14 +303,18 @@
             db.ref('soal/').push(dataKirim)
                 .then(() => {
                     alert("🎉 Soal/Tugas berhasil disimpan ke Firebase!");
-                    document.getElementById("input-soal").value = "";
-                    if (jenis === "Pilihan Ganda") {
-                        document.getElementById("input-opsia").value = "";
-                        document.getElementById("input-opsib").value = "";
-                        document.getElementById("input-opsic").value = "";
-                        document.getElementById("input-opsid").value = "";
-                        document.getElementById("input-kunci").value = "";
-                        document.getElementById("input-gambar").value = "";
+                    if (jenis === "Puzzle Kata") {
+                        document.getElementById("input-puzzle-kata").value = "";
+                    } else {
+                        document.getElementById("input-soal").value = "";
+                        if (jenis === "Pilihan Ganda") {
+                            document.getElementById("input-opsia").value = "";
+                            document.getElementById("input-opsib").value = "";
+                            document.getElementById("input-opsic").value = "";
+                            document.getElementById("input-opsid").value = "";
+                            document.getElementById("input-kunci").value = "";
+                            document.getElementById("input-gambar").value = "";
+                        }
                     }
                     btn.disabled = false;
                     btn.innerText = "💾 Simpan Soal ke Firebase";
@@ -307,7 +338,6 @@
                 .then((snapshot) => {
                     tbody.innerHTML = "";
                     const data = snapshot.val();
-                    cacheKeySoalMap = {};
 
                     if (!data) {
                         tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang ditemukan di Firebase.</td></tr>`;
@@ -317,7 +347,7 @@
                     let dataSoalArr = [];
                     Object.keys(data).forEach(key => {
                         let item = data[key];
-                        item.firebaseKey = key; // Simpan key unik Firebase
+                        item.firebaseKey = key;
                         dataSoalArr.push(item);
                     });
 
@@ -364,7 +394,6 @@
                 });
         }
 
-        // Fungsi Hapus Satuan (Satu Soal)
         function hapusSoalSatu(firebaseKey) {
             if (confirm("Apakah Anda yakin ingin menghapus soal ini dari Firebase?")) {
                 db.ref('soal/' + firebaseKey).remove()
@@ -378,7 +407,6 @@
             }
         }
 
-        // Fungsi Hapus Kelompok (Berdasarkan Filter yang Sedang Dipilih)
         async function hapusSoalKelompok() {
             let filterKelas = document.getElementById("filter-kelas").value;
             let filterMapel = document.getElementById("filter-mapel").value;
