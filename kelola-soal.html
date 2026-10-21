@@ -8,7 +8,7 @@
     <!-- Favicon & Metadata WhatsApp -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:title" content="EduAdmin Pro - Kelola Soal & Kuis">
-    <meta property="og:description" content="Panel guru untuk menambah dan mengatur bank soal ujian secara real-time.">
+    <meta property="og:description" content="Panel guru untuk menambah, mengedit, dan mengatur bank soal ujian secara real-time.">
     <meta property="og:image" content="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:type" content="website">
 
@@ -31,7 +31,7 @@
     <div class="container py-5">
         <div class="card card-custom p-4 mb-4 text-center bg-primary text-white shadow-sm">
             <h2 class="font-weight-bold mb-2">📝 Kelola Soal & Kuis (Firebase)</h2>
-            <p class="mb-0 text-white-50">Input, atur, dan hapus bank soal atau tugas siswa secara online melalui Firebase.</p>
+            <p class="mb-0 text-white-50">Input, edit, dan hapus bank soal atau tugas siswa secara online melalui Firebase.</p>
         </div>
 
         <!-- Form Input Soal Dinamis -->
@@ -73,13 +73,13 @@
                 </div>
             </div>
 
-            <!-- Area Label Pertanyaan Dinamis (Bisa disembunyikan untuk Puzzle Kata) -->
+            <!-- Area Label Pertanyaan Dinamis -->
             <div class="form-group" id="group-pertanyaan">
                 <label id="label-pertanyaan" class="small font-weight-bold">Pertanyaan / Soal</label>
                 <textarea id="input-soal" class="form-control" rows="3" placeholder="Tuliskan pertanyaan di sini..."></textarea>
             </div>
 
-            <!-- CONTAINER KHUSUS PUZZLE KATA (Hanya Input Kata Kunci) -->
+            <!-- CONTAINER KHUSUS PUZZLE KATA -->
             <div id="container-puzzle" style="display: none;">
                 <div class="form-group bg-light p-3 rounded border">
                     <label class="small font-weight-bold text-success">🔤 Kata/Kalimat yang akan diacak otomatis untuk siswa:</label>
@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <!-- CONTAINER KHUSUS PILIHAN GANDA (Opsi A-D & Kunci) -->
+            <!-- CONTAINER KHUSUS PILIHAN GANDA -->
             <div id="container-pg">
                 <div class="form-row">
                     <div class="form-group col-md-3">
@@ -125,7 +125,7 @@
             </button>
         </div>
 
-        <!-- Daftar Soal Tersimpan dengan Filter & Fitur Hapus -->
+        <!-- Daftar Soal Tersimpan dengan Filter & Fitur Aksi -->
         <div class="card card-custom p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                 <h4 class="text-secondary font-weight-bold mb-2">📊 Daftar Soal di Firebase</h4>
@@ -182,8 +182,8 @@
                             <th width="12%">Kelas</th>
                             <th width="15%">Mapel</th>
                             <th width="15%">Jenis</th>
-                            <th width="38%">Pertanyaan / Tugas / Kata Kunci</th>
-                            <th width="15%">Aksi Hapus</th>
+                            <th width="33%">Pertanyaan / Tugas / Kunci</th>
+                            <th width="20%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-soal-body">
@@ -197,6 +197,100 @@
             <a href="guru.html" class="btn btn-light btn-custom border text-muted shadow-sm">&larr; Kembali ke Dashboard Guru</a>
         </div>
     </div>
+
+    <!-- Modal Pop-up Edit Soal -->
+    <div class="modal fade" id="modalEditSoal" tabindex="-1" role="dialog" aria-labelledby="modalEditLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius: 15px;">
+          <div class="modal-header bg-warning text-dark" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+            <h5 class="modal-title font-weight-bold" id="modalEditLabel">✏️ Edit Soal / Tugas</h5>
+            <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body p-4">
+            <form id="form-edit-soal" onsubmit="simpanPerubahanSoalFirebase(event)">
+                <input type="hidden" id="edit-firebase-key">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="small font-weight-bold">Kelas</label>
+                        <select id="edit-kelas" class="form-control" required>
+                            <option value="Kelas 1">Kelas 1</option>
+                            <option value="Kelas 2">Kelas 2</option>
+                            <option value="Kelas 3">Kelas 3</option>
+                            <option value="Kelas 4">Kelas 4</option>
+                            <option value="Kelas 5">Kelas 5</option>
+                            <option value="Kelas 6">Kelas 6</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="small font-weight-bold">Mata Pelajaran</label>
+                        <select id="edit-mapel" class="form-control" required>
+                            <option value="PAIBP">PAIBP</option>
+                            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                            <option value="Matematika">Matematika</option>
+                            <option value="IPAS">IPAS</option>
+                            <option value="PJOK">PJOK</option>
+                            <option value="Bahasa Inggris">Bahasa Inggris</option>
+                            <option value="Bahasa Jawa">Bahasa Jawa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="small font-weight-bold">Jenis Soal / Kuis</label>
+                    <input type="text" id="edit-jenis" class="form-control bg-light" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="small font-weight-bold" id="edit-label-pertanyaan">Pertanyaan / Soal</label>
+                    <textarea id="edit-pertanyaan" class="form-control" rows="3" required></textarea>
+                </div>
+
+                <!-- Container Khusus Edit Pilihan Ganda -->
+                <div id="edit-container-pg" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <label class="small font-weight-bold">Opsi A</label>
+                            <input type="text" id="edit-opsia" class="form-control">
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label class="small font-weight-bold">Opsi B</label>
+                            <input type="text" id="edit-opsib" class="form-control">
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label class="small font-weight-bold">Opsi C</label>
+                            <input type="text" id="edit-opsic" class="form-control">
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label class="small font-weight-bold">Opsi D</label>
+                            <input type="text" id="edit-opsid" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="small font-weight-bold">Kunci Jawaban</label>
+                            <input type="text" id="edit-kunci" class="form-control">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="small font-weight-bold">Link Gambar</label>
+                            <input type="text" id="edit-gambar" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-warning btn-block font-weight-bold mt-4 shadow-sm">💾 Perbarui Soal di Firebase</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script jQuery, Popper, dan Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
         // Konfigurasi Firebase Realtime Database
@@ -213,6 +307,8 @@
         // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+        let globalSoalCache = {};
 
         document.addEventListener("DOMContentLoaded", function() {
             tampilkanDaftarSoalFirebase();
@@ -236,8 +332,8 @@
                 containerPuzzle.style.display = "none";
 
                 if (jenis === "Merangkum Materi") {
-                    labelPertanyaan.innerHTML = "✍️ Judul / Instruksi Tugas Ringkasan (Siswa wajib merangkum min. 300 karakter):";
-                    inputSoal.placeholder = "Contoh: Buatlah ringkasan mengenai materi Bab 1 tentang ekosistem...";
+                    labelPertanyaan.innerHTML = "✍️ Judul / Instruksi Tugas Ringkasan:";
+                    inputSoal.placeholder = "Contoh: Buatlah ringkasan mengenai materi Bab 1...";
                     containerPG.style.display = "none";
                 } else if (jenis === "Essay") {
                     labelPertanyaan.innerHTML = "📝 Pertanyaan Essay / Uraian:";
@@ -265,7 +361,7 @@
                     alert("Kata untuk puzzle tidak boleh kosong!");
                     return;
                 }
-                soal = kataPuzzle; // Disimpan sebagai teks utama/kunci
+                soal = kataPuzzle;
                 kunciVal = kataPuzzle;
             } else {
                 soal = document.getElementById("input-soal").value.trim();
@@ -338,6 +434,7 @@
                 .then((snapshot) => {
                     tbody.innerHTML = "";
                     const data = snapshot.val();
+                    globalSoalCache = {};
 
                     if (!data) {
                         tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang ditemukan di Firebase.</td></tr>`;
@@ -349,6 +446,7 @@
                         let item = data[key];
                         item.firebaseKey = key;
                         dataSoalArr.push(item);
+                        globalSoalCache[key] = item;
                     });
 
                     let dataFiltered = dataSoalArr.filter(item => {
@@ -383,6 +481,7 @@
                             <td class="text-center"><span class="badge badge-info">${jns}</span></td>
                             <td class="text-left font-weight-bold">${prt}</td>
                             <td class="text-center">
+                                <button class="btn btn-warning btn-sm font-weight-bold px-2 py-1 mr-1" onclick="bukaModalEdit('${fKey}')">✏️ Edit</button>
                                 <button class="btn btn-danger btn-sm font-weight-bold px-2 py-1" onclick="hapusSoalSatu('${fKey}')">🗑️ Hapus</button>
                             </td>
                         `;
@@ -391,6 +490,77 @@
                 })
                 .catch(e => {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat daftar soal: ${e.message}</td></tr>`;
+                });
+        }
+
+        // Buka Modal Edit Soal
+        function bukaModalEdit(firebaseKey) {
+            let soalObj = globalSoalCache[firebaseKey];
+            if (!soalObj) return;
+
+            document.getElementById("edit-firebase-key").value = firebaseKey;
+            document.getElementById("edit-kelas").value = soalObj.kelas || "Kelas 6";
+            document.getElementById("edit-mapel").value = soalObj.mapel || "PAIBP";
+            document.getElementById("edit-jenis").value = soalObj.jenis || "Pilihan Ganda";
+            document.getElementById("edit-pertanyaan").value = soalObj.pertanyaan || "";
+
+            let containerPG = document.getElementById("edit-container-pg");
+            let labelPrt = document.getElementById("edit-label-pertanyaan");
+
+            if (soalObj.jenis === "Pilihan Ganda") {
+                containerPG.style.display = "block";
+                labelPrt.innerHTML = "Pertanyaan / Soal Pilihan Ganda";
+                document.getElementById("edit-opsia").value = soalObj.opsiA || "";
+                document.getElementById("edit-opsib").value = soalObj.opsiB || "";
+                document.getElementById("edit-opsic").value = soalObj.opsiC || "";
+                document.getElementById("edit-opsid").value = soalObj.opsid || "";
+                document.getElementById("edit-kunci").value = soalObj.kunci || "";
+                document.getElementById("edit-gambar").value = soalObj.gambar || "";
+            } else if (soalObj.jenis === "Puzzle Kata") {
+                containerPG.style.display = "none";
+                labelPrt.innerHTML = "Kata / Kalimat Puzzle (Kunci & Soal)";
+            } else {
+                containerPG.style.display = "none";
+                labelPrt.innerHTML = "Pertanyaan / Instruksi Tugas";
+            }
+
+            $('#modalEditSoal').modal('show');
+        }
+
+        // Simpan Perubahan Edit Soal ke Firebase
+        function simpanPerubahanSoalFirebase(event) {
+            event.preventDefault();
+            let key = document.getElementById("edit-firebase-key").value;
+            let kelas = document.getElementById("edit-kelas").value;
+            let mapel = document.getElementById("edit-mapel").value;
+            let jenis = document.getElementById("edit-jenis").value;
+            let pertanyaan = document.getElementById("edit-pertanyaan").value.trim();
+
+            let dataUpdate = {
+                kelas: kelas,
+                mapel: mapel,
+                pertanyaan: pertanyaan
+            };
+
+            if (jenis === "Pilihan Ganda") {
+                dataUpdate.opsiA = document.getElementById("edit-opsia").value.trim();
+                dataUpdate.opsiB = document.getElementById("edit-opsib").value.trim();
+                dataUpdate.opsiC = document.getElementById("edit-opsic").value.trim();
+                dataUpdate.opsiD = document.getElementById("edit-opsid").value.trim();
+                dataUpdate.kunci = document.getElementById("edit-kunci").value.trim();
+                dataUpdate.gambar = document.getElementById("edit-gambar").value.trim();
+            } else if (jenis === "Puzzle Kata") {
+                dataUpdate.kunci = pertanyaan; // Sinkronkan kunci puzzle
+            }
+
+            db.ref('soal/' + key).update(dataUpdate)
+                .then(() => {
+                    alert("🎉 Soal berhasil diperbarui di Firebase!");
+                    $('#modalEditSoal').modal('hide');
+                    tampilkanDaftarSoalFirebase();
+                })
+                .catch(err => {
+                    alert("Gagal memperbarui soal: " + err.message);
                 });
         }
 
