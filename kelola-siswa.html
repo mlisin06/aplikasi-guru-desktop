@@ -3,24 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Data Siswa - Panel Guru</title>
+    <title>Kelola Data Siswa - Panel Guru (Firebase)</title>
+
+    <!-- Favicon & Metadata WhatsApp -->
+    <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
+    <meta property="og:title" content="EduAdmin Pro - Kelola Data Siswa">
+    <meta property="og:description" content="Manajemen data siswa sekolah, backup, impor massal, edit, dan hapus secara real-time.">
+    <meta property="og:image" content="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
+    <meta property="og:type" content="website">
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase App & Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .form-control { border-radius: 10px; padding: 10px 15px; }
         .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
         .table th, .table td { vertical-align: middle !important; }
+        .box-import { background: #eef9f1; border: 2px dashed #28a745; border-radius: 12px; }
+        .box-backup { background: #eef7ff; border: 2px dashed #0d6efd; border-radius: 12px; }
     </style>
 </head>
 <body>
     <div class="container py-5">
+        <!-- Card Header & Fitur Backup/Restore & Import -->
         <div class="card card-custom p-4 bg-white mb-4">
-            <h3 class="text-success font-weight-bold mb-1">👨‍🎓 Kelola Data Siswa (Cloud Server)</h3>
-            <p class="text-muted small mb-4">Tambah dan kelola daftar nama siswa per kelas agar tersimpan di Google Sheets.</p>
+            <h3 class="text-success font-weight-bold mb-1">👨‍🎓 Kelola Data Siswa (Firebase Realtime Database)</h3>
+            <p class="text-muted small mb-3">Tambah, edit, backup, dan kelola daftar nama siswa per kelas secara real-time.</p>
 
-            <form id="form-siswa" onsubmit="tambahSiswa(event)">
+            <!-- Box Backup & Restor Data Siswa (JSON) untuk Tahun Depan -->
+            <div class="box-backup p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                    <h6 class="font-weight-bold text-primary mb-2 mb-md-0">📦 Backup & Restor Data Siswa (Untuk Tahun Depan)</h6>
+                    <button type="button" class="btn btn-primary btn-sm font-weight-bold shadow-sm" onclick="downloadBackupSiswaJSON()">
+                        📥 Unduh File Backup Siswa (.json)
+                    </button>
+                </div>
+                <p class="text-muted small mb-3">Unduh file cadangan data siswa untuk disimpan. Tahun depan, Anda cukup upload file JSON ini untuk memulihkan seluruh nama siswa secara instan.</p>
+                <div class="form-row align-items-center">
+                    <div class="col-md-8 mb-2 mb-md-0">
+                        <input type="file" id="file-backup-siswa" class="form-control-file p-1 bg-white border rounded" accept=".json">
+                        <small class="text-muted">Pilih file backup berformat <b>.json</b>.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="btn-import-siswa-json" class="btn btn-primary btn-block font-weight-bold shadow-sm" onclick="uploadBackupSiswaJSON()">
+                            📤 Upload & Restor ke Firebase
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box Unduh Template & Import Massal CSV -->
+            <div class="box-import p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                    <h6 class="font-weight-bold text-success mb-2 mb-md-0">📥 Impor Awal via CSV (Template Excel)</h6>
+                    <button type="button" class="btn btn-outline-success btn-sm font-weight-bold" onclick="unduhTemplateCSV()">
+                        📄 Unduh Template CSV
+                    </button>
+                </div>
+                <div class="form-row align-items-center">
+                    <div class="col-md-8 mb-2 mb-md-0">
+                        <input type="file" id="file-csv-siswa" class="form-control-file p-1 bg-white border rounded" accept=".csv">
+                        <small class="text-muted">Gunakan file CSV sesuai template (Kolom: <b>Kelas, NIS, Nama</b>).</small>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="btn-upload-csv" class="btn btn-success btn-block font-weight-bold shadow-sm" onclick="uploadSiswaMassalCSV()">
+                            📤 Upload & Import CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-0 mb-4">
+
+            <!-- Form Tambah Siswa Satu per Satu -->
+            <h5 class="font-weight-bold text-dark mb-3">➕ Tambah Siswa Satu Per Satu</h5>
+            <form id="form-siswa" onsubmit="tambahSiswaFirebase(event)">
                 <div class="form-row">
                     <div class="form-group col-md-3">
                         <label class="font-weight-bold small text-muted">Pilih Kelas</label>
@@ -43,28 +106,49 @@
                         <input type="text" id="nama-siswa" class="form-control" placeholder="Ketik nama lengkap siswa..." required>
                     </div>
                 </div>
-                <button type="submit" id="btn-simpan" class="btn btn-success btn-custom">➕ Simpan Data Siswa ke Server</button>
+                <button type="submit" id="btn-simpan" class="btn btn-success btn-custom">➕ Simpan Data Siswa ke Firebase</button>
             </form>
         </div>
 
+        <!-- Tabel Daftar Siswa dengan Filter Dinamis & Aksi Edit/Hapus -->
         <div class="card card-custom p-4 bg-white">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="font-weight-bold text-dark mb-0">📋 Daftar Siswa Terdaftar</h5>
-                <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="muatDataSiswa()">🔄 Muat Ulang Data</button>
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                <h5 class="font-weight-bold text-dark mb-2">📋 Daftar Siswa Terdaftar</h5>
+                <div>
+                    <button class="btn btn-outline-danger btn-sm font-weight-bold mr-2" onclick="hapusSiswaKelompok()">🗑️ Hapus Sesuai Filter</button>
+                    <button class="btn btn-outline-primary btn-sm font-weight-bold" onclick="muatDataSiswaFirebase()">🔄 Muat Ulang Data</button>
+                </div>
+            </div>
+
+            <!-- Filter Kelas Dinamis -->
+            <div class="form-row mb-3 bg-light p-3 rounded">
+                <div class="form-group col-md-4 mb-0">
+                    <label class="small font-weight-bold">Filter Sesuai Kelas (Dinamis):</label>
+                    <select id="filter-kelas-tabel" class="form-control form-control-sm" onchange="muatDataSiswaFirebase()">
+                        <option value="">-- Semua Kelas --</option>
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                </div>
             </div>
 
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead class="thead-dark text-center">
                         <tr>
-                            <th style="width: 10%;">No</th>
-                            <th style="width: 20%;">Kelas</th>
-                            <th style="width: 20%;">NIS</th>
-                            <th style="width: 50%;">Nama Lengkap Siswa</th>
+                            <th style="width: 7%;">No</th>
+                            <th style="width: 15%;">Kelas</th>
+                            <th style="width: 18%;">NIS</th>
+                            <th style="width: 40%;">Nama Lengkap Siswa</th>
+                            <th style="width: 20%;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-siswa-body">
-                        <tr><td colspan="4" class="text-center text-muted py-4">Memuat data siswa dari server cloud...</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">Memuat data siswa dari Firebase...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -75,43 +159,280 @@
         </div>
     </div>
 
+    <!-- Modal Pop-up Edit Data Siswa -->
+    <div class="modal fade" id="modalEditSiswa" tabindex="-1" role="dialog" aria-labelledby="modalEditLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius: 15px;">
+          <div class="modal-header bg-warning text-dark" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+            <h5 class="modal-title font-weight-bold" id="modalEditLabel">✏️ Edit Data Siswa</h5>
+            <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body p-4">
+            <form id="form-edit-siswa" onsubmit="simpanPerubahanSiswaFirebase(event)">
+                <input type="hidden" id="edit-firebase-key">
+                <div class="form-group">
+                    <label class="font-weight-bold small text-muted">Pilih Kelas</label>
+                    <select id="edit-kelas-siswa" class="form-control" required>
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-bold small text-muted">Nomor Induk / NIS</label>
+                    <input type="text" id="edit-nis-siswa" class="form-control" placeholder="Contoh: 1023">
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-bold small text-muted">Nama Lengkap Siswa</label>
+                    <input type="text" id="edit-nama-siswa" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-warning btn-block font-weight-bold mt-4 shadow-sm">💾 Perbarui Data Siswa</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script jQuery, Popper, dan Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyI-MoR-4xGjrxrbgn-rKjqLiHzrrQQ0tJwlFGBSExRl9BBE9pVPTGzvobYMoMkrei0/exec";
+        // Konfigurasi Firebase Realtime Database
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgwdiryHd1TqpKdNiV_KXK-leSl3sOW8g",
+            authDomain: "eduadmin-pro-88cd6.firebaseapp.com",
+            databaseURL: "https://eduadmin-pro-88cd6-default-rtdb.firebaseio.com/",
+            projectId: "eduadmin-pro-88cd6",
+            storageBucket: "eduadmin-pro-88cd6.firebasestorage.app",
+            messagingSenderId: "223595774231",
+            appId: "1:223595774231:web:707feff9094f18d839b752"
+        };
+
+        // Inisialisasi Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let globalSiswaCache = {};
 
         document.addEventListener("DOMContentLoaded", function() {
-            muatDataSiswa();
+            muatDataSiswaFirebase();
         });
 
-        async function muatDataSiswa() {
-            let tbody = document.getElementById("tabel-siswa-body");
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-primary py-4">⏳ Mengambil data siswa dari Google Sheets...</td></tr>`;
-
+        // 1. Fungsi Unduh Backup Data Siswa (.json)
+        async function downloadBackupSiswaJSON() {
             try {
-                let response = await fetch(SCRIPT_URL + "?action=getSiswa");
-                let dataSiswa = await response.json();
-                tbody.innerHTML = "";
-
-                if (dataSiswa.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Belum ada data siswa di server.</td></tr>`;
+                let snapshot = await db.ref('siswa/').once('value');
+                let data = snapshot.val();
+                if (!data) {
+                    alert("Tidak ada data siswa di Firebase untuk di-backup.");
                     return;
                 }
-
-                dataSiswa.forEach((siswa, index) => {
-                    let tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="text-center">${index + 1}</td>
-                        <td class="text-center"><b>${siswa.kelas}</b></td>
-                        <td class="text-center">${siswa.nis || '-'}</td>
-                        <td>${siswa.nama}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Gagal memuat data siswa dari server.</td></tr>`;
+                let listSiswa = [];
+                Object.keys(data).forEach(key => listSiswa.push(data[key]));
+                
+                let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(listSiswa, null, 2));
+                let downloadAnchor = document.createElement('a');
+                let namaFile = `backup_data_siswa_${new Date().toISOString().slice(0,10)}.json`;
+                
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", namaFile);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+                alert(`🎉 Berhasil mengunduh backup ${listSiswa.length} data siswa! Simpan file ini untuk digunakan tahun depan.`);
+            } catch (err) {
+                alert("Gagal mengunduh backup: " + err.message);
             }
         }
 
-        function tambahSiswa(event) {
+        // 2. Fungsi Upload & Restor Backup Siswa (.json)
+        function uploadBackupSiswaJSON() {
+            let fileInput = document.getElementById('file-backup-siswa');
+            let file = fileInput.files[0];
+            if (!file) {
+                alert("Pilih file backup (.json) terlebih dahulu!");
+                return;
+            }
+            let reader = new FileReader();
+            let btn = document.getElementById('btn-import-siswa-json');
+            
+            reader.onload = async function(e) {
+                try {
+                    btn.disabled = true;
+                    btn.innerText = "Mengimpor Data...";
+                    let listSiswa = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(listSiswa) || listSiswa.length === 0) {
+                        alert("File JSON tidak valid atau kosong.");
+                        btn.disabled = false;
+                        btn.innerText = "📤 Upload & Restor ke Firebase";
+                        return;
+                    }
+                    
+                    let promises = listSiswa.map(item => {
+                        return db.ref('siswa/').push({
+                            kelas: item.kelas || "Kelas 6",
+                            nis: item.nis || "-",
+                            nama: item.nama || "",
+                            tanggal: item.tanggal || new Date().toLocaleDateString("id-ID")
+                        });
+                    });
+                    
+                    await Promise.all(promises);
+                    alert(`🎉 Berhasil memulihkan ${listSiswa.length} data siswa ke Firebase!`);
+                    fileInput.value = "";
+                    muatDataSiswaFirebase();
+                } catch (err) {
+                    alert("Gagal memproses file backup: " + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "📤 Upload & Restor ke Firebase";
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 3. Fungsi Unduh Template CSV
+        function unduhTemplateCSV() {
+            let isiCSV = "Kelas,NIS,Nama\nKelas 6,1001,Ahmad Subagja\nKelas 6,1002,Budi Santoso\nKelas 6,1003,Citra Dewi";
+            let blob = new Blob([isiCSV], { type: "text/csv;charset=utf-8;" });
+            let url = URL.createObjectURL(blob);
+            let link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "template_data_siswa.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 4. Fungsi Upload / Import Massal Siswa dari CSV
+        async function uploadSiswaMassalCSV() {
+            let fileInput = document.getElementById("file-csv-siswa");
+            let file = fileInput.files[0];
+            if (!file) {
+                alert("Harap pilih file CSV terlebih dahulu!");
+                return;
+            }
+            let btn = document.getElementById("btn-upload-csv");
+            btn.disabled = true;
+            btn.innerText = "Mengimpor Data...";
+
+            let reader = new FileReader();
+            reader.onload = async function(e) {
+                let teks = e.target.result;
+                let baris = teks.split(/\r\n|\n/);
+                let dataPush = [];
+                let tgl = new Date().toLocaleDateString("id-ID");
+
+                for (let i = 1; i < baris.length; i++) {
+                    let item = baris[i].trim();
+                    if (!item) continue;
+                    let kolom = item.split(",");
+                    if (kolom.length >= 3) {
+                        let kls = kolom[0].trim();
+                        let nis = kolom[1].trim();
+                        let nms = kolom[2].trim();
+                        if (nms) {
+                            dataPush.push({
+                                kelas: kls || "Kelas 6",
+                                nis: nis || "-",
+                                nama: nms,
+                                tanggal: tgl
+                            });
+                        }
+                    }
+                }
+
+                if (dataPush.length === 0) {
+                    alert("Tidak ada data siswa yang valid dalam file CSV tersebut.");
+                    btn.disabled = false;
+                    btn.innerText = "📤 Upload & Import CSV";
+                    return;
+                }
+
+                try {
+                    let promises = dataPush.map(s => db.ref('siswa/').push(s));
+                    await Promise.all(promises);
+                    alert(`🎉 Berhasil mengimpor ${dataPush.length} data siswa ke Firebase!`);
+                    fileInput.value = "";
+                    muatDataSiswaFirebase();
+                } catch (err) {
+                    alert("Gagal mengimpor data: " + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "📤 Upload & Import CSV";
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 5. Memuat Data Siswa dengan Filter Dinamis
+        function muatDataSiswaFirebase() {
+            let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
+            let tbody = document.getElementById("tabel-siswa-body");
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-primary py-4">⏳ Mengambil data dari Firebase...</td></tr>`;
+
+            db.ref('siswa/').once('value')
+                .then((snapshot) => {
+                    tbody.innerHTML = "";
+                    const data = snapshot.val();
+                    globalSiswaCache = {};
+
+                    if (!data) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada data siswa di Firebase.</td></tr>`;
+                        return;
+                    }
+
+                    let dataSiswaArr = [];
+                    Object.keys(data).forEach((key) => {
+                        let item = data[key];
+                        item.firebaseKey = key;
+                        dataSiswaArr.push(item);
+                        globalSiswaCache[key] = item;
+                    });
+
+                    let dataFiltered = dataSiswaArr.filter(item => {
+                        let kls = String(item.kelas || "").trim();
+                        return filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+                    });
+
+                    if (dataFiltered.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada data siswa yang cocok dengan filter kelas ini.</td></tr>`;
+                        return;
+                    }
+
+                    let index = 1;
+                    dataFiltered.forEach((siswa) => {
+                        let fKey = siswa.firebaseKey;
+                        let tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td class="text-center">${index++}</td>
+                            <td class="text-center"><b>${siswa.kelas || '-'}</b></td>
+                            <td class="text-center">${siswa.nis || '-'}</td>
+                            <td class="text-left font-weight-bold">${siswa.nama || '-'}</td>
+                            <td class="text-center">
+                                <button class="btn btn-warning btn-sm font-weight-bold mr-1" onclick="bukaModalEdit('${fKey}')">✏️ Edit</button>
+                                <button class="btn btn-danger btn-sm font-weight-bold" onclick="hapusSiswaSatu('${fKey}')">🗑️ Hapus</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data: ${error.message}</td></tr>`;
+                });
+        }
+
+        // 6. Tambah Data Siswa Baru (Manual)
+        function tambahSiswaFirebase(event) {
             event.preventDefault();
             let kelas = document.getElementById("kelas-siswa").value;
             let nis = document.getElementById("nis-siswa").value.trim();
@@ -119,31 +440,110 @@
             let btn = document.getElementById("btn-simpan");
 
             btn.disabled = true;
-            btn.innerText = "Menyimpan ke Cloud...";
+            btn.innerText = "Menyimpan ke Firebase...";
 
-            let dataKirim = {
-                action: "simpanSiswa",
+            db.ref('siswa/').push({
                 kelas: kelas,
                 nis: nis,
-                nama: nama
-            };
-
-            fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dataKirim)
+                nama: nama,
+                tanggal: new Date().toLocaleDateString("id-ID")
             }).then(() => {
-                alert("🎉 Data siswa berhasil disimpan ke server cloud!");
+                alert("🎉 Data siswa berhasil disimpan ke Firebase!");
                 document.getElementById("form-siswa").reset();
                 btn.disabled = false;
-                btn.innerText = "➕ Simpan Data Siswa ke Server";
-                setTimeout(muatDataSiswa, 1500); // Refresh tabel otomatis
-            }).catch(err => {
-                alert("Gagal menyimpan data: " + err);
+                btn.innerText = "➕ Simpan Data Siswa ke Firebase";
+                muatDataSiswaFirebase();
+            }).catch((err) => {
+                alert("Gagal menyimpan data: " + err.message);
                 btn.disabled = false;
-                btn.innerText = "➕ Simpan Data Siswa ke Server";
+                btn.innerText = "➕ Simpan Data Siswa ke Firebase";
             });
+        }
+
+        // 7. Buka Modal Pop-up Edit Siswa
+        function bukaModalEdit(firebaseKey) {
+            let siswa = globalSiswaCache[firebaseKey];
+            if (!siswa) return;
+
+            document.getElementById("edit-firebase-key").value = firebaseKey;
+            document.getElementById("edit-kelas-siswa").value = siswa.kelas || "Kelas 1";
+            document.getElementById("edit-nis-siswa").value = siswa.nis || "";
+            document.getElementById("edit-nama-siswa").value = siswa.nama || "";
+
+            $('#modalEditSiswa').modal('show');
+        }
+
+        // 8. Simpan Perubahan Edit Siswa ke Firebase
+        function simpanPerubahanSiswaFirebase(event) {
+            event.preventDefault();
+            let key = document.getElementById("edit-firebase-key").value;
+            let kelasBaru = document.getElementById("edit-kelas-siswa").value;
+            let nisBaru = document.getElementById("edit-nis-siswa").value.trim();
+            let namaBaru = document.getElementById("edit-nama-siswa").value.trim();
+
+            db.ref('siswa/' + key).update({
+                kelas: kelasBaru,
+                nis: nisBaru,
+                nama: namaBaru
+            }).then(() => {
+                alert("🎉 Data siswa berhasil diperbarui!");
+                $('#modalEditSiswa').modal('hide');
+                muatDataSiswaFirebase();
+            }).catch((err) => {
+                alert("Gagal memperbarui data: " + err.message);
+            });
+        }
+
+        // 9. Hapus Data Siswa Satuan
+        function hapusSiswaSatu(firebaseKey) {
+            let siswa = globalSiswaCache[firebaseKey];
+            let namaSiswa = siswa ? siswa.nama : "siswa ini";
+
+            if (confirm(`Apakah Anda yakin ingin menghapus data "${namaSiswa}" dari Firebase?`)) {
+                db.ref('siswa/' + firebaseKey).remove()
+                    .then(() => {
+                        alert("Data siswa berhasil dihapus!");
+                        muatDataSiswaFirebase();
+                    })
+                    .catch((err) => {
+                        alert("Gagal menghapus data: " + err.message);
+                    });
+            }
+        }
+
+        // 10. Hapus Data Siswa Massal Berdasarkan Filter
+        async function hapusSiswaKelompok() {
+            let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
+            let pesanKonfirmasi = filterKelas 
+                ? `Apakah Anda yakin ingin menghapus SELURUH data siswa pada ${filterKelas}?`
+                : "PERINGATAN: Filter kelas kosong. Ini akan menghapus SELURUH DATA SISWA di database. Yakin ingin melanjutkan?";
+
+            if (confirm(pesanKonfirmasi)) {
+                try {
+                    let snapshot = await db.ref('siswa/').once('value');
+                    let data = snapshot.val();
+                    if (!data) {
+                        alert("Tidak ada data siswa untuk dihapus.");
+                        return;
+                    }
+
+                    let updatePromises = [];
+                    Object.keys(data).forEach(key => {
+                        let item = data[key];
+                        let kls = String(item.kelas || "").trim();
+
+                        if (!filterKelas || kls.toLowerCase() === filterKelas.toLowerCase()) {
+                            updatePromises.push(db.ref('siswa/' + key).remove());
+                        }
+                    });
+
+                    await Promise.all(updatePromises);
+                    alert("🎉 Berhasil menghapus data siswa yang dipilih!");
+                    muatDataSiswaFirebase();
+                } catch (err) {
+                    alert("Gagal menghapus kelompok data siswa: " + err.message);
+                }
+            }
         }
     </script>
 </body>
