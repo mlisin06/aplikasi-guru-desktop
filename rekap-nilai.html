@@ -27,10 +27,25 @@
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .table th, .table td { vertical-align: middle !important; text-align: center; }
         .table th:nth-child(3), .table td:nth-child(3) { text-align: left; }
+        .banner-demo { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; }
     </style>
 </head>
 <body>
     <div class="container-fluid mt-4 mb-5 px-4">
+        
+        <!-- Banner Mode Demo (Hanya muncul jika ada ?demo=true di URL) -->
+        <div id="banner-demo-mode" class="banner-demo p-3 mb-4 text-dark shadow-sm" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
+                    <small class="text-muted">Simulasi rekap nilai dan ekspor Excel. Anda dapat menguji filter atau tombol unduh dengan aman.</small>
+                </div>
+                <button class="btn btn-warning btn-sm font-weight-bold mt-2 mt-md-0" onclick="muatDataDemoRekap()">
+                    ✨ Muat Contoh Nilai Demo
+                </button>
+            </div>
+        </div>
+
         <div class="card card-custom p-4 bg-white">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <div>
@@ -172,177 +187,175 @@
         const db = firebase.database();
         
         let globalDetailCache = {};
-        let rekapDataForExcel = []; // Menyimpan array data bersih khusus ekspor Excel
+        let rekapDataForExcel = [];
+        let isDemoMode = false;
+        let dataDemoNilai = {
+            "n_1": { kelas: "Kelas 6", nama: "Ahmad Subagja", mapel: "Matematika", jenis: "Pilihan Ganda", nilai: 90, detail: "Jawaban benar semua." },
+            "n_2": { kelas: "Kelas 6", nama: "Ahmad Subagja", mapel: "Matematika", jenis: "Puzzle Kata", nilai: 85, detail: "PANCASILA" },
+            "n_3": { kelas: "Kelas 6", nama: "Budi Santoso", mapel: "Matematika", jenis: "Pilihan Ganda", nilai: 75, detail: "Sebagian benar." }
+        };
 
         document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === 'true' || window.location.href.includes('demo=true')) {
+                isDemoMode = true;
+                document.getElementById('banner-demo-mode').style.display = 'block';
+            }
             tampilkanRekapNilaiFirebase();
         });
 
+        function muatDataDemoRekap() {
+            renderTabelRekap(dataDemoNilai);
+            alert("✨ [MODE DEMO] Contoh rekap nilai berhasil dimuat!");
+        }
+
         async function tampilkanRekapNilaiFirebase() {
-            let filterKelas = document.getElementById("filter-kelas").value.trim();
-            let filterMapel = document.getElementById("filter-mapel").value.trim();
             let tbody = document.getElementById("tabel-nilai-body");
             tbody.innerHTML = `<tr><td colspan="9" class="text-center text-primary py-4">⏳ Mengambil rekap nilai dari Firebase...</td></tr>`;
 
             try {
                 let snapshot = await db.ref('nilai/').once('value');
                 let dataObj = snapshot.val();
-                tbody.innerHTML = "";
-                globalDetailCache = {};
-                rekapDataForExcel = [];
-
                 if (!dataObj) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di Firebase.</td></tr>`;
+                    if (isDemoMode) { renderTabelRekap(dataDemoNilai); }
+                    else { tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data nilai di Firebase.</td></tr>`; }
                     return;
                 }
-
-                let rekapMap = {};
-                Object.keys(dataObj).forEach(dbKey => {
-                    let item = dataObj[dbKey];
-                    if (!item) return;
-
-                    let kls = String(item.kelas || "").trim();
-                    let nms = String(item.nama || "").trim();
-                    let mpl = String(item.mapel || "").trim();
-                    
-                    if (!nms) return;
-
-                    let matchKelas = filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
-                    let matchMapel = filterMapel ? mpl.toLowerCase() === filterMapel.toLowerCase() : true;
-
-                    if (matchKelas && matchMapel) {
-                        let key = `${kls}_${nms}_${mpl}`;
-
-                        if (!rekapMap[key]) {
-                            rekapMap[key] = {
-                                kelas: kls,
-                                nama: nms,
-                                mapel: mpl,
-                                "Pilihan Ganda": null,
-                                "Puzzle Kata": null,
-                                "Essay": null,
-                                "Merangkum Materi": null,
-                                detailJawabanMap: {},
-                                keyFirebaseMap: {}
-                            };
-                        }
-                        
-                        let jenisSoal = String(item.jenis || "").trim().toLowerCase();
-                        let valNilai = item.nilai !== undefined ? item.nilai : "";
-                        let valDetail = item.detail || "-";
-
-                        if (jenisSoal.includes("pilihan ganda")) {
-                            rekapMap[key]["Pilihan Ganda"] = valNilai;
-                            rekapMap[key].detailJawabanMap["Pilihan Ganda"] = valDetail;
-                            rekapMap[key].keyFirebaseMap["Pilihan Ganda"] = dbKey;
-                        } else if (jenisSoal.includes("puzzle")) {
-                            rekapMap[key]["Puzzle Kata"] = valNilai;
-                            rekapMap[key].detailJawabanMap["Puzzle Kata"] = valDetail;
-                            rekapMap[key].keyFirebaseMap["Puzzle Kata"] = dbKey;
-                        } else if (jenisSoal.includes("essay") || jenisSoal.includes("esai")) {
-                            rekapMap[key]["Essay"] = valNilai;
-                            rekapMap[key].detailJawabanMap["Essay"] = valDetail;
-                            rekapMap[key].keyFirebaseMap["Essay"] = dbKey;
-                        } else if (jenisSoal.includes("merangkum") || jenisSoal.includes("materi")) {
-                            rekapMap[key]["Merangkum Materi"] = valNilai;
-                            rekapMap[key].detailJawabanMap["Merangkum Materi"] = valDetail;
-                            rekapMap[key].keyFirebaseMap["Merangkum Materi"] = dbKey;
-                        } else {
-                            rekapMap[key]["Pilihan Ganda"] = valNilai;
-                            rekapMap[key].detailJawabanMap["Pilihan Ganda"] = valDetail;
-                            rekapMap[key].keyFirebaseMap["Pilihan Ganda"] = dbKey;
-                        }
-                    }
-                });
-
-                let keys = Object.keys(rekapMap);
-                if (keys.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada data rekap yang cocok dengan filter.</td></tr>`;
-                    return;
-                }
-
-                let index = 1;
-                keys.forEach(key => {
-                    let row = rekapMap[key];
-                    
-                    let totalNilai = 0;
-                    let jumlahDikerjakan = 0;
-
-                    let jenisKuisList = ["Pilihan Ganda", "Puzzle Kata", "Essay", "Merangkum Materi"];
-                    jenisKuisList.forEach(jenis => {
-                        let val = row[jenis];
-                        if (val !== null && val !== undefined && val !== "") {
-                            let num = Number(val);
-                            if (!isNaN(num)) {
-                                totalNilai += num;
-                                jumlahDikerjakan++;
-                            }
-                        }
-                    });
-
-                    let nilaiAkhir = jumlahDikerjakan > 0 ? Math.round(totalNilai / jumlahDikerjakan) : 0;
-                    let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
-
-                    // Simpan data bersih untuk diekspor ke Excel
-                    rekapDataForExcel.push({
-                        "No": index,
-                        "Kelas": row.kelas,
-                        "Nama Siswa": row.nama,
-                        "Mata Pelajaran": row.mapel,
-                        "Pilihan Ganda": row["Pilihan Ganda"] !== null ? row["Pilihan Ganda"] : "-",
-                        "Puzzle Kata": row["Puzzle Kata"] !== null ? row["Puzzle Kata"] : "-",
-                        "Essay": row["Essay"] !== null ? row["Essay"] : "-",
-                        "Merangkum Materi": row["Merangkum Materi"] !== null ? row["Merangkum Materi"] : "-",
-                        "Nilai Akhir": jumlahDikerjakan > 0 ? nilaiAkhir : "-"
-                    });
-
-                    let renderKolom = (jenisKuisName) => {
-                        let val = row[jenisKuisName];
-                        let detailTeks = row.detailJawabanMap[jenisKuisName] || "Tidak ada rincian detail.";
-                        let firebaseKeyItem = row.keyFirebaseMap[jenisKuisName] || "";
-
-                        if (val === null || val === undefined || val === "") {
-                            return '<span class="badge badge-warning" style="font-size: 10px;">Belum Dikerjakan</span>';
-                        }
-                        
-                        let num = Number(val);
-                        let currentNilaiVal = isNaN(num) ? "" : val;
-
-                        let btnLabel = isNaN(num) ? "👀 Periksa & Nilai" : "✏️ Ubah Nilai";
-                        let btnClass = isNaN(num) ? "btn-outline-primary" : "btn-outline-secondary";
-
-                        let cacheId = "id_" + Math.random().toString(36).substr(2, 9);
-                        globalDetailCache[cacheId] = detailTeks;
-
-                        let infoPanjangTeks = detailTeks.length > 50 ? ` <small class="text-muted">(${detailTeks.length} kar)</small>` : '';
-
-                        return `
-                            <div class="mb-1"><span class="badge ${isNaN(num) ? 'badge-info' : 'badge-light border'} px-2 py-1">${val}</span>${infoPanjangTeks}</div>
-                            <button class="btn ${btnClass} btn-sm py-0 px-2" style="font-size: 10px;" onclick="bukaModalKoreksiCache('${row.nama}', '${row.kelas}', '${row.mapel}', '${jenisKuisName}', '${cacheId}', '${currentNilaiVal}', '${firebaseKeyItem}')">${btnLabel}</button>
-                        `;
-                    };
-
-                    let tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${index++}</td>
-                        <td><b>${row.kelas}</b></td>
-                        <td class="font-weight-bold text-left">${row.nama}</td>
-                        <td><span class="badge badge-secondary">${row.mapel}</span></td>
-                        <td>${renderKolom("Pilihan Ganda")}</td>
-                        <td>${renderKolom("Puzzle Kata")}</td>
-                        <td>${renderKolom("Essay")}</td>
-                        <td>${renderKolom("Merangkum Materi")}</td>
-                        <td>${jumlahDikerjakan > 0 ? `<span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span>` : '<span class="text-muted">-</span>'}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                renderTabelRekap(dataObj);
             } catch (e) {
-                console.error(e);
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal memuat rekap nilai: ${e.message}</td></tr>`;
+                if (isDemoMode) { renderTabelRekap(dataDemoNilai); }
+                else { tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Gagal memuat rekap nilai: ${e.message}</td></tr>`; }
             }
         }
 
-        // Fungsi Ekspor Data ke Excel (.xlsx)
+        function renderTabelRekap(dataObj) {
+            let filterKelas = document.getElementById("filter-kelas").value.trim();
+            let filterMapel = document.getElementById("filter-mapel").value.trim();
+            let tbody = document.getElementById("tabel-nilai-body");
+            tbody.innerHTML = "";
+            globalDetailCache = {};
+            rekapDataForExcel = [];
+
+            let rekapMap = {};
+            Object.keys(dataObj).forEach(dbKey => {
+                let item = dataObj[dbKey];
+                if (!item) return;
+
+                let kls = String(item.kelas || "").trim();
+                let nms = String(item.nama || "").trim();
+                let mpl = String(item.mapel || "").trim();
+                if (!nms) return;
+
+                let matchKelas = filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+                let matchMapel = filterMapel ? mpl.toLowerCase() === filterMapel.toLowerCase() : true;
+
+                if (matchKelas && matchMapel) {
+                    let key = `${kls}_${nms}_${mpl}`;
+                    if (!rekapMap[key]) {
+                        rekapMap[key] = {
+                            kelas: kls, nama: nms, mapel: mpl,
+                            "Pilihan Ganda": null, "Puzzle Kata": null, "Essay": null, "Merangkum Materi": null,
+                            detailJawabanMap: {}, keyFirebaseMap: {}
+                        };
+                    }
+                    
+                    let jenisSoal = String(item.jenis || "").trim().toLowerCase();
+                    let valNilai = item.nilai !== undefined ? item.nilai : "";
+                    let valDetail = item.detail || "-";
+
+                    if (jenisSoal.includes("pilihan ganda")) {
+                        rekapMap[key]["Pilihan Ganda"] = valNilai;
+                        rekapMap[key].detailJawabanMap["Pilihan Ganda"] = valDetail;
+                        rekapMap[key].keyFirebaseMap["Pilihan Ganda"] = dbKey;
+                    } else if (jenisSoal.includes("puzzle")) {
+                        rekapMap[key]["Puzzle Kata"] = valNilai;
+                        rekapMap[key].detailJawabanMap["Puzzle Kata"] = valDetail;
+                        rekapMap[key].keyFirebaseMap["Puzzle Kata"] = dbKey;
+                    } else if (jenisSoal.includes("essay") || jenisSoal.includes("esai")) {
+                        rekapMap[key]["Essay"] = valNilai;
+                        rekapMap[key].detailJawabanMap["Essay"] = valDetail;
+                        rekapMap[key].keyFirebaseMap["Essay"] = dbKey;
+                    } else if (jenisSoal.includes("merangkum") || jenisSoal.includes("materi")) {
+                        rekapMap[key]["Merangkum Materi"] = valNilai;
+                        rekapMap[key].detailJawabanMap["Merangkum Materi"] = valDetail;
+                        rekapMap[key].keyFirebaseMap["Merangkum Materi"] = dbKey;
+                    } else {
+                        rekapMap[key]["Pilihan Ganda"] = valNilai;
+                        rekapMap[key].detailJawabanMap["Pilihan Ganda"] = valDetail;
+                        rekapMap[key].keyFirebaseMap["Pilihan Ganda"] = dbKey;
+                    }
+                }
+            });
+
+            let keys = Object.keys(rekapMap);
+            if (keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada data rekap yang cocok dengan filter.</td></tr>`;
+                return;
+            }
+
+            let index = 1;
+            keys.forEach(key => {
+                let row = rekapMap[key];
+                let totalNilai = 0, jumlahDikerjakan = 0;
+
+                ["Pilihan Ganda", "Puzzle Kata", "Essay", "Merangkum Materi"].forEach(jenis => {
+                    let val = row[jenis];
+                    if (val !== null && val !== undefined && val !== "") {
+                        let num = Number(val);
+                        if (!isNaN(num)) { totalNilai += num; jumlahDikerjakan++; }
+                    }
+                });
+
+                let nilaiAkhir = jumlahDikerjakan > 0 ? Math.round(totalNilai / jumlahDikerjakan) : 0;
+                let badgeColor = nilaiAkhir >= 75 ? 'success' : (nilaiAkhir >= 60 ? 'warning' : 'danger');
+
+                rekapDataForExcel.push({
+                    "No": index, "Kelas": row.kelas, "Nama Siswa": row.nama, "Mata Pelajaran": row.mapel,
+                    "Pilihan Ganda": row["Pilihan Ganda"] !== null ? row["Pilihan Ganda"] : "-",
+                    "Puzzle Kata": row["Puzzle Kata"] !== null ? row["Puzzle Kata"] : "-",
+                    "Essay": row["Essay"] !== null ? row["Essay"] : "-",
+                    "Merangkum Materi": row["Merangkum Materi"] !== null ? row["Merangkum Materi"] : "-",
+                    "Nilai Akhir": jumlahDikerjakan > 0 ? nilaiAkhir : "-"
+                });
+
+                let renderKolom = (jenisKuisName) => {
+                    let val = row[jenisKuisName];
+                    let detailTeks = row.detailJawabanMap[jenisKuisName] || "Tidak ada rincian detail.";
+                    let firebaseKeyItem = row.keyFirebaseMap[jenisKuisName] || "";
+
+                    if (val === null || val === undefined || val === "") {
+                        return '<span class="badge badge-warning" style="font-size: 10px;">Belum Dikerjakan</span>';
+                    }
+                    
+                    let num = Number(val);
+                    let currentNilaiVal = isNaN(num) ? "" : val;
+                    let btnLabel = isNaN(num) ? "👀 Periksa & Nilai" : "✏️ Ubah Nilai";
+                    let btnClass = isNaN(num) ? "btn-outline-primary" : "btn-outline-secondary";
+                    let cacheId = "id_" + Math.random().toString(36).substr(2, 9);
+                    globalDetailCache[cacheId] = detailTeks;
+
+                    return `
+                        <div class="mb-1"><span class="badge ${isNaN(num) ? 'badge-info' : 'badge-light border'} px-2 py-1">${val}</span></div>
+                        <button class="btn ${btnClass} btn-sm py-0 px-2" style="font-size: 10px;" onclick="bukaModalKoreksiCache('${row.nama}', '${row.kelas}', '${row.mapel}', '${jenisKuisName}', '${cacheId}', '${currentNilaiVal}', '${firebaseKeyItem}')">${btnLabel}</button>
+                    `;
+                };
+
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${index++}</td>
+                    <td><b>${row.kelas}</b></td>
+                    <td class="font-weight-bold text-left">${row.nama}</td>
+                    <td><span class="badge badge-secondary">${row.mapel}</span></td>
+                    <td>${renderKolom("Pilihan Ganda")}</td>
+                    <td>${renderKolom("Puzzle Kata")}</td>
+                    <td>${renderKolom("Essay")}</td>
+                    <td>${renderKolom("Merangkum Materi")}</td>
+                    <td>${jumlahDikerjakan > 0 ? `<span class="badge badge-${badgeColor} px-3 py-2" style="font-size: 14px;">${nilaiAkhir}</span>` : '<span class="text-muted">-</span>'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         function unduhRekapNilaiExcel() {
             if (rekapDataForExcel.length === 0) {
                 alert("Tidak ada data rekap nilai untuk diunduh!");
@@ -351,37 +364,26 @@
 
             let filterKelas = document.getElementById("filter-kelas").value.trim();
             let filterMapel = document.getElementById("filter-mapel").value.trim();
-
-            // Buat worksheet dari array data
             let worksheet = XLSX.utils.json_to_sheet(rekapDataForExcel);
-
-            // Buat workbook baru
             let workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Nilai");
 
-            // Format nama file dinamis berdasarkan filter
             let namaKelas = filterKelas ? filterKelas.replace(/\s+/g, '_') : "Semua_Kelas";
             let namaMapel = filterMapel ? filterMapel.replace(/\s+/g, '_') : "Semua_Mapel";
-            let namaFile = `Rekap_Nilai_${namaKelas}_${namaMapel}.xlsx`;
-
-            // Proses download file Excel
-            XLSX.writeFile(workbook, namaFile);
+            XLSX.writeFile(workbook, `Rekap_Nilai_${namaKelas}_${namaMapel}.xlsx`);
         }
 
         function bukaModalKoreksiCache(nama, kelas, mapel, jenisKuis, cacheId, nilaiSekarang, firebaseKey) {
             let detailTeks = globalDetailCache[cacheId] || "Tidak ada detail.";
-
             document.getElementById("info-siswa-detail").textContent = `${nama} (${kelas}) - ${mapel} [${jenisKuis}]`;
             document.getElementById("isi-detail-jawaban").textContent = detailTeks;
             document.getElementById("info-jumlah-karakter").textContent = detailTeks.length;
             document.getElementById("input-nilai-guru").value = nilaiSekarang;
-
             document.getElementById("hidden-firebase-key").value = firebaseKey;
             document.getElementById("hidden-nama-siswa").value = nama;
             document.getElementById("hidden-kelas-siswa").value = kelas;
             document.getElementById("hidden-mapel-siswa").value = mapel;
             document.getElementById("hidden-jenis-kuis").value = jenisKuis;
-
             $('#modalDetailJawaban').modal('show');
         }
 
@@ -398,27 +400,24 @@
                 return;
             }
 
+            if (isDemoMode || (firebaseKey && firebaseKey.startsWith("n_"))) {
+                $('#modalDetailJawaban').modal('hide');
+                alert("🎉 [MODE DEMO] Nilai siswa berhasil diperbarui secara lokal!");
+                return;
+            }
+
             try {
                 $('#modalDetailJawaban').modal('hide');
-                
                 if (firebaseKey) {
-                    await db.ref('nilai/' + firebaseKey).update({
-                        nilai: Number(nilaiBaru),
-                        keterangan: "Dinilai Guru"
-                    });
+                    await db.ref('nilai/' + firebaseKey).update({ nilai: Number(nilaiBaru), keterangan: "Dinilai Guru" });
                 } else {
                     await db.ref('nilai/').push({
                         tanggal: new Date().toLocaleDateString("id-ID"),
-                        nama: nama,
-                        kelas: kelas,
-                        mapel: mapel,
-                        jenis: jenis,
-                        nilai: Number(nilaiBaru),
-                        keterangan: "Dinilai Guru",
+                        nama: nama, kelas: kelas, mapel: mapel, jenis: jenis,
+                        nilai: Number(nilaiBaru), keterangan: "Dinilai Guru",
                         detail: document.getElementById("isi-detail-jawaban").textContent
                     });
                 }
-
                 alert("🎉 Berhasil! Nilai siswa telah diperbarui di Firebase.");
                 tampilkanRekapNilaiFirebase();
             } catch (err) {
@@ -428,6 +427,13 @@
 
         async function hapusSemuaNilaiFirebase() {
             if (confirm("Apakah Anda yakin ingin mengosongkan seluruh data nilai di Firebase?")) {
+                if (isDemoMode) {
+                    dataDemoNilai = {};
+                    renderTabelRekap(dataDemoNilai);
+                    alert("🎉 [MODE DEMO] Data nilai dikosongkan dari simulasi!");
+                    return;
+                }
+
                 try {
                     await db.ref('nilai/').remove();
                     alert("Data nilai di Firebase berhasil dikosongkan.");
