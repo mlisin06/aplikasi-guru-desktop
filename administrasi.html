@@ -1,19 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
-<!DOCTYPE html>
-<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administrasi & Materi Pembelajaran - Portal Pendidikan (Firebase)</title>
 
-    <!-- === PASANG KODE LOGO & WHATSAPP DI SINI === -->
+    <!-- Logo & Metadata WhatsApp/Social Share -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:title" content="EduAdmin Pro - Portal Pendidikan & Ujian Online">
     <meta property="og:description" content="Platform manajemen ujian online, tugas, dan rekap nilai siswa terintegrasi secara real-time dengan Firebase.">
     <meta property="og:image" content="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:type" content="website">
-    <!-- ============================================ -->
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,10 +24,25 @@
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #ffffff; }
         .form-control { border-radius: 10px; padding: 10px 15px; height: calc(1.5em + 1rem + 2px); }
         .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+        .banner-demo { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; }
     </style>
 </head>
 <body>
     <div class="container py-5">
+
+        <!-- Banner Alert jika Mode Demo Aktif -->
+        <div id="banner-demo-mode" class="banner-demo p-3 mb-4 text-dark shadow-sm" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
+                    <small class="text-muted">Anda sedang berada dalam mode simulasi interaktif. Silakan uji coba fitur simpan dan tampilkan data contoh tanpa khawatir merusak database utama.</small>
+                </div>
+                <button class="btn btn-warning btn-sm font-weight-bold mt-2 mt-md-0" onclick="muatDataDemoTabel()">
+                    ✨ Tampilkan Data Contoh Demo
+                </button>
+            </div>
+        </div>
+
         <div class="card card-custom p-4 mb-4 text-center bg-info text-white shadow-sm">
             <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi PDF Online (Firebase)</h2>
             <p class="mb-0 text-white-50">Upload modul/materi PDF via Google Drive agar bisa dibaca langsung oleh siswa secara real-time.</p>
@@ -142,7 +154,21 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let isDemoMode = false;
+        let dataDemoCache = [
+            { firebaseKey: "demo_1", kelas: "Kelas 6", mapel: "Matematika", judul: "Modul Bab 1 Operasi Hitung Pecahan", filedata: "https://drive.google.com" },
+            { firebaseKey: "demo_2", kelas: "Kelas 6", mapel: "IPAS", judul: "Rangkuman Bab 2 Tumbuhan dan Lingkungan", filedata: "https://drive.google.com" },
+            { firebaseKey: "demo_3", kelas: "Kelas 5", mapel: "Bahasa Indonesia", judul: "Buku Cerita & Ringkasan Bab 1", filedata: "https://drive.google.com" }
+        ];
+
         document.addEventListener("DOMContentLoaded", function() {
+            // Cek parameter ?demo=true di URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === 'true' || window.location.href.includes('demo')) {
+                isDemoMode = true;
+                document.getElementById('banner-demo-mode').style.display = 'block';
+            }
+
             tampilkanDaftarMateriFirebase();
         });
 
@@ -169,8 +195,24 @@
 
             let btn = event.target;
             btn.disabled = true;
-            btn.innerText = "Menyimpan ke Firebase...";
+            btn.innerText = "Menyimpan...";
 
+            // Jika dalam mode demo, tambahkan ke cache demo lokal
+            if (isDemoMode) {
+                setTimeout(() => {
+                    dataKirim.firebaseKey = "demo_" + Date.now();
+                    dataDemoCache.unshift(dataKirim);
+                    alert("🎉 [MODE DEMO] Simulasi simpan materi berhasil!");
+                    document.getElementById("upload-judul").value = "";
+                    document.getElementById("upload-link").value = "";
+                    btn.disabled = false;
+                    btn.innerText = "📤 Simpan Materi ke Firebase";
+                    renderTabelMateri(dataDemoCache);
+                }, 500);
+                return;
+            }
+
+            // Mode Normal (Firebase Realtime Database)
             db.ref('materi/').push(dataKirim)
                 .then(() => {
                     alert("🎉 Materi berhasil disimpan ke Firebase!");
@@ -190,60 +232,88 @@
         // 2. Tampilkan Daftar Materi dari Firebase dengan Filter Kelas
         function tampilkanDaftarMateriFirebase() {
             let tbody = document.getElementById("tabel-materi-body");
-            let filterKelas = document.getElementById("filter-kelas-materi").value.trim();
             tbody.innerHTML = `<tr><td colspan="5" class="text-center text-primary py-4">⏳ Memuat data materi dari Firebase...</td></tr>`;
 
             db.ref('materi/').once('value')
                 .then((snapshot) => {
-                    tbody.innerHTML = "";
                     const data = snapshot.val();
 
                     if (!data) {
-                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi tersimpan di Firebase.</td></tr>`;
+                        if (isDemoMode) {
+                            renderTabelMateri(dataDemoCache);
+                        } else {
+                            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi tersimpan di Firebase.</td></tr>`;
+                        }
                         return;
                     }
 
                     let dataMateriArr = [];
                     Object.keys(data).forEach(key => {
                         let item = data[key];
-                        item.firebaseKey = key; // Simpan key unik untuk hapus
+                        item.firebaseKey = key;
                         dataMateriArr.push(item);
                     });
 
-                    let dataFiltered = dataMateriArr.filter(item => {
-                        let kls = String(item.kelas || "").trim();
-                        return filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
-                    });
-
-                    if (dataFiltered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada materi yang cocok dengan filter kelas ini.</td></tr>`;
-                        return;
-                    }
-
-                    dataFiltered.forEach((materi, index) => {
-                        let fKey = materi.firebaseKey;
-                        let tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td class="text-center">${index + 1}</td>
-                            <td class="text-center"><b>${materi.kelas || '-'}</b></td>
-                            <td class="text-center"><span class="badge badge-secondary">${materi.mapel || '-'}</span></td>
-                            <td class="font-weight-bold text-left">${materi.judul || '-'}</td>
-                            <td class="text-center">
-                                <a href="${materi.filedata || '#'}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-2 py-1 mr-1">👀 Buka</a>
-                                <button class="btn btn-sm btn-danger font-weight-bold px-2 py-1" onclick="hapusMateriSatu('${fKey}')">🗑️ Hapus</button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                    renderTabelMateri(dataMateriArr);
                 })
                 .catch(e => {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data dari Firebase: ${e.message}</td></tr>`;
+                    if (isDemoMode) {
+                        renderTabelMateri(dataDemoCache);
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data dari Firebase: ${e.message}</td></tr>`;
+                    }
                 });
+        }
+
+        // Helper untuk Rendere Data ke Tabel
+        function renderTabelMateri(dataArr) {
+            let tbody = document.getElementById("tabel-materi-body");
+            let filterKelas = document.getElementById("filter-kelas-materi").value.trim();
+            tbody.innerHTML = "";
+
+            let dataFiltered = dataArr.filter(item => {
+                let kls = String(item.kelas || "").trim();
+                return filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+            });
+
+            if (dataFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada materi yang cocok dengan filter kelas ini.</td></tr>`;
+                return;
+            }
+
+            dataFiltered.forEach((materi, index) => {
+                let fKey = materi.firebaseKey;
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="text-center">${index + 1}</td>
+                    <td class="text-center"><b>${materi.kelas || '-'}</b></td>
+                    <td class="text-center"><span class="badge badge-secondary">${materi.mapel || '-'}</span></td>
+                    <td class="font-weight-bold text-left">${materi.judul || '-'}</td>
+                    <td class="text-center">
+                        <a href="${materi.filedata || '#'}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-2 py-1 mr-1">👀 Buka</a>
+                        <button class="btn btn-sm btn-danger font-weight-bold px-2 py-1" onclick="hapusMateriSatu('${fKey}')">🗑️ Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Fungsi khusus memuat data contoh untuk pengunjung blog
+        function muatDataDemoTabel() {
+            renderTabelMateri(dataDemoCache);
+            alert("✨ Data simulasi contoh demo berhasil ditampilkan pada tabel!");
         }
 
         // 3. Hapus Satuan (Satu Materi)
         function hapusMateriSatu(firebaseKey) {
-            if (confirm("Apakah Anda yakin ingin menghapus materi ini dari Firebase?")) {
+            if (confirm("Apakah Anda yakin ingin menghapus materi ini?")) {
+                if (isDemoMode || firebaseKey.startsWith("demo_")) {
+                    dataDemoCache = dataDemoCache.filter(item => item.firebaseKey !== firebaseKey);
+                    alert("[MODE DEMO] Data berhasil dihapus dari tampilan simulasi!");
+                    renderTabelMateri(dataDemoCache);
+                    return;
+                }
+
                 db.ref('materi/' + firebaseKey).remove()
                     .then(() => {
                         alert("Materi berhasil dihapus!");
@@ -264,6 +334,17 @@
                 : "PERINGATAN: Filter kelas kosong. Ini akan menghapus SELURUH MATERI di database. Yakin ingin melanjutkan?";
 
             if (confirm(pesanKonfirmasi)) {
+                if (isDemoMode) {
+                    if (filterKelas) {
+                        dataDemoCache = dataDemoCache.filter(item => item.kelas.toLowerCase() !== filterKelas.toLowerCase());
+                    } else {
+                        dataDemoCache = [];
+                    }
+                    alert("[MODE DEMO] Data simulasi berhasil dikosongkan!");
+                    renderTabelMateri(dataDemoCache);
+                    return;
+                }
+
                 try {
                     let snapshot = await db.ref('materi/').once('value');
                     let data = snapshot.val();
