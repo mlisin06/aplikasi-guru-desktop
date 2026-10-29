@@ -26,10 +26,25 @@
         textarea.form-control { height: auto; }
         .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
         .box-backup { background: #eef7ff; border: 2px dashed #0d6efd; border-radius: 12px; }
+        .banner-demo { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; }
     </style>
 </head>
 <body>
     <div class="container py-5">
+        
+        <!-- Banner Mode Demo (Hanya muncul jika ada ?demo=true di URL) -->
+        <div id="banner-demo-mode" class="banner-demo p-3 mb-4 text-dark shadow-sm" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
+                    <small class="text-muted">Simulasi manajemen bank soal. Anda dapat menguji tambah, edit, atau filter soal dengan aman.</small>
+                </div>
+                <button class="btn btn-warning btn-sm font-weight-bold mt-2 mt-md-0" onclick="muatDataDemoSoal()">
+                    ✨ Muat Contoh Soal Demo
+                </button>
+            </div>
+        </div>
+
         <div class="card card-custom p-4 mb-4 text-center bg-primary text-white shadow-sm">
             <h2 class="font-weight-bold mb-2">📝 Kelola Soal & Kuis (Firebase)</h2>
             <p class="mb-0 text-white-50">Input, edit, backup/ekspor, dan impor bank soal ujian secara otomatis melalui Firebase.</p>
@@ -335,28 +350,33 @@
         const db = firebase.database();
 
         let globalSoalCache = {};
+        let isDemoMode = false;
+        let dataDemoSoal = [
+            { firebaseKey: "s_1", kelas: "Kelas 6", mapel: "Matematika", jenis: "Pilihan Ganda", pertanyaan: "Hasil dari 125 + 25 x 4 adalah...", opsiA: "200", opsiB: "225", opsiC: "600", opsiD: "150", kunci: "B" },
+            { firebaseKey: "s_2", kelas: "Kelas 6", mapel: "Pendidikan Pancasila", jenis: "Puzzle Kata", pertanyaan: "PANCASILA", kunci: "PANCASILA" }
+        ];
 
         document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === 'true' || window.location.href.includes('demo=true')) {
+                isDemoMode = true;
+                document.getElementById('banner-demo-mode').style.display = 'block';
+            }
             tampilkanDaftarSoalFirebase();
             sesuaikanFormInput();
         });
+
+        function muatDataDemoSoal() {
+            renderTabelSoal(dataDemoSoal);
+            alert("✨ [MODE DEMO] Contoh soal demo berhasil dimuat!");
+        }
 
         // 1. FUNGSI DOWNLOAD BACKUP SOAL (JSON)
         async function downloadBackupSoalJSON() {
             try {
                 let snapshot = await db.ref('soal/').once('value');
                 let data = snapshot.val();
-
-                if (!data) {
-                    alert("Tidak ada soal di Firebase untuk di-backup.");
-                    return;
-                }
-
-                let listSoal = [];
-                Object.keys(data).forEach(key => {
-                    let item = data[key];
-                    listSoal.push(item);
-                });
+                let listSoal = data ? Object.keys(data).map(key => data[key]) : dataDemoSoal;
 
                 let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(listSoal, null, 2));
                 let downloadAnchor = document.createElement('a');
@@ -368,7 +388,7 @@
                 downloadAnchor.click();
                 downloadAnchor.remove();
 
-                alert(`🎉 Berhasil mengunduh backup ${listSoal.length} soal! simpan file '${namaFile}' untuk digunakan tahun depan.`);
+                alert(`🎉 Berhasil mengunduh backup ${listSoal.length} soal!`);
             } catch (err) {
                 alert("Gagal mengunduh backup: " + err.message);
             }
@@ -418,7 +438,7 @@
                     });
 
                     await Promise.all(promises);
-                    alert(`🎉 Berhasil mengimpor ${listSoal.length} soal ke Firebase! Soal siap digunakan.`);
+                    alert(`🎉 Berhasil mengimpor ${listSoal.length} soal ke Firebase!`);
                     fileInput.value = "";
                     tampilkanDaftarSoalFirebase();
                 } catch (err) {
@@ -489,25 +509,27 @@
                 kunciVal = jenis === "Pilihan Ganda" ? document.getElementById("input-kunci").value.trim() : "";
             }
             
-            let opsiA = jenis === "Pilihan Ganda" ? document.getElementById("input-opsia").value.trim() : "";
-            let opsiB = jenis === "Pilihan Ganda" ? document.getElementById("input-opsib").value.trim() : "";
-            let opsiC = jenis === "Pilihan Ganda" ? document.getElementById("input-opsic").value.trim() : "";
-            let opsiD = jenis === "Pilihan Ganda" ? document.getElementById("input-opsid").value.trim() : "";
-            let gambar = jenis === "Pilihan Ganda" ? document.getElementById("input-gambar").value.trim() : "";
-
             let dataKirim = {
                 tanggal: new Date().toLocaleDateString("id-ID"),
                 kelas: kelas,
                 mapel: mapel,
                 jenis: jenis,
                 pertanyaan: soal,
-                opsiA: opsiA,
-                opsiB: opsiB,
-                opsiC: opsiC,
-                opsiD: opsiD,
+                opsiA: jenis === "Pilihan Ganda" ? document.getElementById("input-opsia").value.trim() : "",
+                opsiB: jenis === "Pilihan Ganda" ? document.getElementById("input-opsib").value.trim() : "",
+                opsiC: jenis === "Pilihan Ganda" ? document.getElementById("input-opsic").value.trim() : "",
+                opsiD: jenis === "Pilihan Ganda" ? document.getElementById("input-opsid").value.trim() : "",
                 kunci: kunciVal,
-                gambar: gambar
+                gambar: jenis === "Pilihan Ganda" ? document.getElementById("input-gambar").value.trim() : ""
             };
+
+            if (isDemoMode) {
+                dataKirim.firebaseKey = "demo_" + Date.now();
+                dataDemoSoal.unshift(dataKirim);
+                alert("🎉 [MODE DEMO] Simulasi simpan soal berhasil secara lokal!");
+                renderTabelSoal(dataDemoSoal);
+                return;
+            }
 
             let btn = event.target;
             btn.disabled = true;
@@ -516,22 +538,9 @@
             db.ref('soal/').push(dataKirim)
                 .then(() => {
                     alert("🎉 Soal/Tugas berhasil disimpan ke Firebase!");
-                    if (jenis === "Puzzle Kata") {
-                        document.getElementById("input-puzzle-kata").value = "";
-                    } else {
-                        document.getElementById("input-soal").value = "";
-                        if (jenis === "Pilihan Ganda") {
-                            document.getElementById("input-opsia").value = "";
-                            document.getElementById("input-opsib").value = "";
-                            document.getElementById("input-opsic").value = "";
-                            document.getElementById("input-opsid").value = "";
-                            document.getElementById("input-kunci").value = "";
-                            document.getElementById("input-gambar").value = "";
-                        }
-                    }
+                    tampilkanDaftarSoalFirebase();
                     btn.disabled = false;
                     btn.innerText = "💾 Simpan Soal ke Firebase";
-                    tampilkanDaftarSoalFirebase();
                 })
                 .catch(err => {
                     alert("Gagal menyimpan: " + err.message);
@@ -541,20 +550,12 @@
         }
 
         function tampilkanDaftarSoalFirebase() {
-            let filterKelas = document.getElementById("filter-kelas").value;
-            let filterMapel = document.getElementById("filter-mapel").value;
-            let filterJenis = document.getElementById("filter-jenis").value;
-            let tbody = document.getElementById("tabel-soal-body");
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-primary py-4">⏳ Memuat daftar soal dari Firebase...</td></tr>`;
-
             db.ref('soal/').once('value')
                 .then((snapshot) => {
-                    tbody.innerHTML = "";
                     const data = snapshot.val();
-                    globalSoalCache = {};
-
                     if (!data) {
-                        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang ditemukan di Firebase.</td></tr>`;
+                        if (isDemoMode) { renderTabelSoal(dataDemoSoal); }
+                        else { document.getElementById("tabel-soal-body").innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang ditemukan di Firebase.</td></tr>`; }
                         return;
                     }
 
@@ -563,51 +564,59 @@
                         let item = data[key];
                         item.firebaseKey = key;
                         dataSoalArr.push(item);
-                        globalSoalCache[key] = item;
                     });
 
-                    let dataFiltered = dataSoalArr.filter(item => {
-                        let kls = String(item.kelas || "").trim();
-                        let mpl = String(item.mapel || "").trim();
-                        let jns = String(item.jenis || "").trim();
-                        
-                        let matchKelas = filterKelas ? kls === filterKelas : true;
-                        let matchMapel = filterMapel ? mpl === filterMapel : true;
-                        let matchJenis = filterJenis ? jns === filterJenis : true;
-
-                        return matchKelas && matchMapel && matchJenis;
-                    });
-
-                    if (dataFiltered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang cocok dengan filter.</td></tr>`;
-                        return;
-                    }
-
-                    dataFiltered.forEach((item, index) => {
-                        let kls = item.kelas || '-';
-                        let mpl = item.mapel || '-';
-                        let jns = item.jenis || '-';
-                        let prt = item.pertanyaan || '-';
-                        let fKey = item.firebaseKey;
-
-                        let tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td class="text-center">${index + 1}</td>
-                            <td class="text-center"><b>${kls}</b></td>
-                            <td class="text-center"><span class="badge badge-secondary">${mpl}</span></td>
-                            <td class="text-center"><span class="badge badge-info">${jns}</span></td>
-                            <td class="text-left font-weight-bold">${prt}</td>
-                            <td class="text-center">
-                                <button class="btn btn-warning btn-sm font-weight-bold px-2 py-1 mr-1" onclick="bukaModalEdit('${fKey}')">✏️ Edit</button>
-                                <button class="btn btn-danger btn-sm font-weight-bold px-2 py-1" onclick="hapusSoalSatu('${fKey}')">🗑️ Hapus</button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                    renderTabelSoal(dataSoalArr);
                 })
                 .catch(e => {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat daftar soal: ${e.message}</td></tr>`;
+                    if (isDemoMode) { renderTabelSoal(dataDemoSoal); }
+                    else { document.getElementById("tabel-soal-body").innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat daftar soal: ${e.message}</td></tr>`; }
                 });
+        }
+
+        function renderTabelSoal(dataArr) {
+            let filterKelas = document.getElementById("filter-kelas").value;
+            let filterMapel = document.getElementById("filter-mapel").value;
+            let filterJenis = document.getElementById("filter-jenis").value;
+            let tbody = document.getElementById("tabel-soal-body");
+            tbody.innerHTML = "";
+            globalSoalCache = {};
+
+            let dataFiltered = dataArr.filter(item => {
+                let kls = String(item.kelas || "").trim();
+                let mpl = String(item.mapel || "").trim();
+                let jns = String(item.jenis || "").trim();
+                
+                let matchKelas = filterKelas ? kls === filterKelas : true;
+                let matchMapel = filterMapel ? mpl === filterMapel : true;
+                let matchJenis = filterJenis ? jns === filterJenis : true;
+
+                return matchKelas && matchMapel && matchJenis;
+            });
+
+            if (dataFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang cocok dengan filter.</td></tr>`;
+                return;
+            }
+
+            dataFiltered.forEach((item, index) => {
+                let fKey = item.firebaseKey;
+                globalSoalCache[fKey] = item;
+
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="text-center">${index + 1}</td>
+                    <td class="text-center"><b>${item.kelas || '-'}</b></td>
+                    <td class="text-center"><span class="badge badge-secondary">${item.mapel || '-'}</span></td>
+                    <td class="text-center"><span class="badge badge-info">${item.jenis || '-'}</span></td>
+                    <td class="text-left font-weight-bold">${item.pertanyaan || '-'}</td>
+                    <td class="text-center">
+                        <button class="btn btn-warning btn-sm font-weight-bold px-2 py-1 mr-1" onclick="bukaModalEdit('${fKey}')">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm font-weight-bold px-2 py-1" onclick="hapusSoalSatu('${fKey}')">🗑️ Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function bukaModalEdit(firebaseKey) {
@@ -632,9 +641,6 @@
                 document.getElementById("edit-opsid").value = soalObj.opsiD || "";
                 document.getElementById("edit-kunci").value = soalObj.kunci || "";
                 document.getElementById("edit-gambar").value = soalObj.gambar || "";
-            } else if (soalObj.jenis === "Puzzle Kata") {
-                containerPG.style.display = "none";
-                labelPrt.innerHTML = "Kata / Kalimat Puzzle (Kunci & Soal)";
             } else {
                 containerPG.style.display = "none";
                 labelPrt.innerHTML = "Pertanyaan / Instruksi Tugas";
@@ -646,16 +652,12 @@
         function simpanPerubahanSoalFirebase(event) {
             event.preventDefault();
             let key = document.getElementById("edit-firebase-key").value;
-            let kelas = document.getElementById("edit-kelas").value;
-            let mapel = document.getElementById("edit-mapel").value;
-            let jenis = document.getElementById("edit-jenis").value;
-            let pertanyaan = document.getElementById("edit-pertanyaan").value.trim();
-
             let dataUpdate = {
-                kelas: kelas,
-                mapel: mapel,
-                pertanyaan: pertanyaan
+                kelas: document.getElementById("edit-kelas").value,
+                mapel: document.getElementById("edit-mapel").value,
+                pertanyaan: document.getElementById("edit-pertanyaan").value.trim()
             };
+            let jenis = document.getElementById("edit-jenis").value;
 
             if (jenis === "Pilihan Ganda") {
                 dataUpdate.opsiA = document.getElementById("edit-opsia").value.trim();
@@ -664,8 +666,15 @@
                 dataUpdate.opsiD = document.getElementById("edit-opsid").value.trim();
                 dataUpdate.kunci = document.getElementById("edit-kunci").value.trim();
                 dataUpdate.gambar = document.getElementById("edit-gambar").value.trim();
-            } else if (jenis === "Puzzle Kata") {
-                dataUpdate.kunci = pertanyaan;
+            }
+
+            if (isDemoMode || key.startsWith("s_") || key.startsWith("demo_")) {
+                let idx = dataDemoSoal.findIndex(x => x.firebaseKey === key);
+                if (idx !== -1) { Object.assign(dataDemoSoal[idx], dataUpdate); }
+                $('#modalEditSoal').modal('hide');
+                alert("🎉 [MODE DEMO] Soal berhasil diperbarui!");
+                renderTabelSoal(dataDemoSoal);
+                return;
             }
 
             db.ref('soal/' + key).update(dataUpdate)
@@ -680,7 +689,13 @@
         }
 
         function hapusSoalSatu(firebaseKey) {
-            if (confirm("Apakah Anda yakin ingin menghapus soal ini dari Firebase?")) {
+            if (confirm("Apakah Anda yakin ingin menghapus soal ini?")) {
+                if (isDemoMode || firebaseKey.startsWith("s_") || firebaseKey.startsWith("demo_")) {
+                    dataDemoSoal = dataDemoSoal.filter(x => x.firebaseKey !== firebaseKey);
+                    renderTabelSoal(dataDemoSoal);
+                    return;
+                }
+
                 db.ref('soal/' + firebaseKey).remove()
                     .then(() => {
                         alert("Soal berhasil dihapus!");
@@ -698,11 +713,19 @@
             let filterJenis = document.getElementById("filter-jenis").value;
 
             let pesanKonfirmasi = "Apakah Anda yakin ingin menghapus SEMUA soal yang tampil berdasarkan filter saat ini?";
-            if (!filterKelas && !filterMapel && !filterJenis) {
-                pesanKonfirmasi = "PERINGATAN: Anda tidak memilih filter (semua kosong). Ini akan menghapus SELURUH BANK SOAL di database. Yakin ingin melanjutkan?";
-            }
-
             if (confirm(pesanKonfirmasi)) {
+                if (isDemoMode) {
+                    dataDemoSoal = dataDemoSoal.filter(item => {
+                        let matchK = filterKelas ? item.kelas === filterKelas : true;
+                        let matchM = filterMapel ? item.mapel === filterMapel : true;
+                        let matchJ = filterJenis ? item.jenis === filterJenis : true;
+                        return !(matchK && matchM && matchJ);
+                    });
+                    renderTabelSoal(dataDemoSoal);
+                    alert("🎉 [MODE DEMO] Soal berhasil dihapus dari simulasi!");
+                    return;
+                }
+
                 try {
                     let snapshot = await db.ref('soal/').once('value');
                     let data = snapshot.val();
