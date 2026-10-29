@@ -21,11 +21,19 @@
         .header-box { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border-radius: 15px; box-shadow: 0 10px 20px rgba(40, 167, 69, 0.15); }
         .btn-custom { border-radius: 10px; padding: 12px 20px; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         #main-content { display: none; width: 100%; }
+        .banner-demo { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; }
     </style>
 </head>
 <body>
-    <!-- Konten Utama (Disembunyikan dulu sampai password benar) -->
+    <!-- Konten Utama (Disembunyikan dulu sampai password benar / mode demo aktif) -->
     <div id="main-content" class="container py-5">
+        
+        <!-- Banner Pemberitahuan Mode Demo -->
+        <div id="banner-demo-mode" class="banner-demo p-3 mb-4 text-dark shadow-sm" style="display: none;">
+            <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
+            <small class="text-muted">Anda masuk tanpa kata sandi dalam mode pratinjau interaktif.</small>
+        </div>
+
         <div class="header-box p-4 mb-4 text-center">
             <h2 class="font-weight-bold mb-2">👨‍🏫 Dashboard Panel Guru (Cloud Online)</h2>
             <p class="mb-0 text-white-50">Kelola soal ujian, data siswa, materi pembelajaran, dan rekapitulasi nilai secara real-time.</p>
@@ -38,7 +46,7 @@
                     <div class="display-4 mb-3">📝</div>
                     <h5 class="font-weight-bold text-dark">Kelola Soal</h5>
                     <p class="text-muted small">Tambah soal Pilihan Ganda, Essay, Puzzle, dll ke Google Sheets.</p>
-                    <a href="kelola-soal.html" class="btn btn-success btn-custom mt-auto">Buka Soal</a>
+                    <a href="kelola-soal.html" id="menu-soal" class="btn btn-success btn-custom mt-auto">Buka Soal</a>
                 </div>
             </div>
 
@@ -48,7 +56,7 @@
                     <div class="display-4 mb-3">👨‍🎓</div>
                     <h5 class="font-weight-bold text-dark">Data Siswa</h5>
                     <p class="text-muted small">Tambah dan pantau daftar nama siswa per kelas secara online.</p>
-                    <a href="kelola-siswa.html" class="btn btn-warning btn-custom text-white mt-auto">Buka Siswa</a>
+                    <a href="kelola-siswa.html" id="menu-siswa" class="btn btn-warning btn-custom text-white mt-auto">Buka Siswa</a>
                 </div>
             </div>
 
@@ -58,7 +66,7 @@
                     <div class="display-4 mb-3">📚</div>
                     <h5 class="font-weight-bold text-dark">Materi PDF</h5>
                     <p class="text-muted small">Upload modul atau bahan bacaan agar bisa dibaca siswa.</p>
-                    <a href="administrasi.html" class="btn btn-info btn-custom text-white mt-auto">Buka Materi</a>
+                    <a href="administrasi.html" id="menu-admin" class="btn btn-info btn-custom text-white mt-auto">Buka Materi</a>
                 </div>
             </div>
 
@@ -68,28 +76,41 @@
                     <div class="display-4 mb-3">📊</div>
                     <h5 class="font-weight-bold text-dark">Rekap Nilai</h5>
                     <p class="text-muted small">Pantau nilai akhir seluruh siswa secara real-time dari database.</p>
-                    <a href="rekap-nilai.html" class="btn btn-primary btn-custom mt-auto">Buka Rekap</a>
+                    <a href="rekap-nilai.html" id="menu-rekap" class="btn btn-primary btn-custom mt-auto">Buka Rekap</a>
                 </div>
             </div>
         </div>
 
         <div class="text-center mt-4">
-            <a href="index.html" class="btn btn-light btn-custom border text-muted shadow-sm">&larr; Kembali ke Beranda Utama</a>
+            <a href="index.html" id="menu-back" class="btn btn-light btn-custom border text-muted shadow-sm">&larr; Kembali ke Beranda Utama</a>
         </div>
     </div>
 
     <script>
-        // Cek Password saat halaman dibuka
+        // Cek Password atau Mode Demo saat halaman dibuka
         window.onload = function() {
-            let passwordGuru = prompt("🔐 Masukkan Kata Sandi Khusus Guru:");
-            
-            if (passwordGuru === "240785") {
-                // Jika benar, tampilkan halaman guru
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDemo = urlParams.get('demo') === 'true' || window.location.href.includes('demo=true');
+
+            if (isDemo) {
+                // Jika Mode Demo aktif, langsung tampilkan dashboard tanpa password & sambungkan parameter demo ke tombol menu
                 document.getElementById("main-content").style.display = "block";
+                document.getElementById("banner-demo-mode").style.display = "block";
+                document.getElementById("menu-soal").href = "kelola-soal.html?demo=true";
+                document.getElementById("menu-siswa").href = "kelola-siswa.html?demo=true";
+                document.getElementById("menu-admin").href = "administrasi.html?demo=true";
+                document.getElementById("menu-rekap").href = "rekap-nilai.html?demo=true";
+                document.getElementById("menu-back").href = "index.html?demo=true";
             } else {
-                // Jika salah atau dibatalkan, kembalikan ke beranda utama
-                alert("❌ Kata sandi salah!");
-                window.location.href = "index.html";
+                // Jika akses normal, jalankan validasi password asli Anda
+                let passwordGuru = prompt("🔐 Masukkan Kata Sandi Khusus Guru:");
+                
+                if (passwordGuru === "240785") {
+                    document.getElementById("main-content").style.display = "block";
+                } else {
+                    alert("❌ Kata sandi salah!");
+                    window.location.href = "index.html";
+                }
             }
         };
     </script>
