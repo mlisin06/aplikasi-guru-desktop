@@ -27,10 +27,25 @@
         .table th, .table td { vertical-align: middle !important; }
         .box-import { background: #eef9f1; border: 2px dashed #28a745; border-radius: 12px; }
         .box-backup { background: #eef7ff; border: 2px dashed #0d6efd; border-radius: 12px; }
+        .banner-demo { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; }
     </style>
 </head>
 <body>
     <div class="container py-5">
+        
+        <!-- Banner Mode Demo (Hanya muncul jika ada ?demo=true di URL) -->
+        <div id="banner-demo-mode" class="banner-demo p-3 mb-4 text-dark shadow-sm" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
+                    <small class="text-muted">Simulasi manajemen data siswa. Anda dapat menguji tambah, edit, atau filter data dengan aman.</small>
+                </div>
+                <button class="btn btn-warning btn-sm font-weight-bold mt-2 mt-md-0" onclick="muatDataDemoSiswa()">
+                    ✨ Muat Contoh Siswa Demo
+                </button>
+            </div>
+        </div>
+
         <!-- Card Header & Fitur Backup/Restore & Import -->
         <div class="card card-custom p-4 bg-white mb-4">
             <h3 class="text-success font-weight-bold mb-1">👨‍🎓 Kelola Data Siswa (Firebase Realtime Database)</h3>
@@ -220,22 +235,33 @@
         const db = firebase.database();
 
         let globalSiswaCache = {};
+        let isDemoMode = false;
+        let dataDemoSiswa = [
+            { firebaseKey: "sw_1", kelas: "Kelas 6", nis: "1001", nama: "Ahmad Subagja" },
+            { firebaseKey: "sw_2", kelas: "Kelas 6", nis: "1002", nama: "Budi Santoso" },
+            { firebaseKey: "sw_3", kelas: "Kelas 5", nis: "1003", nama: "Citra Dewi" }
+        ];
 
         document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === 'true' || window.location.href.includes('demo=true')) {
+                isDemoMode = true;
+                document.getElementById('banner-demo-mode').style.display = 'block';
+            }
             muatDataSiswaFirebase();
         });
+
+        function muatDataDemoSiswa() {
+            renderTabelSiswa(dataDemoSiswa);
+            alert("✨ [MODE DEMO] Contoh data siswa berhasil dimuat!");
+        }
 
         // 1. Fungsi Unduh Backup Data Siswa (.json)
         async function downloadBackupSiswaJSON() {
             try {
                 let snapshot = await db.ref('siswa/').once('value');
                 let data = snapshot.val();
-                if (!data) {
-                    alert("Tidak ada data siswa di Firebase untuk di-backup.");
-                    return;
-                }
-                let listSiswa = [];
-                Object.keys(data).forEach(key => listSiswa.push(data[key]));
+                let listSiswa = data ? Object.keys(data).map(key => data[key]) : dataDemoSiswa;
                 
                 let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(listSiswa, null, 2));
                 let downloadAnchor = document.createElement('a');
@@ -246,7 +272,7 @@
                 document.body.appendChild(downloadAnchor);
                 downloadAnchor.click();
                 downloadAnchor.remove();
-                alert(`🎉 Berhasil mengunduh backup ${listSiswa.length} data siswa! Simpan file ini untuk digunakan tahun depan.`);
+                alert(`🎉 Berhasil mengunduh backup ${listSiswa.length} data siswa!`);
             } catch (err) {
                 alert("Gagal mengunduh backup: " + err.message);
             }
@@ -340,12 +366,7 @@
                         let nis = kolom[1].trim();
                         let nms = kolom[2].trim();
                         if (nms) {
-                            dataPush.push({
-                                kelas: kls || "Kelas 6",
-                                nis: nis || "-",
-                                nama: nms,
-                                tanggal: tgl
-                            });
+                            dataPush.push({ kelas: kls || "Kelas 6", nis: nis || "-", nama: nms, tanggal: tgl });
                         }
                     }
                 }
@@ -375,18 +396,15 @@
 
         // 5. Memuat Data Siswa dengan Filter Dinamis
         function muatDataSiswaFirebase() {
-            let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
             let tbody = document.getElementById("tabel-siswa-body");
             tbody.innerHTML = `<tr><td colspan="5" class="text-center text-primary py-4">⏳ Mengambil data dari Firebase...</td></tr>`;
 
             db.ref('siswa/').once('value')
                 .then((snapshot) => {
-                    tbody.innerHTML = "";
                     const data = snapshot.val();
-                    globalSiswaCache = {};
-
                     if (!data) {
-                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada data siswa di Firebase.</td></tr>`;
+                        if (isDemoMode) { renderTabelSiswa(dataDemoSiswa); }
+                        else { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada data siswa di Firebase.</td></tr>`; }
                         return;
                     }
 
@@ -395,40 +413,48 @@
                         let item = data[key];
                         item.firebaseKey = key;
                         dataSiswaArr.push(item);
-                        globalSiswaCache[key] = item;
                     });
 
-                    let dataFiltered = dataSiswaArr.filter(item => {
-                        let kls = String(item.kelas || "").trim();
-                        return filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
-                    });
-
-                    if (dataFiltered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada data siswa yang cocok dengan filter kelas ini.</td></tr>`;
-                        return;
-                    }
-
-                    let index = 1;
-                    dataFiltered.forEach((siswa) => {
-                        let fKey = siswa.firebaseKey;
-                        let tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td class="text-center">${index++}</td>
-                            <td class="text-center"><b>${siswa.kelas || '-'}</b></td>
-                            <td class="text-center">${siswa.nis || '-'}</td>
-                            <td class="text-left font-weight-bold">${siswa.nama || '-'}</td>
-                            <td class="text-center">
-                                <button class="btn btn-warning btn-sm font-weight-bold mr-1" onclick="bukaModalEdit('${fKey}')">✏️ Edit</button>
-                                <button class="btn btn-danger btn-sm font-weight-bold" onclick="hapusSiswaSatu('${fKey}')">🗑️ Hapus</button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                    renderTabelSiswa(dataSiswaArr);
                 })
                 .catch((error) => {
-                    console.error(error);
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data: ${error.message}</td></tr>`;
+                    if (isDemoMode) { renderTabelSiswa(dataDemoSiswa); }
+                    else { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data: ${error.message}</td></tr>`; }
                 });
+        }
+
+        function renderTabelSiswa(dataArr) {
+            let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
+            let tbody = document.getElementById("tabel-siswa-body");
+            tbody.innerHTML = "";
+            globalSiswaCache = {};
+
+            let dataFiltered = dataArr.filter(item => {
+                let kls = String(item.kelas || "").trim();
+                return filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+            });
+
+            if (dataFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada data siswa yang cocok dengan filter kelas ini.</td></tr>`;
+                return;
+            }
+
+            dataFiltered.forEach((siswa, index) => {
+                let fKey = siswa.firebaseKey;
+                globalSiswaCache[fKey] = siswa;
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="text-center">${index + 1}</td>
+                    <td class="text-center"><b>${siswa.kelas || '-'}</b></td>
+                    <td class="text-center">${siswa.nis || '-'}</td>
+                    <td class="text-left font-weight-bold">${siswa.nama || '-'}</td>
+                    <td class="text-center">
+                        <button class="btn btn-warning btn-sm font-weight-bold mr-1" onclick="bukaModalEdit('${fKey}')">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm font-weight-bold" onclick="hapusSiswaSatu('${fKey}')">🗑️ Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         // 6. Tambah Data Siswa Baru (Manual)
@@ -439,15 +465,26 @@
             let nama = document.getElementById("nama-siswa").value.trim();
             let btn = document.getElementById("btn-simpan");
 
-            btn.disabled = true;
-            btn.innerText = "Menyimpan ke Firebase...";
-
-            db.ref('siswa/').push({
+            let dataBaru = {
                 kelas: kelas,
                 nis: nis,
                 nama: nama,
                 tanggal: new Date().toLocaleDateString("id-ID")
-            }).then(() => {
+            };
+
+            if (isDemoMode) {
+                dataBaru.firebaseKey = "demo_" + Date.now();
+                dataDemoSiswa.unshift(dataBaru);
+                alert("🎉 [MODE DEMO] Data siswa berhasil disimpan secara lokal!");
+                document.getElementById("form-siswa").reset();
+                renderTabelSiswa(dataDemoSiswa);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Menyimpan ke Firebase...";
+
+            db.ref('siswa/').push(dataBaru).then(() => {
                 alert("🎉 Data siswa berhasil disimpan ke Firebase!");
                 document.getElementById("form-siswa").reset();
                 btn.disabled = false;
@@ -477,15 +514,22 @@
         function simpanPerubahanSiswaFirebase(event) {
             event.preventDefault();
             let key = document.getElementById("edit-firebase-key").value;
-            let kelasBaru = document.getElementById("edit-kelas-siswa").value;
-            let nisBaru = document.getElementById("edit-nis-siswa").value.trim();
-            let namaBaru = document.getElementById("edit-nama-siswa").value.trim();
+            let dataUpdate = {
+                kelas: document.getElementById("edit-kelas-siswa").value,
+                nis: document.getElementById("edit-nis-siswa").value.trim(),
+                nama: document.getElementById("edit-nama-siswa").value.trim()
+            };
 
-            db.ref('siswa/' + key).update({
-                kelas: kelasBaru,
-                nis: nisBaru,
-                nama: namaBaru
-            }).then(() => {
+            if (isDemoMode || key.startsWith("sw_") || key.startsWith("demo_")) {
+                let idx = dataDemoSiswa.findIndex(x => x.firebaseKey === key);
+                if (idx !== -1) { Object.assign(dataDemoSiswa[idx], dataUpdate); }
+                $('#modalEditSiswa').modal('hide');
+                alert("🎉 [MODE DEMO] Data siswa berhasil diperbarui!");
+                renderTabelSiswa(dataDemoSiswa);
+                return;
+            }
+
+            db.ref('siswa/' + key).update(dataUpdate).then(() => {
                 alert("🎉 Data siswa berhasil diperbarui!");
                 $('#modalEditSiswa').modal('hide');
                 muatDataSiswaFirebase();
@@ -499,15 +543,19 @@
             let siswa = globalSiswaCache[firebaseKey];
             let namaSiswa = siswa ? siswa.nama : "siswa ini";
 
-            if (confirm(`Apakah Anda yakin ingin menghapus data "${namaSiswa}" dari Firebase?`)) {
-                db.ref('siswa/' + firebaseKey).remove()
-                    .then(() => {
-                        alert("Data siswa berhasil dihapus!");
-                        muatDataSiswaFirebase();
-                    })
-                    .catch((err) => {
-                        alert("Gagal menghapus data: " + err.message);
-                    });
+            if (confirm(`Apakah Anda yakin ingin menghapus data "${namaSiswa}"?`)) {
+                if (isDemoMode || firebaseKey.startsWith("sw_") || firebaseKey.startsWith("demo_")) {
+                    dataDemoSiswa = dataDemoSiswa.filter(x => x.firebaseKey !== firebaseKey);
+                    renderTabelSiswa(dataDemoSiswa);
+                    return;
+                }
+
+                db.ref('siswa/' + firebaseKey).remove().then(() => {
+                    alert("Data siswa berhasil dihapus!");
+                    muatDataSiswaFirebase();
+                }).catch((err) => {
+                    alert("Gagal menghapus data: " + err.message);
+                });
             }
         }
 
@@ -516,9 +564,20 @@
             let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
             let pesanKonfirmasi = filterKelas 
                 ? `Apakah Anda yakin ingin menghapus SELURUH data siswa pada ${filterKelas}?`
-                : "PERINGATAN: Filter kelas kosong. Ini akan menghapus SELURUH DATA SISWA di database. Yakin ingin melanjutkan?";
+                : "PERINGATAN: Filter kelas kosong. Ini akan menghapus SELURUH DATA SISWA. Yakin ingin melanjutkan?";
 
             if (confirm(pesanKonfirmasi)) {
+                if (isDemoMode) {
+                    if (filterKelas) {
+                        dataDemoSiswa = dataDemoSiswa.filter(x => x.kelas.toLowerCase() !== filterKelas.toLowerCase());
+                    } else {
+                        dataDemoSiswa = [];
+                    }
+                    renderTabelSiswa(dataDemoSiswa);
+                    alert("🎉 [MODE DEMO] Data berhasil dihapus dari simulasi!");
+                    return;
+                }
+
                 try {
                     let snapshot = await db.ref('siswa/').once('value');
                     let data = snapshot.val();
@@ -531,7 +590,6 @@
                     Object.keys(data).forEach(key => {
                         let item = data[key];
                         let kls = String(item.kelas || "").trim();
-
                         if (!filterKelas || kls.toLowerCase() === filterKelas.toLowerCase()) {
                             updatePromises.push(db.ref('siswa/' + key).remove());
                         }
