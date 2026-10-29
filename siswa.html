@@ -26,10 +26,25 @@
         .btn-custom { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
         .box-materi-info { background: #e8f4fd; border-left: 5px solid #17a2b8; border-radius: 10px; }
         .puzzle-box { background: #fff3cd; border: 2px dashed #ffc107; border-radius: 12px; }
+        .banner-demo { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; }
     </style>
 </head>
 <body>
     <div class="container py-5">
+        
+        <!-- Banner Mode Demo (Hanya muncul jika ada ?demo=true di URL) -->
+        <div id="banner-demo-mode" class="banner-demo p-3 mb-4 text-dark shadow-sm" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
+                    <small class="text-muted">Simulasi ruang ujian siswa. Anda dapat menguji coba pemilihan kelas, nama, dan mengerjakan soal demo.</small>
+                </div>
+                <button class="btn btn-warning btn-sm font-weight-bold mt-2 mt-md-0" onclick="muatDataDemoSiswa()">
+                    ✨ Muat Data Demo Ujian
+                </button>
+            </div>
+        </div>
+
         <div class="card card-custom p-4 mb-4 text-center bg-primary text-white shadow-sm">
             <h2 class="font-weight-bold mb-2">🎓 EduAdmin Pro - Panel Siswa (Firebase)</h2>
             <p class="mb-0 text-white-50">Silakan pilih kelas dan nama Anda terlebih dahulu untuk mulai ujian.</p>
@@ -137,11 +152,40 @@
         let semuaSiswa = [];
         let semuaSoal = [];
         let soalAktif = [];
+        let isDemoMode = false;
+
+        let dataDemoSiswa = [
+            { kelas: "Kelas 6", nama: "Ahmad Subagja" },
+            { kelas: "Kelas 6", nama: "Budi Santoso" },
+            { kelas: "Kelas 5", nama: "Citra Dewi" }
+        ];
+
+        let dataDemoSoal = [
+            { kelas: "Kelas 6", mapel: "Matematika", jenis: "Pilihan Ganda", pertanyaan: "Hasil dari 125 + 25 x 4 adalah...", opsiA: "200", opsiB: "225", opsiC: "600", opsiD: "150", kunci: "B" },
+            { kelas: "Kelas 6", mapel: "Pendidikan Pancasila", jenis: "Puzzle Kata", pertanyaan: "PANCASILA", kunci: "PANCASILA" }
+        ];
+
+        let dataDemoMateri = [
+            { kelas: "Kelas 6", mapel: "Matematika", judul: "Modul Bilangan Bulat", filedata: "#" }
+        ];
 
         document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === 'true' || window.location.href.includes('demo=true')) {
+                isDemoMode = true;
+                document.getElementById('banner-demo-mode').style.display = 'block';
+            }
             ambilDataSiswaFirebase();
             ambilDataSoalFirebaseGlobal();
         });
+
+        function muatDataDemoSiswa() {
+            semuaSiswa = dataDemoSiswa;
+            semuaSoal = dataDemoSoal;
+            document.getElementById("kelas-siswa").value = "Kelas 6";
+            pilihKelasAction();
+            alert("✨ [MODE DEMO] Data uji coba siswa & soal berhasil dimuat!");
+        }
 
         async function ambilDataSiswaFirebase() {
             try {
@@ -149,12 +193,13 @@
                 let data = snapshot.val();
                 semuaSiswa = [];
                 if (data) {
-                    Object.keys(data).forEach(key => {
-                        semuaSiswa.push(data[key]);
-                    });
+                    Object.keys(data).forEach(key => semuaSiswa.push(data[key]));
+                } else if (isDemoMode) {
+                    semuaSiswa = dataDemoSiswa;
                 }
             } catch (e) {
-                console.error("Gagal memuat data siswa:", e);
+                if (isDemoMode) { semuaSiswa = dataDemoSiswa; }
+                else { console.error("Gagal memuat data siswa:", e); }
             }
         }
 
@@ -164,12 +209,13 @@
                 let dataSoalObj = snapshotSoal.val();
                 semuaSoal = [];
                 if (dataSoalObj) {
-                    Object.keys(dataSoalObj).forEach(key => {
-                        semuaSoal.push(dataSoalObj[key]);
-                    });
+                    Object.keys(dataSoalObj).forEach(key => semuaSoal.push(dataSoalObj[key]));
+                } else if (isDemoMode) {
+                    semuaSoal = dataDemoSoal;
                 }
             } catch (e) {
-                console.error("Gagal memuat soal dari Firebase:", e);
+                if (isDemoMode) { semuaSoal = dataDemoSoal; }
+                else { console.error("Gagal memuat soal dari Firebase:", e); }
             }
         }
 
@@ -195,6 +241,10 @@
 
             dropdownNama.innerHTML = `<option value="">-- Pilih Nama Siswa --</option>`;
             
+            if (filterSiswa.length === 0 && isDemoMode) {
+                filterSiswa = dataDemoSiswa.filter(s => s.kelas.toLowerCase() === kelasDipilih.toLowerCase());
+            }
+
             if (filterSiswa.length === 0) {
                 dropdownNama.innerHTML = `<option value="">-- Tidak ada siswa terdaftar di ${kelasDipilih} --</option>`;
             } else {
@@ -217,7 +267,9 @@
             dropdownKuis.innerHTML = `<option value="">-- Pilih Kuis / Mapel --</option>`;
             let daftarUnikKuis = [];
             
-            semuaSoal.forEach(s => {
+            let sumberSoal = semuaSoal.length > 0 ? semuaSoal : (isDemoMode ? dataDemoSoal : []);
+
+            sumberSoal.forEach(s => {
                 let kSoal = String(s.kelas || "").trim();
                 if (kSoal.toLowerCase() === kelasDipilih.toLowerCase()) {
                     let jenisKuis = s.jenis || "Ujian";
@@ -256,13 +308,12 @@
                 let dataMateriObj = snapshot.val();
                 tbody.innerHTML = "";
 
-                if (!dataMateriObj) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Belum ada materi tersimpan.</td></tr>`;
-                    return;
-                }
-
                 let dataMateri = [];
-                Object.keys(dataMateriObj).forEach(k => dataMateri.push(dataMateriObj[k]));
+                if (dataMateriObj) {
+                    Object.keys(dataMateriObj).forEach(k => dataMateri.push(dataMateriObj[k]));
+                } else if (isDemoMode) {
+                    dataMateri = dataDemoMateri;
+                }
 
                 let dataFiltered = dataMateri.filter(item => {
                     let mKelas = String(item.kelas || "").trim();
@@ -285,7 +336,14 @@
                     tbody.appendChild(tr);
                 });
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-3">Gagal memuat materi.</td></tr>`;
+                if (isDemoMode) {
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `<td>1</td><td><span class="badge badge-secondary">Matematika</span></td><td class="font-weight-bold text-left">Modul Demo Materi</td><td><a href="#" class="btn btn-sm btn-success font-weight-bold px-3">👀 Baca Materi</a></td>`;
+                    tbody.innerHTML = "";
+                    tbody.appendChild(tr);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-3">Gagal memuat materi.</td></tr>`;
+                }
             }
         }
 
@@ -304,7 +362,9 @@
             let mapelTarget = parts[0];
             let jenisTarget = parts.slice(1).join(" - ");
 
-            soalAktif = semuaSoal.filter(s => {
+            let sumberSoal = semuaSoal.length > 0 ? semuaSoal : (isDemoMode ? dataDemoSoal : []);
+
+            soalAktif = sumberSoal.filter(s => {
                 let kSoal = String(s.kelas || "").trim();
                 let mSoal = String(s.mapel || "").trim();
                 let jSoal = String(s.jenis || "").trim();
@@ -316,7 +376,7 @@
             });
 
             if (soalAktif.length === 0) {
-                areaSoal.innerHTML = `<div class="text-warning font-weight-bold py-3">Belum ada butir soal dari Firebase untuk kategori ini.</div>`;
+                areaSoal.innerHTML = `<div class="text-warning font-weight-bold py-3">Belum ada butir soal untuk kategori ini.</div>`;
                 return;
             }
 
@@ -331,7 +391,6 @@
                 htmlContent += `<div class="card p-3 mb-3 border shadow-sm">`;
                 
                 if (jenisItem.toLowerCase() === "puzzle kata") {
-                    // Petunjuk soal ditiadakan, langsung tampilkan kotak huruf acak dari kunci/pertanyaan
                     let kataAcak = acakKata(kunciResmi || pertanyaan);
                     htmlContent += `
                         <div class="puzzle-box p-3 mb-2">
@@ -422,7 +481,6 @@
             let listDetail = [];
             let nilaiAkhir = 0;
             let keteranganStatus = "Selesai Mengerjakan";
-
             let totalSoal = soalAktif.length;
             let jumlahBenar = 0;
 
@@ -433,15 +491,10 @@
                     let jawabanSiswa = radioDipilih ? radioDipilih.value.trim().toUpperCase() : "-";
                     let kunci = String(item.kunci || "").trim().toUpperCase();
 
-                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa === kunci) {
-                        jumlahBenar++;
-                    }
+                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa === kunci) { jumlahBenar++; }
                     listDetail.push(`Soal ${index + 1}: ${jawabanSiswa} (Kunci: ${kunci || '-'})`);
                 });
-
-                if (totalSoal > 0) {
-                    nilaiAkhir = Math.round((jumlahBenar / totalSoal) * 100);
-                }
+                if (totalSoal > 0) { nilaiAkhir = Math.round((jumlahBenar / totalSoal) * 100); }
                 keteranganStatus = `Benar ${jumlahBenar} dari ${totalSoal} Soal`;
 
             } else if (jenisLower.includes("puzzle kata")) {
@@ -451,26 +504,18 @@
                     let jawabanSiswa = inputEl ? inputEl.value.trim() : "-";
                     let kunci = String(item.kunci || "").trim();
 
-                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa.toLowerCase() === kunci.toLowerCase()) {
-                        jumlahBenar++;
-                    }
+                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa.toLowerCase() === kunci.toLowerCase()) { jumlahBenar++; }
                     listDetail.push(`Puzzle ${index + 1}: ${jawabanSiswa} (Kunci: ${kunci || '-'})`);
                 });
-
-                if (totalSoal > 0) {
-                    nilaiAkhir = Math.round((jumlahBenar / totalSoal) * 100);
-                }
+                if (totalSoal > 0) { nilaiAkhir = Math.round((jumlahBenar / totalSoal) * 100); }
                 keteranganStatus = `Benar ${jumlahBenar} dari ${totalSoal} Soal`;
 
             } else if (jenisLower.includes("essay") || jenisLower.includes("merangkum materi")) {
                 nilaiAkhir = "Menunggu Koreksi";
                 keteranganStatus = "Perlu Dinilai Guru";
-
                 let semuaTextarea = document.querySelectorAll("#area-soal textarea");
                 semuaTextarea.forEach((ta, idx) => {
-                    if (ta.value && ta.value.trim() !== "") {
-                        listDetail.push(`Jawaban ${idx+1}: ${ta.value.trim()}`);
-                    }
+                    if (ta.value && ta.value.trim() !== "") { listDetail.push(`Jawaban ${idx+1}: ${ta.value.trim()}`); }
                 });
             } else {
                 soalAktif.forEach((item, index) => {
@@ -479,30 +524,25 @@
                     let jawabanSiswa = inputEl ? inputEl.value.trim() : "-";
                     let kunci = String(item.kunci || "").trim();
 
-                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa.toLowerCase() === kunci.toLowerCase()) {
-                        jumlahBenar++;
-                    }
+                    if (jawabanSiswa !== "-" && kunci !== "" && jawabanSiswa.toLowerCase() === kunci.toLowerCase()) { jumlahBenar++; }
                     listDetail.push(`Soal ${index + 1}: ${jawabanSiswa}`);
                 });
-
-                if (totalSoal > 0) {
-                    nilaiAkhir = Math.round((jumlahBenar / totalSoal) * 100);
-                }
+                if (totalSoal > 0) { nilaiAkhir = Math.round((jumlahBenar / totalSoal) * 100); }
                 keteranganStatus = `Benar ${jumlahBenar} dari ${totalSoal} Soal`;
             }
 
             let stringDetailJawaban = listDetail.join(" | ") || "-";
-
             let dataKirim = {
                 tanggal: new Date().toLocaleDateString("id-ID"),
-                nama: nama,
-                kelas: kelas,
-                mapel: mapel,
-                jenis: jenis,
-                nilai: nilaiAkhir,
-                keterangan: keteranganStatus,
-                detail: stringDetailJawaban 
+                nama: nama, kelas: kelas, mapel: mapel, jenis: jenis,
+                nilai: nilaiAkhir, keterangan: keteranganStatus, detail: stringDetailJawaban 
             };
+
+            if (isDemoMode) {
+                alert(`🎉 [MODE DEMO] Simulasi pengiriman jawaban berhasil!\nNilai Anda: ${nilaiAkhir}`);
+                location.reload();
+                return;
+            }
 
             let btn = event.target;
             btn.disabled = true;
