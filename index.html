@@ -67,12 +67,23 @@
             color: white;
             transform: translateY(-2px);
         }
+        .banner-demo { 
+            background: #fff3cd; 
+            border: 1px solid #ffeeba; 
+            border-radius: 12px; 
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="welcome-card mx-auto">
+            <!-- Banner Mode Demo (Hanya muncul jika diakses dengan ?demo=true) -->
+            <div id="banner-demo-mode" class="banner-demo p-2 mb-3 text-dark shadow-sm" style="display: none;">
+                <span class="font-weight-bold text-warning">🎮 Mode Demo Aktif</span>
+            </div>
+
             <!-- Logo Tut Wuri -->
             <img src="assets/images/tutwuri.png" alt="Logo Tut Wuri Handayani" class="header-logo">
             
@@ -81,10 +92,10 @@
 
             <!-- Tombol Navigasi ke Halaman Siswa atau Guru -->
             <div class="d-flex flex-column">
-                <a href="siswa.html" class="btn btn-menu btn-siswa shadow-sm">
+                <a href="siswa.html" id="btn-link-siswa" class="btn btn-menu btn-siswa shadow-sm">
                     🎓 Masuk ke Ruang Siswa (Mengerjakan Ujian)
                 </a>
-                <a href="guru.html" class="btn btn-menu btn-guru shadow-sm">
+                <a href="guru.html" id="btn-link-guru" class="btn btn-menu btn-guru shadow-sm">
                     👩‍🏫 Masuk ke Panel Guru (Kelola Soal & Nilai)
                 </a>
             </div>
@@ -96,5 +107,18 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Deteksi otomatis jika dibuka via link blog dengan parameter ?demo=true
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === 'true' || window.location.href.includes('demo=true')) {
+                document.getElementById('banner-demo-mode').style.display = 'block';
+                // Teruskan parameter demo ke tombol siswa & guru
+                document.getElementById('btn-link-siswa').href = 'siswa.html?demo=true';
+                document.getElementById('btn-link-guru').href = 'guru.html?demo=true';
+            }
+        });
+    </script>
 </body>
 </html>
