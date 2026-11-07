@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rekap Nilai Siswa - Panel Guru (Firebase)</title>
 
-    <!-- Favicon & Metadata WhatsApp -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:title" content="EduAdmin Pro - Rekap Nilai Siswa">
     <meta property="og:description" content="Rekapitulasi nilai siswa real-time dari Firebase, lengkap dengan fitur ekspor ke Excel.">
@@ -15,30 +14,26 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase App & Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-    <!-- SheetJS (XLSX) Library untuk Ekspor Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
         .card-custom { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .table th, .table td { vertical-align: middle !important; text-align: center; }
-        .table th:nth-child(3), .table td:nth-child(3) { text-align: left; }
+        .table th:nth-child(4), .table td:nth-child(4) { text-align: left; }
         .banner-demo { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; }
     </style>
 </head>
 <body>
     <div class="container-fluid mt-4 mb-5 px-4">
         
-        <!-- Banner Mode Demo (Hanya muncul jika ada ?demo=true di URL) -->
         <div id="banner-demo-mode" class="banner-demo p-3 mb-4 text-dark shadow-sm" style="display: none;">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
                     <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
-                    <small class="text-muted">Simulasi rekap nilai dan ekspor Excel berdasarkan Tahun, Semester, dan Bab.</small>
+                    <small class="text-muted">Simulasi rekap nilai dengan filter Tahun dan Bab ketik bebas.</small>
                 </div>
                 <button class="btn btn-warning btn-sm font-weight-bold mt-2 mt-md-0" onclick="muatDataDemoRekap()">
                     ✨ Muat Contoh Nilai Demo
@@ -59,22 +54,17 @@
                 </div>
             </div>
 
-            <!-- Filter Lengkap: Tahun, Semester, Kelas, Mapel, Bab -->
+            <!-- Filter Rekap (Tahun & Bab menggunakan Input Teks Bebas) -->
             <div class="form-row mb-4 bg-light p-3 rounded">
                 <div class="form-group col-md-3 mb-2">
                     <label class="small font-weight-bold">Filter Tahun Ajaran:</label>
-                    <select id="filter-tahun" class="form-control form-control-sm" onchange="tampilkanRekapNilaiFirebase()">
-                        <option value="">-- Semua Tahun --</option>
-                        <option value="2025/2026">2025/2026</option>
-                        <option value="2026/2027" selected>2026/2027</option>
-                        <option value="2027/2028">2027/2028</option>
-                    </select>
+                    <input type="text" id="filter-tahun" class="form-control form-control-sm" placeholder="Ketik tahun..." oninput="tampilkanRekapNilaiFirebase()">
                 </div>
                 <div class="form-group col-md-3 mb-2">
                     <label class="small font-weight-bold">Filter Semester:</label>
-                    <select id="filter-semester" class="form-control form-control-sm" onchange="updateDaftarBabFilter(); tampilkanRekapNilaiFirebase();">
+                    <select id="filter-semester" class="form-control form-control-sm" onchange="tampilkanRekapNilaiFirebase()">
                         <option value="">-- Semua Semester --</option>
-                        <option value="Semester 1" selected>Semester 1</option>
+                        <option value="Semester 1">Semester 1</option>
                         <option value="Semester 2">Semester 2</option>
                     </select>
                 </div>
@@ -82,31 +72,22 @@
                     <label class="small font-weight-bold">Filter Kelas:</label>
                     <select id="filter-kelas" class="form-control form-control-sm" onchange="tampilkanRekapNilaiFirebase()">
                         <option value="">-- Semua Kelas --</option>
-                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6" selected>Kelas 6</option>
+                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6">Kelas 6</option>
                     </select>
                 </div>
                 <div class="form-group col-md-3 mb-2">
                     <label class="small font-weight-bold">Filter Mata Pelajaran:</label>
-                    <select id="filter-mapel" class="form-control form-control-sm" onchange="updateDaftarBabFilter(); tampilkanRekapNilaiFirebase();">
+                    <select id="filter-mapel" class="form-control form-control-sm" onchange="tampilkanRekapNilaiFirebase()">
                         <option value="">-- Semua Mapel --</option>
-                        <option value="PAIBP" selected>PAIBP</option>
-                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                        <option value="Matematika">Matematika</option>
-                        <option value="IPAS">IPAS</option>
-                        <option value="PJOK">PJOK</option>
-                        <option value="Bahasa Inggris">Bahasa Inggris</option>
-                        <option value="Bahasa Jawa">Bahasa Jawa</option>
+                        <option value="PAIBP">PAIBP</option><option value="Pendidikan Pancasila">Pendidikan Pancasila</option><option value="Bahasa Indonesia">Bahasa Indonesia</option><option value="Matematika">Matematika</option><option value="IPAS">IPAS</option><option value="PJOK">PJOK</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Bahasa Jawa">Bahasa Jawa</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-row mb-4 bg-white p-2 border rounded">
                 <div class="form-group col-md-12 mb-0">
-                    <label class="small font-weight-bold text-success">Filter Bab (Dinamis):</label>
-                    <select id="filter-bab" class="form-control form-control-sm border-success font-weight-bold" onchange="tampilkanRekapNilaiFirebase()">
-                        <option value="">-- Semua Bab --</option>
-                    </select>
+                    <label class="small font-weight-bold text-success">Filter Bab / Materi (Ketik Nama Bab):</label>
+                    <input type="text" id="filter-bab" class="form-control form-control-sm border-success font-weight-bold" placeholder="Ketik nama bab untuk memfilter..." oninput="tampilkanRekapNilaiFirebase()">
                 </div>
             </div>
 
@@ -138,29 +119,21 @@
         </div>
     </div>
 
-    <!-- Modal Pop-up untuk Membaca Detail Jawaban & Berikan Nilai Langsung -->
-    <div class="modal fade" id="modalDetailJawaban" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <!-- Modal Koreksi & Penilaian Guru -->
+    <div class="modal fade" id="modalDetailJawaban" tabindex="-1" role="dialog" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content" style="border-radius: 15px;">
           <div class="modal-header bg-success text-white" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
-            <h5 class="modal-title font-weight-bold" id="modalLabel">📝 Koreksi & Detail Jawaban Siswa</h5>
-            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <h5 class="modal-title font-weight-bold">📝 Koreksi & Detail Jawaban Siswa</h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <div class="modal-body p-4">
             <p id="info-siswa-detail" class="font-weight-bold text-secondary mb-3"></p>
-            
             <div class="form-group mb-3">
-                <label class="small font-weight-bold text-dark">Rincian Jawaban / Ketikan Lengkap Siswa (<span id="info-jumlah-karakter">0</span> Karakter):</label>
-                <div class="p-3 bg-light border rounded" style="white-space: pre-wrap; word-break: break-word; max-height: 350px; overflow-y: auto; font-size: 13px;" id="isi-detail-jawaban">
-                  -
-                </div>
+                <label class="small font-weight-bold text-dark">Rincian Jawaban Siswa:</label>
+                <div class="p-3 bg-light border rounded" style="white-space: pre-wrap; word-break: break-word; max-height: 350px; overflow-y: auto; font-size: 13px;" id="isi-detail-jawaban">-</div>
             </div>
-
             <hr>
-
-            <!-- Form Guru Memberikan Nilai Langsung -->
             <div class="p-3 border rounded bg-light">
                 <label class="font-weight-bold text-success mb-2">⭐ Berikan / Ubah Nilai Tugas Ini (Skor 0 - 100):</label>
                 <div class="form-row align-items-center">
@@ -173,28 +146,21 @@
                         <input type="hidden" id="hidden-jenis-kuis">
                     </div>
                     <div class="col-md-6">
-                        <button type="button" class="btn btn-success font-weight-bold btn-block shadow-sm" onclick="simpanNilaiDariGuruFirebase()">
-                            💾 Simpan Nilai ke Firebase
-                        </button>
+                        <button type="button" class="btn btn-success font-weight-bold btn-block shadow-sm" onclick="simpanNilaiDariGuruFirebase()">💾 Simpan Nilai ke Firebase</button>
                     </div>
                 </div>
             </div>
-
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm px-4 font-weight-bold" data-dismiss="modal">Tutup</button>
-          </div>
+          <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm px-4 font-weight-bold" data-dismiss="modal">Tutup</button></div>
         </div>
       </div>
     </div>
 
-    <!-- Script jQuery, Popper, dan Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-        // Konfigurasi Firebase Realtime Database
         const firebaseConfig = {
             apiKey: "AIzaSyAgwdiryHd1TqpKdNiV_KXK-leSl3sOW8g",
             authDomain: "eduadmin-pro-88cd6.firebaseapp.com",
@@ -205,70 +171,24 @@
             appId: "1:223595774231:web:707feff9094f18d839b752"
         };
 
-        // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
         let globalDetailCache = {};
         let rekapDataForExcel = [];
         let isDemoMode = false;
-
-        // Master Daftar Bab Dinamis Berdasarkan Mapel & Semester
-        const bankBabMaster = {
-            "PAIBP": {
-                "Semester 1": ["Bab I Indahnya Saling Menghormati", "Bab II Ketika Bumi Berhenti Berputar", "Bab III Anak Saleh", "Bab IV Halal dan Haram"],
-                "Semester 2": ["Bab V Meneladani Perjuangan Nabi", "Bab VI Zakat Fitrah dan Mal", "Bab VII Ayo Berakhlak Terpuji", "Bab VIII Mari Belajar Al-Qur'an"]
-            },
-            "Pendidikan Pancasila": {
-                "Semester 1": ["Bab 1 Belajar Pancasila", "Bab 2 Norma di Sekitarku"],
-                "Semester 2": ["Bab 3 Jati Diri Bangsa", "Bab 4 Negaraku Indonesia"]
-            },
-            "Matematika": {
-                "Semester 1": ["Bab 1 Bilangan Bulat", "Bab 2 Pecahan", "Bab 3 KPK dan FPB"],
-                "Semester 2": ["Bab 4 Luas dan Keliling", "Bab 5 Bangun Ruang", "Bab 6 Statistika"]
-            },
-            "IPAS": {
-                "Semester 1": ["Bab 1 Mengenal Tubuh Kita", "Bab 2 Cerita Tentang Indonesia"],
-                "Semester 2": ["Bab 3 Pelesir Dunia", "Bab 4 Indonesiaku Kaya"]
-            },
-            "Bahasa Indonesia": {
-                "Semester 1": ["Bab 1 Bangga Menjadi Anak Indonesia", "Bab 2 Musikus Indonesia"],
-                "Semester 2": ["Bab 3 Taman Nasional", "Bab 4 Jeda untuk Alam"]
-            }
-        };
-
         let dataDemoNilai = {
-            "n_1": { tahun: "2026/2027", semester: "Semester 1", bab: "Bab IV Halal dan Haram", kelas: "Kelas 6", nama: "Ahmad Subagja", mapel: "PAIBP", jenis: "Pilihan Ganda", nilai: 90, detail: "Jawaban benar semua." },
-            "n_2": { tahun: "2026/2027", semester: "Semester 1", bab: "Bab IV Halal dan Haram", kelas: "Kelas 6", nama: "Ahmad Subagja", mapel: "PAIBP", jenis: "Puzzle Kata", nilai: 85, detail: "HALAL" },
-            "n_3": { tahun: "2026/2027", semester: "Semester 1", bab: "Bab IV Halal dan Haram", kelas: "Kelas 6", nama: "Budi Santoso", mapel: "PAIBP", jenis: "Pilihan Ganda", nilai: 75, detail: "Sebagian benar." }
+            "n_1": { tahun: "2026/2027", semester: "Semester 1", bab: "Bab 4 Ketentuan Makanan Halal", kelas: "Kelas 6", nama: "Ahmad Subagja", mapel: "PAIBP", jenis: "Pilihan Ganda", nilai: 90, detail: "Jawaban benar semua." }
         };
 
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('demo') === 'true' || window.location.href.includes('demo=true')) {
+            if (urlParams.get('demo'] === 'true' || window.location.href.includes('demo=true')) {
                 isDemoMode = true;
                 document.getElementById('banner-demo-mode').style.display = 'block';
             }
-            updateDaftarBabFilter();
             tampilkanRekapNilaiFirebase();
         });
-
-        function updateDaftarBabFilter() {
-            let mapel = document.getElementById("filter-mapel").value;
-            let semester = document.getElementById("filter-semester").value;
-            let selectBab = document.getElementById("filter-bab");
-            selectBab.innerHTML = `<option value="">-- Semua Bab --</option>`;
-
-            if (mapel && semester && bankBabMaster[mapel]?.[semester]) {
-                bankBabMaster[mapel][semester].forEach(bab => {
-                    let opt = document.createElement("option");
-                    opt.value = bab;
-                    opt.textContent = bab;
-                    selectBab.appendChild(opt);
-                });
-            }
-            tampilkanRekapNilaiFirebase();
-        }
 
         function muatDataDemoRekap() {
             renderTabelRekap(dataDemoNilai);
@@ -290,16 +210,16 @@
                 renderTabelRekap(dataObj);
             } catch (e) {
                 if (isDemoMode) { renderTabelRekap(dataDemoNilai); }
-                else { tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Gagal memuat rekap nilai: ${e.message}</td></tr>`; }
+                else { tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Gagal memuat rekap nilai.</td></tr>`; }
             }
         }
 
         function renderTabelRekap(dataObj) {
-            let fTahun = document.getElementById("filter-tahun").value;
+            let fTahun = document.getElementById("filter-tahun").value.trim().toLowerCase();
             let fSemester = document.getElementById("filter-semester").value;
             let filterKelas = document.getElementById("filter-kelas").value.trim();
             let filterMapel = document.getElementById("filter-mapel").value.trim();
-            let fBab = document.getElementById("filter-bab").value;
+            let fBab = document.getElementById("filter-bab").value.trim().toLowerCase();
 
             let tbody = document.getElementById("tabel-nilai-body");
             tbody.innerHTML = "";
@@ -311,25 +231,25 @@
                 let item = dataObj[dbKey];
                 if (!item) return;
 
-                let thn = String(item.tahun || "2026/2027").trim();
+                let thn = String(item.tahun || "2026/2027").toLowerCase();
                 let smt = String(item.semester || "Semester 1").trim();
-                let bab = String(item.bab || "Umum").trim();
+                let bab = String(item.bab || "Umum").toLowerCase();
                 let kls = String(item.kelas || "").trim();
                 let nms = String(item.nama || "").trim();
                 let mpl = String(item.mapel || "").trim();
                 if (!nms) return;
 
-                let matchTahun = fTahun ? thn === fTahun : true;
+                let matchTahun = fTahun ? thn.includes(fTahun) : true;
                 let matchSemester = fSemester ? smt === fSemester : true;
                 let matchKelas = filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
                 let matchMapel = filterMapel ? mpl.toLowerCase() === filterMapel.toLowerCase() : true;
-                let matchBab = fBab ? bab === fBab : true;
+                let matchBab = fBab ? bab.includes(fBab) : true;
 
                 if (matchTahun && matchSemester && matchKelas && matchMapel && matchBab) {
-                    let key = `${thn}_${smt}_${bab}_${kls}_${nms}_${mpl}`;
+                    let key = `${item.tahun}_${item.semester}_${item.bab}_${kls}_${nms}_${mpl}`;
                     if (!rekapMap[key]) {
                         rekapMap[key] = {
-                            tahun: thn, semester: smt, bab: bab,
+                            tahun: item.tahun || "2026/2027", semester: item.semester || "Semester 1", bab: item.bab || "Umum",
                             kelas: kls, nama: nms, mapel: mpl,
                             "Pilihan Ganda": null, "Puzzle Kata": null, "Essay": null, "Merangkum Materi": null,
                             detailJawabanMap: {}, keyFirebaseMap: {}
@@ -356,10 +276,6 @@
                         rekapMap[key]["Merangkum Materi"] = valNilai;
                         rekapMap[key].detailJawabanMap["Merangkum Materi"] = valDetail;
                         rekapMap[key].keyFirebaseMap["Merangkum Materi"] = dbKey;
-                    } else {
-                        rekapMap[key]["Pilihan Ganda"] = valNilai;
-                        rekapMap[key].detailJawabanMap["Pilihan Ganda"] = valDetail;
-                        rekapMap[key].keyFirebaseMap["Pilihan Ganda"] = dbKey;
                     }
                 }
             });
@@ -436,27 +352,17 @@
         }
 
         function unduhRekapNilaiExcel() {
-            if (rekapDataForExcel.length === 0) {
-                alert("Tidak ada data rekap nilai untuk diunduh!");
-                return;
-            }
-
-            let filterKelas = document.getElementById("filter-kelas").value.trim();
-            let filterMapel = document.getElementById("filter-mapel").value.trim();
+            if (rekapDataForExcel.length === 0) { alert("Tidak ada data rekap nilai untuk diunduh!"); return; }
             let worksheet = XLSX.utils.json_to_sheet(rekapDataForExcel);
             let workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Nilai");
-
-            let namaKelas = filterKelas ? filterKelas.replace(/\s+/g, '_') : "Semua_Kelas";
-            let namaMapel = filterMapel ? filterMapel.replace(/\s+/g, '_') : "Semua_Mapel";
-            XLSX.writeFile(workbook, `Rekap_Nilai_${namaKelas}_${namaMapel}.xlsx`);
+            XLSX.writeFile(workbook, `Rekap_Nilai_Siswa.xlsx`);
         }
 
         function bukaModalKoreksiCache(nama, kelas, mapel, jenisKuis, cacheId, nilaiSekarang, firebaseKey) {
             let detailTeks = globalDetailCache[cacheId] || "Tidak ada detail.";
             document.getElementById("info-siswa-detail").textContent = `${nama} (${kelas}) - ${mapel} [${jenisKuis}]`;
             document.getElementById("isi-detail-jawaban").textContent = detailTeks;
-            document.getElementById("info-jumlah-karakter").textContent = detailTeks.length;
             document.getElementById("input-nilai-guru").value = nilaiSekarang;
             document.getElementById("hidden-firebase-key").value = firebaseKey;
             document.getElementById("hidden-nama-siswa").value = nama;
@@ -468,20 +374,16 @@
 
         async function simpanNilaiDariGuruFirebase() {
             let firebaseKey = document.getElementById("hidden-firebase-key").value;
-            let nama = document.getElementById("hidden-nama-siswa").value;
-            let kelas = document.getElementById("hidden-kelas-siswa").value;
-            let mapel = document.getElementById("hidden-mapel-siswa").value;
-            let jenis = document.getElementById("hidden-jenis-kuis").value;
             let nilaiBaru = document.getElementById("input-nilai-guru").value.trim();
 
             if (nilaiBaru === "" || isNaN(nilaiBaru) || Number(nilaiBaru) < 0 || Number(nilaiBaru) > 100) {
-                alert("Harap masukkan angka nilai yang valid antara 0 sampai 100!");
+                alert("Masukkan angka nilai valid antara 0 sampai 100!");
                 return;
             }
 
             if (isDemoMode || (firebaseKey && firebaseKey.startsWith("n_"))) {
                 $('#modalDetailJawaban').modal('hide');
-                alert("🎉 [MODE DEMO] Nilai siswa berhasil diperbarui secara lokal!");
+                alert("🎉 [MODE DEMO] Nilai diperbarui secara lokal!");
                 return;
             }
 
@@ -489,18 +391,8 @@
                 $('#modalDetailJawaban').modal('hide');
                 if (firebaseKey) {
                     await db.ref('nilai/' + firebaseKey).update({ nilai: Number(nilaiBaru), keterangan: "Dinilai Guru" });
-                } else {
-                    await db.ref('nilai/').push({
-                        tanggal: new Date().toLocaleDateString("id-ID"),
-                        tahun: document.getElementById("filter-tahun").value || "2026/2027",
-                        semester: document.getElementById("filter-semester").value || "Semester 1",
-                        bab: document.getElementById("filter-bab").value || "Umum",
-                        nama: nama, kelas: kelas, mapel: mapel, jenis: jenis,
-                        nilai: Number(nilaiBaru), keterangan: "Dinilai Guru",
-                        detail: document.getElementById("isi-detail-jawaban").textContent
-                    });
                 }
-                alert("🎉 Berhasil! Nilai siswa telah diperbarui di Firebase.");
+                alert("🎉 Berhasil! Nilai diperbarui di Firebase.");
                 tampilkanRekapNilaiFirebase();
             } catch (err) {
                 alert("Gagal menyimpan nilai: " + err.message);
@@ -508,21 +400,9 @@
         }
 
         async function hapusSemuaNilaiFirebase() {
-            if (confirm("Apakah Anda yakin ingin mengosongkan seluruh data nilai di Firebase?")) {
-                if (isDemoMode) {
-                    dataDemoNilai = {};
-                    renderTabelRekap(dataDemoNilai);
-                    alert("🎉 [MODE DEMO] Data nilai dikosongkan dari simulasi!");
-                    return;
-                }
-
-                try {
-                    await db.ref('nilai/').remove();
-                    alert("Data nilai di Firebase berhasil dikosongkan.");
-                    tampilkanRekapNilaiFirebase();
-                } catch (err) {
-                    alert("Gagal menghapus data: " + err.message);
-                }
+            if (confirm("Kosongkan seluruh data nilai di Firebase?")) {
+                if (isDemoMode) { renderTabelRekap({}); alert("🎉 [MODE DEMO] Dikosongkan!"); return; }
+                try { await db.ref('nilai/').remove(); tampilkanRekapNilaiFirebase(); } catch (err) { alert("Gagal: " + err.message); }
             }
         }
     </script>
