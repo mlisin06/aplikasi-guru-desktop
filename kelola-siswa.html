@@ -49,7 +49,7 @@
         <!-- Card Header & Fitur Backup/Restore & Import -->
         <div class="card card-custom p-4 bg-white mb-4">
             <h3 class="text-success font-weight-bold mb-1">👨‍🎓 Kelola Data Siswa (Firebase Realtime Database)</h3>
-            <p class="text-muted small mb-3">Tambah, edit, backup, dan kelola daftar nama siswa per kelas secara real-time.</p>
+            <p class="text-muted small mb-3">Tambah, edit, backup, dan kelola daftar nama siswa per tahun ajaran dan kelas secara real-time.</p>
 
             <!-- Box Backup & Restor Data Siswa (JSON) untuk Tahun Depan -->
             <div class="box-backup p-3 mb-4">
@@ -84,7 +84,7 @@
                 <div class="form-row align-items-center">
                     <div class="col-md-8 mb-2 mb-md-0">
                         <input type="file" id="file-csv-siswa" class="form-control-file p-1 bg-white border rounded" accept=".csv">
-                        <small class="text-muted">Gunakan file CSV sesuai template (Kolom: <b>Kelas, NIS, Nama</b>).</small>
+                        <small class="text-muted">Gunakan file CSV sesuai template (Kolom: <b>TahunAjaran, Kelas, NIS, Nama</b>).</small>
                     </div>
                     <div class="col-md-4">
                         <button type="button" id="btn-upload-csv" class="btn btn-success btn-block font-weight-bold shadow-sm" onclick="uploadSiswaMassalCSV()">
@@ -101,6 +101,14 @@
             <form id="form-siswa" onsubmit="tambahSiswaFirebase(event)">
                 <div class="form-row">
                     <div class="form-group col-md-3">
+                        <label class="font-weight-bold small text-muted">Tahun Ajaran</label>
+                        <select id="tahun-siswa" class="form-control" required>
+                            <option value="2025/2026">2025/2026</option>
+                            <option value="2026/2027" selected>2026/2027</option>
+                            <option value="2027/2028">2027/2028</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
                         <label class="font-weight-bold small text-muted">Pilih Kelas</label>
                         <select id="kelas-siswa" class="form-control" required>
                             <option value="">-- Pilih Kelas --</option>
@@ -109,16 +117,16 @@
                             <option value="Kelas 3">Kelas 3</option>
                             <option value="Kelas 4">Kelas 4</option>
                             <option value="Kelas 5">Kelas 5</option>
-                            <option value="Kelas 6">Kelas 6</option>
+                            <option value="Kelas 6" selected>Kelas 6</option>
                         </select>
                     </div>
-                    <div class="form-group col-md-4">
+                    <div class="form-group col-md-3">
                         <label class="font-weight-bold small text-muted">Nomor Induk / NIS (Opsional)</label>
                         <input type="text" id="nis-siswa" class="form-control" placeholder="Contoh: 1023">
                     </div>
-                    <div class="form-group col-md-5">
+                    <div class="form-group col-md-3">
                         <label class="font-weight-bold small text-muted">Nama Lengkap Siswa</label>
-                        <input type="text" id="nama-siswa" class="form-control" placeholder="Ketik nama lengkap siswa..." required>
+                        <input type="text" id="nama-siswa" class="form-control" placeholder="Ketik nama lengkap..." required>
                     </div>
                 </div>
                 <button type="submit" id="btn-simpan" class="btn btn-success btn-custom">➕ Simpan Data Siswa ke Firebase</button>
@@ -135,18 +143,22 @@
                 </div>
             </div>
 
-            <!-- Filter Kelas Dinamis -->
+            <!-- Filter Dinamis: Tahun Ajaran & Kelas -->
             <div class="form-row mb-3 bg-light p-3 rounded">
-                <div class="form-group col-md-4 mb-0">
-                    <label class="small font-weight-bold">Filter Sesuai Kelas (Dinamis):</label>
+                <div class="form-group col-md-6 mb-0">
+                    <label class="small font-weight-bold">Filter Tahun Ajaran:</label>
+                    <select id="filter-tahun-tabel" class="form-control form-control-sm" onchange="muatDataSiswaFirebase()">
+                        <option value="">-- Semua Tahun --</option>
+                        <option value="2025/2026">2025/2026</option>
+                        <option value="2026/2027" selected>2026/2027</option>
+                        <option value="2027/2028">2027/2028</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-6 mb-0">
+                    <label class="small font-weight-bold">Filter Kelas (Dinamis):</label>
                     <select id="filter-kelas-tabel" class="form-control form-control-sm" onchange="muatDataSiswaFirebase()">
                         <option value="">-- Semua Kelas --</option>
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6">Kelas 6</option>
+                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6" selected>Kelas 6</option>
                     </select>
                 </div>
             </div>
@@ -156,9 +168,9 @@
                     <thead class="thead-dark text-center">
                         <tr>
                             <th style="width: 7%;">No</th>
-                            <th style="width: 15%;">Kelas</th>
-                            <th style="width: 18%;">NIS</th>
-                            <th style="width: 40%;">Nama Lengkap Siswa</th>
+                            <th style="width: 20%;">Tahun Ajaran / Kelas</th>
+                            <th style="width: 15%;">NIS</th>
+                            <th style="width: 38%;">Nama Lengkap Siswa</th>
                             <th style="width: 20%;">Aksi</th>
                         </tr>
                     </thead>
@@ -188,14 +200,17 @@
             <form id="form-edit-siswa" onsubmit="simpanPerubahanSiswaFirebase(event)">
                 <input type="hidden" id="edit-firebase-key">
                 <div class="form-group">
+                    <label class="font-weight-bold small text-muted">Tahun Ajaran</label>
+                    <select id="edit-tahun-siswa" class="form-control" required>
+                        <option value="2025/2026">2025/2026</option>
+                        <option value="2026/2027">2026/2027</option>
+                        <option value="2027/2028">2027/2028</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label class="font-weight-bold small text-muted">Pilih Kelas</label>
                     <select id="edit-kelas-siswa" class="form-control" required>
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6">Kelas 6</option>
+                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6">Kelas 6</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -237,9 +252,9 @@
         let globalSiswaCache = {};
         let isDemoMode = false;
         let dataDemoSiswa = [
-            { firebaseKey: "sw_1", kelas: "Kelas 6", nis: "1001", nama: "Ahmad Subagja" },
-            { firebaseKey: "sw_2", kelas: "Kelas 6", nis: "1002", nama: "Budi Santoso" },
-            { firebaseKey: "sw_3", kelas: "Kelas 5", nis: "1003", nama: "Citra Dewi" }
+            { firebaseKey: "sw_1", tahun: "2026/2027", kelas: "Kelas 6", nis: "1001", nama: "Ahmad Subagja" },
+            { firebaseKey: "sw_2", tahun: "2026/2027", kelas: "Kelas 6", nis: "1002", nama: "Budi Santoso" },
+            { firebaseKey: "sw_3", tahun: "2026/2027", kelas: "Kelas 5", nis: "1003", nama: "Citra Dewi" }
         ];
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -304,6 +319,7 @@
                     
                     let promises = listSiswa.map(item => {
                         return db.ref('siswa/').push({
+                            tahun: item.tahun || "2026/2027",
                             kelas: item.kelas || "Kelas 6",
                             nis: item.nis || "-",
                             nama: item.nama || "",
@@ -327,7 +343,7 @@
 
         // 3. Fungsi Unduh Template CSV
         function unduhTemplateCSV() {
-            let isiCSV = "Kelas,NIS,Nama\nKelas 6,1001,Ahmad Subagja\nKelas 6,1002,Budi Santoso\nKelas 6,1003,Citra Dewi";
+            let isiCSV = "TahunAjaran,Kelas,NIS,Nama\n2026/2027,Kelas 6,1001,Ahmad Subagja\n2026/2027,Kelas 6,1002,Budi Santoso\n2026/2027,Kelas 5,1003,Citra Dewi";
             let blob = new Blob([isiCSV], { type: "text/csv;charset=utf-8;" });
             let url = URL.createObjectURL(blob);
             let link = document.createElement("a");
@@ -361,12 +377,13 @@
                     let item = baris[i].trim();
                     if (!item) continue;
                     let kolom = item.split(",");
-                    if (kolom.length >= 3) {
-                        let kls = kolom[0].trim();
-                        let nis = kolom[1].trim();
-                        let nms = kolom[2].trim();
+                    if (kolom.length >= 4) {
+                        let thn = kolom[0].trim();
+                        let kls = kolom[1].trim();
+                        let nis = kolom[2].trim();
+                        let nms = kolom[3].trim();
                         if (nms) {
-                            dataPush.push({ kelas: kls || "Kelas 6", nis: nis || "-", nama: nms, tanggal: tgl });
+                            dataPush.push({ tahun: thn || "2026/2027", kelas: kls || "Kelas 6", nis: nis || "-", nama: nms, tanggal: tgl });
                         }
                     }
                 }
@@ -424,18 +441,22 @@
         }
 
         function renderTabelSiswa(dataArr) {
+            let fTahun = document.getElementById("filter-tahun-tabel").value.trim();
             let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
             let tbody = document.getElementById("tabel-siswa-body");
             tbody.innerHTML = "";
             globalSiswaCache = {};
 
             let dataFiltered = dataArr.filter(item => {
+                let sTahun = String(item.tahun || "2026/2027").trim();
                 let kls = String(item.kelas || "").trim();
-                return filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+                let matchTahun = fTahun ? sTahun === fTahun : true;
+                let matchKelas = filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+                return matchTahun && matchKelas;
             });
 
             if (dataFiltered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada data siswa yang cocok dengan filter kelas ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada data siswa yang cocok dengan filter.</td></tr>`;
                 return;
             }
 
@@ -445,7 +466,7 @@
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td class="text-center">${index + 1}</td>
-                    <td class="text-center"><b>${siswa.kelas || '-'}</b></td>
+                    <td class="text-center"><small>${siswa.tahun || '2026/2027'}</small><br><b>${siswa.kelas || '-'}</b></td>
                     <td class="text-center">${siswa.nis || '-'}</td>
                     <td class="text-left font-weight-bold">${siswa.nama || '-'}</td>
                     <td class="text-center">
@@ -460,12 +481,14 @@
         // 6. Tambah Data Siswa Baru (Manual)
         function tambahSiswaFirebase(event) {
             event.preventDefault();
+            let tahun = document.getElementById("tahun-siswa").value;
             let kelas = document.getElementById("kelas-siswa").value;
             let nis = document.getElementById("nis-siswa").value.trim();
             let nama = document.getElementById("nama-siswa").value.trim();
             let btn = document.getElementById("btn-simpan");
 
             let dataBaru = {
+                tahun: tahun,
                 kelas: kelas,
                 nis: nis,
                 nama: nama,
@@ -503,7 +526,8 @@
             if (!siswa) return;
 
             document.getElementById("edit-firebase-key").value = firebaseKey;
-            document.getElementById("edit-kelas-siswa").value = siswa.kelas || "Kelas 1";
+            document.getElementById("edit-tahun-siswa").value = siswa.tahun || "2026/2027";
+            document.getElementById("edit-kelas-siswa").value = siswa.kelas || "Kelas 6";
             document.getElementById("edit-nis-siswa").value = siswa.nis || "";
             document.getElementById("edit-nama-siswa").value = siswa.nama || "";
 
@@ -515,6 +539,7 @@
             event.preventDefault();
             let key = document.getElementById("edit-firebase-key").value;
             let dataUpdate = {
+                tahun: document.getElementById("edit-tahun-siswa").value,
                 kelas: document.getElementById("edit-kelas-siswa").value,
                 nis: document.getElementById("edit-nis-siswa").value.trim(),
                 nama: document.getElementById("edit-nama-siswa").value.trim()
@@ -561,18 +586,17 @@
 
         // 10. Hapus Data Siswa Massal Berdasarkan Filter
         async function hapusSiswaKelompok() {
+            let fTahun = document.getElementById("filter-tahun-tabel").value.trim();
             let filterKelas = document.getElementById("filter-kelas-tabel").value.trim();
-            let pesanKonfirmasi = filterKelas 
-                ? `Apakah Anda yakin ingin menghapus SELURUH data siswa pada ${filterKelas}?`
-                : "PERINGATAN: Filter kelas kosong. Ini akan menghapus SELURUH DATA SISWA. Yakin ingin melanjutkan?";
+            let pesanKonfirmasi = `Apakah Anda yakin ingin menghapus SELURUH data siswa yang cocok dengan filter saat ini?`;
 
             if (confirm(pesanKonfirmasi)) {
                 if (isDemoMode) {
-                    if (filterKelas) {
-                        dataDemoSiswa = dataDemoSiswa.filter(x => x.kelas.toLowerCase() !== filterKelas.toLowerCase());
-                    } else {
-                        dataDemoSiswa = [];
-                    }
+                    dataDemoSiswa = dataDemoSiswa.filter(x => {
+                        let matchT = fTahun ? (x.tahun || "2026/2027") === fTahun : true;
+                        let matchK = filterKelas ? x.kelas.toLowerCase() === filterKelas.toLowerCase() : true;
+                        return !(matchT && matchK);
+                    });
                     renderTabelSiswa(dataDemoSiswa);
                     alert("🎉 [MODE DEMO] Data berhasil dihapus dari simulasi!");
                     return;
@@ -589,8 +613,12 @@
                     let updatePromises = [];
                     Object.keys(data).forEach(key => {
                         let item = data[key];
+                        let sTahun = String(item.tahun || "2026/2027").trim();
                         let kls = String(item.kelas || "").trim();
-                        if (!filterKelas || kls.toLowerCase() === filterKelas.toLowerCase()) {
+                        let matchT = fTahun ? sTahun === fTahun : true;
+                        let matchK = filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+
+                        if (matchT && matchK) {
                             updatePromises.push(db.ref('siswa/' + key).remove());
                         }
                     });
