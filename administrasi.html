@@ -35,7 +35,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
                     <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
-                    <small class="text-muted">Anda sedang berada dalam mode simulasi interaktif. Silakan uji coba fitur simpan dan tampilkan data contoh tanpa khawatir merusak database utama.</small>
+                    <small class="text-muted">Anda sedang berada dalam mode simulasi interaktif.</small>
                 </div>
                 <button class="btn btn-warning btn-sm font-weight-bold mt-2 mt-md-0" onclick="muatDataDemoTabel()">
                     ✨ Tampilkan Data Contoh Demo
@@ -44,29 +44,40 @@
         </div>
 
         <div class="card card-custom p-4 mb-4 text-center bg-info text-white shadow-sm">
-            <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi PDF Online (Firebase)</h2>
-            <p class="mb-0 text-white-50">Upload modul/materi PDF via Google Drive agar bisa dibaca langsung oleh siswa secara real-time.</p>
+            <h2 class="font-weight-bold mb-2">📚 Administrasi & Materi PDF Online (Tahun, Semester, Bab)</h2>
+            <p class="mb-0 text-white-50">Upload modul/materi PDF via Google Drive berdasarkan Tahun Ajaran, Semester, dan Bab.</p>
         </div>
 
-        <!-- Panel Guru Upload Link PDF -->
+        <!-- Panel Guru Upload Link PDF dengan Tahun, Semester, Bab -->
         <div class="card card-custom p-4 mb-4 border-top border-primary" style="border-top-width: 5px !important;">
             <h4 class="text-primary font-weight-bold mb-3">👨‍🏫 Simpan Materi & Link PDF ke Firebase</h4>
+            
             <div class="form-row">
+                <div class="form-group col-md-3">
+                    <label class="small font-weight-bold">Tahun Ajaran</label>
+                    <select id="upload-tahun" class="form-control">
+                        <option value="2025/2026">2025/2026</option>
+                        <option value="2026/2027" selected>2026/2027</option>
+                        <option value="2027/2028">2027/2028</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-3">
+                    <label class="small font-weight-bold">Semester</label>
+                    <select id="upload-semester" class="form-control" onchange="updateDaftarBabInput()">
+                        <option value="Semester 1">Semester 1 (Ganjil)</option>
+                        <option value="Semester 2">Semester 2 (Genap)</option>
+                    </select>
+                </div>
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Kelas</label>
                     <select id="upload-kelas" class="form-control">
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6" selected>Kelas 6</option>
+                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6" selected>Kelas 6</option>
                     </select>
                 </div>
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Mata Pelajaran</label>
-                    <select id="upload-mapel" class="form-control">
-                        <option value="PAIBP">PAIBP</option>
+                    <select id="upload-mapel" class="form-control" onchange="updateDaftarBabInput()">
+                        <option value="PAIBP" selected>PAIBP</option>
                         <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
                         <option value="Bahasa Indonesia">Bahasa Indonesia</option>
                         <option value="Matematika">Matematika</option>
@@ -76,21 +87,31 @@
                         <option value="Bahasa Jawa">Bahasa Jawa</option>
                     </select>
                 </div>
-                <div class="form-group col-md-3">
-                    <label class="small font-weight-bold">Judul Materi / Bab</label>
-                    <input type="text" id="upload-judul" class="form-control" placeholder="Contoh: Modul Bab 1 Pecahan">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label class="small font-weight-bold text-success">Pilih Bab (Dinamis):</label>
+                    <select id="upload-bab" class="form-control border-success font-weight-bold">
+                        <!-- Terisi otomatis -->
+                    </select>
                 </div>
-                <div class="form-group col-md-3">
+                <div class="form-group col-md-4">
+                    <label class="small font-weight-bold">Judul Keterangan Modul</label>
+                    <input type="text" id="upload-judul" class="form-control" placeholder="Contoh: Modul Pembelajaran Lengkap">
+                </div>
+                <div class="form-group col-md-4">
                     <label class="small font-weight-bold">Link Google Drive PDF</label>
                     <input type="text" id="upload-link" class="form-control" placeholder="Paste Link Google Drive di sini">
                 </div>
             </div>
+
             <button type="button" class="btn btn-primary btn-custom btn-block mt-2 shadow-sm" onclick="simpanMateriPDFKeFirebase()">
                 📤 Simpan Materi ke Firebase
             </button>
         </div>
 
-        <!-- Daftar Materi Siswa dengan Filter & Tombol Hapus -->
+        <!-- Daftar Materi Siswa dengan Filter Lengkap -->
         <div class="card card-custom p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                 <h4 class="text-success font-weight-bold mb-2">📖 Daftar Materi & Bahan Bacaan Online</h4>
@@ -101,16 +122,44 @@
             </div>
 
             <div class="form-row mb-3 bg-light p-3 rounded">
-                <div class="form-group col-md-6 mb-0">
-                    <label class="small font-weight-bold">Filter Sesuai Kelas:</label>
+                <div class="form-group col-md-3 mb-2">
+                    <label class="small font-weight-bold">Filter Tahun:</label>
+                    <select id="filter-tahun" class="form-control form-control-sm" onchange="tampilkanDaftarMateriFirebase()">
+                        <option value="">-- Semua Tahun --</option>
+                        <option value="2025/2026">2025/2026</option>
+                        <option value="2026/2027" selected>2026/2027</option>
+                        <option value="2027/2028">2027/2028</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-3 mb-2">
+                    <label class="small font-weight-bold">Filter Semester:</label>
+                    <select id="filter-semester" class="form-control form-control-sm" onchange="updateDaftarBabFilter(); tampilkanDaftarMateriFirebase();">
+                        <option value="">-- Semua Semester --</option>
+                        <option value="Semester 1" selected>Semester 1</option>
+                        <option value="Semester 2">Semester 2</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-3 mb-2">
+                    <label class="small font-weight-bold">Filter Kelas:</label>
                     <select id="filter-kelas-materi" class="form-control form-control-sm" onchange="tampilkanDaftarMateriFirebase()">
                         <option value="">-- Semua Kelas --</option>
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6">Kelas 6</option>
+                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6" selected>Kelas 6</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-3 mb-2">
+                    <label class="small font-weight-bold">Filter Mapel:</label>
+                    <select id="filter-mapel" class="form-control form-control-sm" onchange="updateDaftarBabFilter(); tampilkanDaftarMateriFirebase();">
+                        <option value="">-- Semua Mapel --</option>
+                        <option value="PAIBP" selected>PAIBP</option><option value="Pendidikan Pancasila">Pendidikan Pancasila</option><option value="Bahasa Indonesia">Bahasa Indonesia</option><option value="Matematika">Matematika</option><option value="IPAS">IPAS</option><option value="PJOK">PJOK</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Bahasa Jawa">Bahasa Jawa</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row mb-3 bg-white p-2 border rounded">
+                <div class="form-group col-md-12 mb-0">
+                    <label class="small font-weight-bold text-success">Filter Bab (Dinamis):</label>
+                    <select id="filter-bab" class="form-control form-control-sm border-success font-weight-bold" onchange="tampilkanDaftarMateriFirebase()">
+                        <option value="">-- Semua Bab --</option>
                     </select>
                 </div>
             </div>
@@ -120,14 +169,15 @@
                     <thead class="thead-dark text-center">
                         <tr>
                             <th width="5%">No</th>
-                            <th width="15%">Kelas</th>
-                            <th width="20%">Mata Pelajaran</th>
-                            <th width="40%">Judul Materi</th>
+                            <th width="15%">Kategori (Tahun/Smstr)</th>
+                            <th width="12%">Kelas/Mapel</th>
+                            <th width="15%">Bab</th>
+                            <th width="33%">Judul Materi</th>
                             <th width="20%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-materi-body">
-                        <tr><td colspan="5" class="text-center text-muted py-4">Memuat data materi dari Firebase...</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-4">Memuat data materi dari Firebase...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -155,27 +205,87 @@
         const db = firebase.database();
 
         let isDemoMode = false;
+
+        // Master Daftar Bab Dinamis Berdasarkan Mapel & Semester
+        const bankBabMaster = {
+            "PAIBP": {
+                "Semester 1": ["Bab I Indahnya Saling Menghormati", "Bab II Ketika Bumi Berhenti Berputar", "Bab III Anak Saleh", "Bab IV Halal dan Haram"],
+                "Semester 2": ["Bab V Meneladani Perjuangan Nabi", "Bab VI Zakat Fitrah dan Mal", "Bab VII Ayo Berakhlak Terpuji", "Bab VIII Mari Belajar Al-Qur'an"]
+            },
+            "Pendidikan Pancasila": {
+                "Semester 1": ["Bab 1 Belajar Pancasila", "Bab 2 Norma di Sekitarku"],
+                "Semester 2": ["Bab 3 Jati Diri Bangsa", "Bab 4 Negaraku Indonesia"]
+            },
+            "Matematika": {
+                "Semester 1": ["Bab 1 Bilangan Bulat", "Bab 2 Pecahan", "Bab 3 KPK dan FPB"],
+                "Semester 2": ["Bab 4 Luas dan Keliling", "Bab 5 Bangun Ruang", "Bab 6 Statistika"]
+            },
+            "IPAS": {
+                "Semester 1": ["Bab 1 Mengenal Tubuh Kita", "Bab 2 Cerita Tentang Indonesia"],
+                "Semester 2": ["Bab 3 Pelesir Dunia", "Bab 4 Indonesiaku Kaya"]
+            },
+            "Bahasa Indonesia": {
+                "Semester 1": ["Bab 1 Bangga Menjadi Anak Indonesia", "Bab 2 Musikus Indonesia"],
+                "Semester 2": ["Bab 3 Taman Nasional", "Bab 4 Jeda untuk Alam"]
+            }
+        };
+
         let dataDemoCache = [
-            { firebaseKey: "demo_1", kelas: "Kelas 6", mapel: "Matematika", judul: "Modul Bab 1 Operasi Hitung Pecahan", filedata: "https://drive.google.com" },
-            { firebaseKey: "demo_2", kelas: "Kelas 6", mapel: "IPAS", judul: "Rangkuman Bab 2 Tumbuhan dan Lingkungan", filedata: "https://drive.google.com" },
-            { firebaseKey: "demo_3", kelas: "Kelas 5", mapel: "Bahasa Indonesia", judul: "Buku Cerita & Ringkasan Bab 1", filedata: "https://drive.google.com" }
+            { firebaseKey: "demo_1", tahun: "2026/2027", semester: "Semester 1", kelas: "Kelas 6", mapel: "PAIBP", bab: "Bab IV Halal dan Haram", judul: "Modul Bab IV Halal dan Haram", filedata: "https://drive.google.com" },
+            { firebaseKey: "demo_2", tahun: "2026/2027", semester: "Semester 1", kelas: "Kelas 6", mapel: "Matematika", bab: "Bab 1 Bilangan Bulat", judul: "Modul Bab 1 Operasi Hitung", filedata: "https://drive.google.com" }
         ];
 
         document.addEventListener("DOMContentLoaded", function() {
-            // Cek parameter ?demo=true di URL
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('demo') === 'true' || window.location.href.includes('demo')) {
                 isDemoMode = true;
                 document.getElementById('banner-demo-mode').style.display = 'block';
             }
 
+            updateDaftarBabInput();
+            updateDaftarBabFilter();
             tampilkanDaftarMateriFirebase();
         });
 
+        function updateDaftarBabInput() {
+            let mapel = document.getElementById("upload-mapel").value;
+            let semester = document.getElementById("upload-semester").value;
+            let selectBab = document.getElementById("upload-bab");
+            selectBab.innerHTML = "";
+
+            let daftarBab = bankBabMaster[mapel]?.[semester] || ["Bab 1 Umum", "Bab 2 Umum"];
+            daftarBab.forEach(bab => {
+                let opt = document.createElement("option");
+                opt.value = bab;
+                opt.textContent = bab;
+                selectBab.appendChild(opt);
+            });
+        }
+
+        function updateDaftarBabFilter() {
+            let mapel = document.getElementById("filter-mapel").value;
+            let semester = document.getElementById("filter-semester").value;
+            let selectBab = document.getElementById("filter-bab");
+            selectBab.innerHTML = `<option value="">-- Semua Bab --</option>`;
+
+            if (mapel && semester && bankBabMaster[mapel]?.[semester]) {
+                bankBabMaster[mapel][semester].forEach(bab => {
+                    let opt = document.createElement("option");
+                    opt.value = bab;
+                    opt.textContent = bab;
+                    selectBab.appendChild(opt);
+                });
+            }
+            tampilkanDaftarMateriFirebase();
+        }
+
         // 1. Simpan Materi ke Firebase node 'materi/'
         function simpanMateriPDFKeFirebase() {
+            let tahun = document.getElementById("upload-tahun").value;
+            let semester = document.getElementById("upload-semester").value;
             let kelas = document.getElementById("upload-kelas").value;
             let mapel = document.getElementById("upload-mapel").value;
+            let bab = document.getElementById("upload-bab").value;
             let judul = document.getElementById("upload-judul").value.trim();
             let linkDrive = document.getElementById("upload-link").value.trim();
 
@@ -186,8 +296,11 @@
 
             let dataKirim = {
                 tanggal: new Date().toLocaleDateString("id-ID"),
+                tahun: tahun,
+                semester: semester,
                 kelas: kelas,
                 mapel: mapel,
+                bab: bab,
                 judul: judul,
                 filedata: linkDrive,
                 fileName: "Dokumen PDF Drive"
@@ -197,7 +310,6 @@
             btn.disabled = true;
             btn.innerText = "Menyimpan...";
 
-            // Jika dalam mode demo, tambahkan ke cache demo lokal
             if (isDemoMode) {
                 setTimeout(() => {
                     dataKirim.firebaseKey = "demo_" + Date.now();
@@ -212,7 +324,6 @@
                 return;
             }
 
-            // Mode Normal (Firebase Realtime Database)
             db.ref('materi/').push(dataKirim)
                 .then(() => {
                     alert("🎉 Materi berhasil disimpan ke Firebase!");
@@ -229,21 +340,18 @@
                 });
         }
 
-        // 2. Tampilkan Daftar Materi dari Firebase dengan Filter Kelas
+        // 2. Tampilkan Daftar Materi dari Firebase dengan Filter Lengkap
         function tampilkanDaftarMateriFirebase() {
             let tbody = document.getElementById("tabel-materi-body");
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-primary py-4">⏳ Memuat data materi dari Firebase...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-primary py-4">⏳ Memuat data materi dari Firebase...</td></tr>`;
 
             db.ref('materi/').once('value')
                 .then((snapshot) => {
                     const data = snapshot.val();
 
                     if (!data) {
-                        if (isDemoMode) {
-                            renderTabelMateri(dataDemoCache);
-                        } else {
-                            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada materi tersimpan di Firebase.</td></tr>`;
-                        }
+                        if (isDemoMode) { renderTabelMateri(dataDemoCache); }
+                        else { tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Belum ada materi tersimpan di Firebase.</td></tr>`; }
                         return;
                     }
 
@@ -257,27 +365,39 @@
                     renderTabelMateri(dataMateriArr);
                 })
                 .catch(e => {
-                    if (isDemoMode) {
-                        renderTabelMateri(dataDemoCache);
-                    } else {
-                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data dari Firebase: ${e.message}</td></tr>`;
-                    }
+                    if (isDemoMode) { renderTabelMateri(dataDemoCache); }
+                    else { tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat data dari Firebase: ${e.message}</td></tr>`; }
                 });
         }
 
-        // Helper untuk Rendere Data ke Tabel
+        // Helper untuk Render Data ke Tabel
         function renderTabelMateri(dataArr) {
             let tbody = document.getElementById("tabel-materi-body");
+            let fTahun = document.getElementById("filter-tahun").value;
+            let fSemester = document.getElementById("filter-semester").value;
             let filterKelas = document.getElementById("filter-kelas-materi").value.trim();
+            let filterMapel = document.getElementById("filter-mapel").value.trim();
+            let fBab = document.getElementById("filter-bab").value;
             tbody.innerHTML = "";
 
             let dataFiltered = dataArr.filter(item => {
+                let sTahun = item.tahun || "2026/2027";
+                let sSemester = item.semester || "Semester 1";
                 let kls = String(item.kelas || "").trim();
-                return filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+                let mpl = String(item.mapel || "").trim();
+                let bab = String(item.bab || "").trim();
+
+                let matchTahun = fTahun ? sTahun === fTahun : true;
+                let matchSemester = fSemester ? sSemester === fSemester : true;
+                let matchKelas = filterKelas ? kls.toLowerCase() === filterKelas.toLowerCase() : true;
+                let matchMapel = filterMapel ? mpl.toLowerCase() === filterMapel.toLowerCase() : true;
+                let matchBab = fBab ? bab === fBab : true;
+
+                return matchTahun && matchSemester && matchKelas && matchMapel && matchBab;
             });
 
             if (dataFiltered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada materi yang cocok dengan filter kelas ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada materi yang cocok dengan filter ini.</td></tr>`;
                 return;
             }
 
@@ -286,8 +406,9 @@
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td class="text-center">${index + 1}</td>
-                    <td class="text-center"><b>${materi.kelas || '-'}</b></td>
-                    <td class="text-center"><span class="badge badge-secondary">${materi.mapel || '-'}</span></td>
+                    <td class="text-center"><small>${materi.tahun || '2026/2027'}</small><br><b>${materi.semester || 'Semester 1'}</b></td>
+                    <td class="text-center"><b>${materi.kelas || '-'}</b><br><span class="badge badge-secondary">${materi.mapel || '-'}</span></td>
+                    <td class="text-center"><span class="badge badge-success">${materi.bab || 'Umum'}</span></td>
                     <td class="font-weight-bold text-left">${materi.judul || '-'}</td>
                     <td class="text-center">
                         <a href="${materi.filedata || '#'}" target="_blank" class="btn btn-sm btn-success font-weight-bold px-2 py-1 mr-1">👀 Buka</a>
@@ -298,7 +419,6 @@
             });
         }
 
-        // Fungsi khusus memuat data contoh untuk pengunjung blog
         function muatDataDemoTabel() {
             renderTabelMateri(dataDemoCache);
             alert("✨ Data simulasi contoh demo berhasil ditampilkan pada tabel!");
@@ -325,22 +445,25 @@
             }
         }
 
-        // 4. Hapus Kelompok (Berdasarkan Filter Kelas)
+        // 4. Hapus Kelompok (Berdasarkan Filter)
         async function hapusMateriKelompok() {
+            let fTahun = document.getElementById("filter-tahun").value;
+            let fSemester = document.getElementById("filter-semester").value;
             let filterKelas = document.getElementById("filter-kelas-materi").value.trim();
+            let filterMapel = document.getElementById("filter-mapel").value.trim();
+            let fBab = document.getElementById("filter-bab").value;
 
-            let pesanKonfirmasi = filterKelas 
-                ? `Apakah Anda yakin ingin menghapus SELURUH materi pada ${filterKelas}?`
-                : "PERINGATAN: Filter kelas kosong. Ini akan menghapus SELURUH MATERI di database. Yakin ingin melanjutkan?";
-
-            if (confirm(pesanKonfirmasi)) {
+            if (confirm("Apakah Anda yakin ingin menghapus SELURUH materi yang tampil berdasarkan filter saat ini?")) {
                 if (isDemoMode) {
-                    if (filterKelas) {
-                        dataDemoCache = dataDemoCache.filter(item => item.kelas.toLowerCase() !== filterKelas.toLowerCase());
-                    } else {
-                        dataDemoCache = [];
-                    }
-                    alert("[MODE DEMO] Data simulasi berhasil dikosongkan!");
+                    dataDemoCache = dataDemoCache.filter(item => {
+                        let matchT = fTahun ? (item.tahun || "2026/2027") === fTahun : true;
+                        let matchS = fSemester ? (item.semester || "Semester 1") === fSemester : true;
+                        let matchK = filterKelas ? item.kelas === filterKelas : true;
+                        let matchM = filterMapel ? item.mapel === filterMapel : true;
+                        let matchB = fBab ? item.bab === fBab : true;
+                        return !(matchT && matchS && matchK && matchM && matchB);
+                    });
+                    alert("[MODE DEMO] Data simulasi berhasil dihapus!");
                     renderTabelMateri(dataDemoCache);
                     return;
                 }
@@ -356,9 +479,13 @@
                     let updatePromises = [];
                     Object.keys(data).forEach(key => {
                         let item = data[key];
-                        let kls = String(item.kelas || "").trim();
+                        let matchT = fTahun ? (item.tahun || "2026/2027") === fTahun : true;
+                        let matchS = fSemester ? (item.semester || "Semester 1") === fSemester : true;
+                        let matchK = filterKelas ? (item.kelas || "") === filterKelas : true;
+                        let matchM = filterMapel ? (item.mapel || "") === filterMapel : true;
+                        let matchB = fBab ? (item.bab || "") === fBab : true;
 
-                        if (!filterKelas || kls.toLowerCase() === filterKelas.toLowerCase()) {
+                        if (matchT && matchS && matchK && matchM && matchB) {
                             updatePromises.push(db.ref('materi/' + key).remove());
                         }
                     });
