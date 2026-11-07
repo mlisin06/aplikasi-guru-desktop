@@ -8,7 +8,7 @@
     <!-- Favicon & Metadata WhatsApp -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:title" content="EduAdmin Pro - Dashboard Guru">
-    <meta property="og:description" content="Panel kontrol guru untuk mengelola soal, data siswa, administrasi, dan rekapitulasi nilai secara real-time.">
+    <meta property="og:description" content="Panel kontrol guru untuk mengelola soal, data siswa, administrasi, dan rekap nilai secara real-time.">
     <meta property="og:image" content="https://i.ibb.co.com/tw4YXz73/gemini-svg-1.jpg">
     <meta property="og:type" content="website">
 
@@ -90,7 +90,7 @@
         // Cek Password atau Mode Demo saat halaman dibuka
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const isDemo = urlParams.get('demo'] === 'true' || window.location.href.includes('demo=true');
+            const isDemo = urlParams.get('demo') === 'true' || window.location.href.includes('demo=true');
 
             if (isDemo) {
                 // Jika Mode Demo aktif, langsung tampilkan dashboard tanpa password & sambungkan parameter demo ke tombol menu
