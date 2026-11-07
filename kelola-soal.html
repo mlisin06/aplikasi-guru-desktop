@@ -37,7 +37,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
                     <h6 class="font-weight-bold text-warning mb-1">🎮 Mode Demo / Pratinjau Blog Aktif</h6>
-                    <small class="text-muted">Simulasi manajemen bank soal. Anda dapat menguji tambah, edit, atau filter soal dengan aman.</small>
+                    <small class="text-muted">Simulasi manajemen bank soal. Tahun dan Bab dapat diketik bebas.</small>
                 </div>
                 <button class="btn btn-warning btn-sm font-weight-bold mt-2 mt-md-0" onclick="muatDataDemoSoal()">
                     ✨ Muat Contoh Soal Demo
@@ -46,8 +46,8 @@
         </div>
 
         <div class="card card-custom p-4 mb-4 text-center bg-primary text-white shadow-sm">
-            <h2 class="font-weight-bold mb-2">📝 Kelola Soal & Kuis (Tahun, Semester, Kelas, Bab)</h2>
-            <p class="mb-0 text-white-50">Input, edit, backup/ekspor, dan filter bank soal berdasarkan Tahun, Semester, Kelas, dan Bab.</p>
+            <h2 class="font-weight-bold mb-2">📝 Kelola Soal & Kuis (Tahun & Bab Bebas Ketik)</h2>
+            <p class="mb-0 text-white-50">Input, edit, dan filter bank soal dengan Tahun Ajaran dan Judul Bab sesuai buku paket.</p>
         </div>
 
         <!-- Panel Backup & Impor Soal Massal -->
@@ -59,12 +59,11 @@
                         📥 Unduh File Backup Soal (.json)
                     </button>
                 </div>
-                <p class="text-muted small mb-3">Unduh backup soal yang sudah dibuat untuk disimpan di laptop/HP. Saat tahun depan ingin memakai soal ini lagi, cukup upload file backup di bawah ini.</p>
+                <p class="text-muted small mb-3">Unduh backup soal yang sudah dibuat untuk disimpan di laptop/HP.</p>
                 
                 <div class="form-row align-items-center">
                     <div class="col-md-8 mb-2 mb-md-0">
                         <input type="file" id="file-backup-soal" class="form-control-file p-1 bg-white border rounded" accept=".json">
-                        <small class="text-muted">Pilih file backup (berformat <b>.json</b>) yang pernah diunduh sebelumnya.</small>
                     </div>
                     <div class="col-md-4">
                         <button type="button" id="btn-import-soal" class="btn btn-success btn-block font-weight-bold shadow-sm" onclick="uploadBackupSoalJSON()">
@@ -75,57 +74,39 @@
             </div>
         </div>
 
-        <!-- Form Input Soal Dinamis dengan Tahun, Semester, Bab -->
+        <!-- Form Input Soal dengan Tahun & Bab Bebas Ketik -->
         <div class="card card-custom p-4 mb-4">
             <h4 class="text-primary font-weight-bold mb-3">➕ Tambah Soal / Tugas Baru</h4>
             <div class="form-row">
                 <div class="form-group col-md-3">
-                    <label class="small font-weight-bold">Tahun Ajaran</label>
-                    <select id="input-tahun" class="form-control">
-                        <option value="2025/2026">2025/2026</option>
-                        <option value="2026/2027" selected>2026/2027</option>
-                        <option value="2027/2028">2027/2028</option>
-                    </select>
+                    <label class="small font-weight-bold">Tahun Ajaran / Periode</label>
+                    <input type="text" id="input-tahun" class="form-control" placeholder="Contoh: 2026/2027" value="2026/2027">
                 </div>
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Semester</label>
-                    <select id="input-semester" class="form-control" onchange="updateDaftarBabInput()">
+                    <select id="input-semester" class="form-control">
                         <option value="Semester 1">Semester 1 (Ganjil)</option>
                         <option value="Semester 2">Semester 2 (Genap)</option>
                     </select>
                 </div>
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Kelas</label>
-                    <select id="input-kelas" class="form-control" onchange="updateDaftarBabInput()">
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6" selected>Kelas 6</option>
+                    <select id="input-kelas" class="form-control">
+                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6" selected>Kelas 6</option>
                     </select>
                 </div>
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">Mata Pelajaran</label>
-                    <select id="input-mapel" class="form-control" onchange="updateDaftarBabInput()">
-                        <option value="PAIBP" selected>PAIBP</option>
-                        <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                        <option value="Matematika">Matematika</option>
-                        <option value="IPAS">IPAS</option>
-                        <option value="PJOK">PJOK</option>
-                        <option value="Bahasa Inggris">Bahasa Inggris</option>
-                        <option value="Bahasa Jawa">Bahasa Jawa</option>
+                    <select id="input-mapel" class="form-control">
+                        <option value="PAIBP" selected>PAIBP</option><option value="Pendidikan Pancasila">Pendidikan Pancasila</option><option value="Bahasa Indonesia">Bahasa Indonesia</option><option value="Matematika">Matematika</option><option value="IPAS">IPAS</option><option value="PJOK">PJOK</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Bahasa Jawa">Bahasa Jawa</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group col-md-6">
-                    <label class="small font-weight-bold text-success">Pilih Bab (Dinamis):</label>
-                    <select id="input-bab" class="form-control font-weight-bold border-success">
-                        <!-- Bab terisi otomatis -->
-                    </select>
+                    <label class="small font-weight-bold text-success">Nama Bab / Materi (Ketik Bebas sesuai Buku):</label>
+                    <input type="text" id="input-bab" class="form-control border-success font-weight-bold" placeholder="Contoh: Bab 4 Ketentuan Makanan Halal">
                 </div>
                 <div class="form-group col-md-6">
                     <label class="small font-weight-bold">Jenis Soal / Tugas</label>
@@ -147,41 +128,22 @@
             <!-- CONTAINER KHUSUS PUZZLE KATA -->
             <div id="container-puzzle" style="display: none;">
                 <div class="form-group bg-light p-3 rounded border">
-                    <label class="small font-weight-bold text-success">🔤 Kata/Kalimat yang akan diacak otomatis untuk siswa:</label>
+                    <label class="small font-weight-bold text-success">🔤 Kata/Kalimat untuk Puzzle:</label>
                     <input type="text" id="input-puzzle-kata" class="form-control" placeholder="Contoh: Pancasila">
-                    <small class="text-muted">Siswa nantinya bertugas menyusun huruf-huruf acak dari kata ini.</small>
                 </div>
             </div>
 
             <!-- CONTAINER KHUSUS PILIHAN GANDA -->
             <div id="container-pg">
                 <div class="form-row">
-                    <div class="form-group col-md-3">
-                        <label class="small font-weight-bold">Opsi A</label>
-                        <input type="text" id="input-opsia" class="form-control" placeholder="Pilihan A">
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label class="small font-weight-bold">Opsi B</label>
-                        <input type="text" id="input-opsib" class="form-control" placeholder="Pilihan B">
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label class="small font-weight-bold">Opsi C</label>
-                        <input type="text" id="input-opsic" class="form-control" placeholder="Pilihan C">
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label class="small font-weight-bold">Opsi D</label>
-                        <input type="text" id="input-opsid" class="form-control" placeholder="Pilihan D">
-                    </div>
+                    <div class="form-group col-md-3"><label class="small font-weight-bold">Opsi A</label><input type="text" id="input-opsia" class="form-control"></div>
+                    <div class="form-group col-md-3"><label class="small font-weight-bold">Opsi B</label><input type="text" id="input-opsib" class="form-control"></div>
+                    <div class="form-group col-md-3"><label class="small font-weight-bold">Opsi C</label><input type="text" id="input-opsic" class="form-control"></div>
+                    <div class="form-group col-md-3"><label class="small font-weight-bold">Opsi D</label><input type="text" id="input-opsid" class="form-control"></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label class="small font-weight-bold">Kunci Jawaban (Contoh: A)</label>
-                        <input type="text" id="input-kunci" class="form-control" placeholder="Kunci jawaban benar">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label class="small font-weight-bold">Link Gambar (Opsional)</label>
-                        <input type="text" id="input-gambar" class="form-control" placeholder="URL gambar jika ada">
-                    </div>
+                    <div class="form-group col-md-6"><label class="small font-weight-bold">Kunci Jawaban (Contoh: A)</label><input type="text" id="input-kunci" class="form-control"></div>
+                    <div class="form-group col-md-6"><label class="small font-weight-bold">Link Gambar (Opsional)</label><input type="text" id="input-gambar" class="form-control"></div>
                 </div>
             </div>
 
@@ -190,7 +152,7 @@
             </button>
         </div>
 
-        <!-- Daftar Soal Tersimpan dengan Filter Lengkap (Tahun, Semester, Kelas, Mapel, Bab, Jenis) -->
+        <!-- Daftar Soal Tersimpan dengan Filter -->
         <div class="card card-custom p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                 <h4 class="text-secondary font-weight-bold mb-2">📊 Daftar Soal di Firebase</h4>
@@ -201,54 +163,22 @@
             </div>
 
             <div class="form-row mb-3 bg-light p-3 rounded">
-                <div class="form-group col-md-3 mb-2">
+                <div class="form-group col-md-4 mb-2">
                     <label class="small font-weight-bold">Filter Tahun:</label>
-                    <select id="filter-tahun" class="form-control form-control-sm" onchange="tampilkanDaftarSoalFirebase()">
-                        <option value="">-- Semua Tahun --</option>
-                        <option value="2025/2026">2025/2026</option>
-                        <option value="2026/2027" selected>2026/2027</option>
-                        <option value="2027/2028">2027/2028</option>
-                    </select>
+                    <input type="text" id="filter-tahun" class="form-control form-control-sm" placeholder="Ketik tahun untuk filter..." oninput="tampilkanDaftarSoalFirebase()">
                 </div>
-                <div class="form-group col-md-3 mb-2">
-                    <label class="small font-weight-bold">Filter Semester:</label>
-                    <select id="filter-semester" class="form-control form-control-sm" onchange="updateDaftarBabFilter()">
-                        <option value="">-- Semua Semester --</option>
-                        <option value="Semester 1" selected>Semester 1</option>
-                        <option value="Semester 2">Semester 2</option>
-                    </select>
-                </div>
-                <div class="form-group col-md-3 mb-2">
+                <div class="form-group col-md-4 mb-2">
                     <label class="small font-weight-bold">Filter Kelas:</label>
-                    <select id="filter-kelas" class="form-control form-control-sm" onchange="updateDaftarBabFilter()">
+                    <select id="filter-kelas" class="form-control form-control-sm" onchange="tampilkanDaftarSoalFirebase()">
                         <option value="">-- Semua Kelas --</option>
-                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6" selected>Kelas 6</option>
+                        <option value="Kelas 1">Kelas 1</option><option value="Kelas 2">Kelas 2</option><option value="Kelas 3">Kelas 3</option><option value="Kelas 4">Kelas 4</option><option value="Kelas 5">Kelas 5</option><option value="Kelas 6">Kelas 6</option>
                     </select>
                 </div>
-                <div class="form-group col-md-3 mb-2">
+                <div class="form-group col-md-4 mb-2">
                     <label class="small font-weight-bold">Filter Mata Pelajaran:</label>
-                    <select id="filter-mapel" class="form-control form-control-sm" onchange="updateDaftarBabFilter()">
+                    <select id="filter-mapel" class="form-control form-control-sm" onchange="tampilkanDaftarSoalFirebase()">
                         <option value="">-- Semua Mapel --</option>
-                        <option value="PAIBP" selected>PAIBP</option><option value="Pendidikan Pancasila">Pendidikan Pancasila</option><option value="Bahasa Indonesia">Bahasa Indonesia</option><option value="Matematika">Matematika</option><option value="IPAS">IPAS</option><option value="PJOK">PJOK</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Bahasa Jawa">Bahasa Jawa</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row mb-3 bg-white p-2 border rounded">
-                <div class="form-group col-md-6 mb-0">
-                    <label class="small font-weight-bold text-success">Filter Bab (Dinamis):</label>
-                    <select id="filter-bab" class="form-control form-control-sm border-success font-weight-bold" onchange="tampilkanDaftarSoalFirebase()">
-                        <option value="">-- Semua Bab --</option>
-                    </select>
-                </div>
-                <div class="form-group col-md-6 mb-0">
-                    <label class="small font-weight-bold">Filter Jenis Kuis:</label>
-                    <select id="filter-jenis" class="form-control form-control-sm" onchange="tampilkanDaftarSoalFirebase()">
-                        <option value="">-- Semua Jenis Kuis --</option>
-                        <option value="Pilihan Ganda">Pilihan Ganda</option>
-                        <option value="Puzzle Kata">Puzzle Kata</option>
-                        <option value="Essay">Essay</option>
-                        <option value="Merangkum Materi">Merangkum Materi</option>
+                        <option value="PAIBP">PAIBP</option><option value="Pendidikan Pancasila">Pendidikan Pancasila</option><option value="Bahasa Indonesia">Bahasa Indonesia</option><option value="Matematika">Matematika</option><option value="IPAS">IPAS</option><option value="PJOK">PJOK</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Bahasa Jawa">Bahasa Jawa</option>
                     </select>
                 </div>
             </div>
@@ -258,10 +188,10 @@
                     <thead class="thead-dark text-center">
                         <tr>
                             <th width="5%">No</th>
-                            <th width="15%">Kategori (Tahun/Smstr)</th>
-                            <th width="12%">Kelas/Mapel</th>
-                            <th width="15%">Bab</th>
-                            <th width="33%">Pertanyaan / Tugas / Kunci</th>
+                            <th width="15%">Tahun / Semester</th>
+                            <th width="12%">Kelas / Mapel</th>
+                            <th width="15%">Bab / Materi</th>
+                            <th width="33%">Pertanyaan / Soal</th>
                             <th width="20%">Aksi</th>
                         </tr>
                     </thead>
@@ -291,19 +221,14 @@
             <form id="form-edit-soal" onsubmit="simpanPerubahanSoalFirebase(event)">
                 <input type="hidden" id="edit-firebase-key">
                 
-                <!-- Tambahan Edit Tahun, Semester, Kelas, dan Mapel -->
                 <div class="form-row">
                     <div class="form-group col-md-3">
                         <label class="small font-weight-bold">Tahun Ajaran</label>
-                        <select id="edit-tahun" class="form-control" required>
-                            <option value="2025/2026">2025/2026</option>
-                            <option value="2026/2027">2026/2027</option>
-                            <option value="2027/2028">2027/2028</option>
-                        </select>
+                        <input type="text" id="edit-tahun" class="form-control" required>
                     </div>
                     <div class="form-group col-md-3">
                         <label class="small font-weight-bold">Semester</label>
-                        <select id="edit-semester" class="form-control" onchange="updateDaftarBabEdit()" required>
+                        <select id="edit-semester" class="form-control" required>
                             <option value="Semester 1">Semester 1</option>
                             <option value="Semester 2">Semester 2</option>
                         </select>
@@ -316,7 +241,7 @@
                     </div>
                     <div class="form-group col-md-3">
                         <label class="small font-weight-bold">Mata Pelajaran</label>
-                        <select id="edit-mapel" class="form-control" onchange="updateDaftarBabEdit()" required>
+                        <select id="edit-mapel" class="form-control" required>
                             <option value="PAIBP">PAIBP</option><option value="Pendidikan Pancasila">Pendidikan Pancasila</option><option value="Bahasa Indonesia">Bahasa Indonesia</option><option value="Matematika">Matematika</option><option value="IPAS">IPAS</option><option value="PJOK">PJOK</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Bahasa Jawa">Bahasa Jawa</option>
                         </select>
                     </div>
@@ -324,10 +249,8 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label class="small font-weight-bold text-success">Pilih Bab (Dinamis):</label>
-                        <select id="edit-bab" class="form-control border-success font-weight-bold" required>
-                            <!-- Terisi otomatis -->
-                        </select>
+                        <label class="small font-weight-bold text-success">Nama Bab / Materi (Bebas Ketik):</label>
+                        <input type="text" id="edit-bab" class="form-control border-success font-weight-bold" required>
                     </div>
                     <div class="form-group col-md-6">
                         <label class="small font-weight-bold">Jenis Soal / Kuis</label>
@@ -343,32 +266,14 @@
                 <!-- Container Khusus Edit Pilihan Ganda -->
                 <div id="edit-container-pg" style="display: none;">
                     <div class="form-row">
-                        <div class="form-group col-md-3">
-                            <label class="small font-weight-bold">Opsi A</label>
-                            <input type="text" id="edit-opsia" class="form-control">
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label class="small font-weight-bold">Opsi B</label>
-                            <input type="text" id="edit-opsib" class="form-control">
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label class="small font-weight-bold">Opsi C</label>
-                            <input type="text" id="edit-opsic" class="form-control">
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label class="small font-weight-bold">Opsi D</label>
-                            <input type="text" id="edit-opsid" class="form-control">
-                        </div>
+                        <div class="form-group col-md-3"><label class="small font-weight-bold">Opsi A</label><input type="text" id="edit-opsia" class="form-control"></div>
+                        <div class="form-group col-md-3"><label class="small font-weight-bold">Opsi B</label><input type="text" id="edit-opsib" class="form-control"></div>
+                        <div class="form-group col-md-3"><label class="small font-weight-bold">Opsi C</label><input type="text" id="edit-opsic" class="form-control"></div>
+                        <div class="form-group col-md-3"><label class="small font-weight-bold">Opsi D</label><input type="text" id="edit-opsid" class="form-control"></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label class="small font-weight-bold">Kunci Jawaban</label>
-                            <input type="text" id="edit-kunci" class="form-control">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label class="small font-weight-bold">Link Gambar</label>
-                            <input type="text" id="edit-gambar" class="form-control">
-                        </div>
+                        <div class="form-group col-md-6"><label class="small font-weight-bold">Kunci Jawaban</label><input type="text" id="edit-kunci" class="form-control"></div>
+                        <div class="form-group col-md-6"><label class="small font-weight-bold">Link Gambar</label><input type="text" id="edit-gambar" class="form-control"></div>
                     </div>
                 </div>
 
@@ -396,40 +301,14 @@
             appId: "1:223595774231:web:707feff9094f18d839b752"
         };
 
-        // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let globalSoalCache = {};
         let isDemoMode = false;
         let dataDemoSoal = [
-            { firebaseKey: "s_1", tahun: "2026/2027", semester: "Semester 1", kelas: "Kelas 6", mapel: "PAIBP", bab: "Bab IV Halal dan Haram", jenis: "Pilihan Ganda", pertanyaan: "Hasil dari 125 + 25 x 4 adalah...", opsiA: "200", opsiB: "225", opsiC: "600", opsiD: "150", kunci: "B" },
-            { firebaseKey: "s_2", tahun: "2026/2027", semester: "Semester 1", kelas: "Kelas 6", mapel: "Pendidikan Pancasila", bab: "Bab 1 Belajar Pancasila", jenis: "Puzzle Kata", pertanyaan: "PANCASILA", kunci: "PANCASILA" }
+            { firebaseKey: "s_1", tahun: "2026/2027", semester: "Semester 1", kelas: "Kelas 6", mapel: "PAIBP", bab: "Bab 4 Ketentuan Makanan Halal", jenis: "Pilihan Ganda", pertanyaan: "Contoh makanan halal adalah...", opsiA: "Bangkai", opsiB: "Ayam disembelih", opsiC: "Darah", opsiD: "Babi", kunci: "B" }
         ];
-
-        // Master Daftar Bab Dinamis Berdasarkan Mapel & Semester
-        const bankBabMaster = {
-            "PAIBP": {
-                "Semester 1": ["Bab I Indahnya Saling Menghormati", "Bab II Ketika Bumi Berhenti Berputar", "Bab III Anak Saleh", "Bab IV Halal dan Haram"],
-                "Semester 2": ["Bab V Meneladani Perjuangan Nabi", "Bab VI Zakat Fitrah dan Mal", "Bab VII Ayo Berakhlak Terpuji", "Bab VIII Mari Belajar Al-Qur'an"]
-            },
-            "Pendidikan Pancasila": {
-                "Semester 1": ["Bab 1 Belajar Pancasila", "Bab 2 Norma di Sekitarku"],
-                "Semester 2": ["Bab 3 Jati Diri Bangsa", "Bab 4 Negaraku Indonesia"]
-            },
-            "Matematika": {
-                "Semester 1": ["Bab 1 Bilangan Bulat", "Bab 2 Pecahan", "Bab 3 KPK dan FPB"],
-                "Semester 2": ["Bab 4 Luas dan Keliling", "Bab 5 Bangun Ruang", "Bab 6 Statistika"]
-            },
-            "IPAS": {
-                "Semester 1": ["Bab 1 Mengenal Tubuh Kita", "Bab 2 Cerita Tentang Indonesia"],
-                "Semester 2": ["Bab 3 Pelesir Dunia", "Bab 4 Indonesiaku Kaya"]
-            },
-            "Bahasa Indonesia": {
-                "Semester 1": ["Bab 1 Bangga Menjadi Anak Indonesia", "Bab 2 Musikus Indonesia"],
-                "Semester 2": ["Bab 3 Taman Nasional", "Bab 4 Jeda untuk Alam"]
-            }
-        };
 
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -437,68 +316,15 @@
                 isDemoMode = true;
                 document.getElementById('banner-demo-mode').style.display = 'block';
             }
-            updateDaftarBabInput();
-            updateDaftarBabFilter();
             tampilkanDaftarSoalFirebase();
             sesuaikanFormInput();
         });
-
-        function updateDaftarBabInput() {
-            let mapel = document.getElementById("input-mapel").value;
-            let semester = document.getElementById("input-semester").value;
-            let selectBab = document.getElementById("input-bab");
-            selectBab.innerHTML = "";
-
-            let daftarBab = bankBabMaster[mapel]?.[semester] || ["Bab 1 Umum", "Bab 2 Umum"];
-            daftarBab.forEach(bab => {
-                let opt = document.createElement("option");
-                opt.value = bab;
-                opt.textContent = bab;
-                selectBab.appendChild(opt);
-            });
-        }
-
-        function updateDaftarBabFilter() {
-            let mapel = document.getElementById("filter-mapel").value;
-            let semester = document.getElementById("filter-semester").value;
-            let selectBab = document.getElementById("filter-bab");
-            selectBab.innerHTML = `<option value="">-- Semua Bab --</option>`;
-
-            if (mapel && semester && bankBabMaster[mapel]?.[semester]) {
-                bankBabMaster[mapel][semester].forEach(bab => {
-                    let opt = document.createElement("option");
-                    opt.value = bab;
-                    opt.textContent = bab;
-                    selectBab.appendChild(opt);
-                });
-            }
-            tampilkanDaftarSoalFirebase();
-        }
-
-        function updateDaftarBabEdit(selectedBab = "") {
-            let mapel = document.getElementById("edit-mapel").value;
-            let semester = document.getElementById("edit-semester").value;
-            let selectBab = document.getElementById("edit-bab");
-            selectBab.innerHTML = "";
-
-            let daftarBab = bankBabMaster[mapel]?.[semester] || ["Bab 1 Umum", "Bab 2 Umum"];
-            daftarBab.forEach(bab => {
-                let opt = document.createElement("option");
-                opt.value = bab;
-                opt.textContent = bab;
-                if (bab === selectedBab) {
-                    opt.selected = true;
-                }
-                selectBab.appendChild(opt);
-            });
-        }
 
         function muatDataDemoSoal() {
             renderTabelSoal(dataDemoSoal);
             alert("✨ [MODE DEMO] Contoh soal demo berhasil dimuat!");
         }
 
-        // 1. FUNGSI DOWNLOAD BACKUP SOAL (JSON)
         async function downloadBackupSoalJSON() {
             try {
                 let snapshot = await db.ref('soal/').once('value');
@@ -521,15 +347,10 @@
             }
         }
 
-        // 2. FUNGSI UPLOAD / RESTOR BACKUP SOAL (JSON)
         function uploadBackupSoalJSON() {
             let fileInput = document.getElementById('file-backup-soal');
             let file = fileInput.files[0];
-
-            if (!file) {
-                alert("Pilih file backup (.json) terlebih dahulu!");
-                return;
-            }
+            if (!file) { alert("Pilih file backup (.json) terlebih dahulu!"); return; }
 
             let reader = new FileReader();
             let btn = document.getElementById('btn-import-soal');
@@ -538,15 +359,7 @@
                 try {
                     btn.disabled = true;
                     btn.innerText = "Mengimpor Soal...";
-
                     let listSoal = JSON.parse(e.target.result);
-
-                    if (!Array.isArray(listSoal) || listSoal.length === 0) {
-                        alert("File JSON tidak valid atau kosong.");
-                        btn.disabled = false;
-                        btn.innerText = "📤 Upload & Restor Soal ke Firebase";
-                        return;
-                    }
 
                     let promises = listSoal.map(item => {
                         return db.ref('soal/').push({
@@ -558,12 +371,8 @@
                             bab: item.bab || "Bab 1",
                             jenis: item.jenis || "Pilihan Ganda",
                             pertanyaan: item.pertanyaan || "",
-                            opsiA: item.opsiA || "",
-                            opsiB: item.opsiB || "",
-                            opsiC: item.opsiC || "",
-                            opsiD: item.opsiD || "",
-                            kunci: item.kunci || "",
-                            gambar: item.gambar || ""
+                            opsiA: item.opsiA || "", opsiB: item.opsiB || "", opsiC: item.opsiC || "", opsiD: item.opsiD || "",
+                            kunci: item.kunci || "", gambar: item.gambar || ""
                         });
                     });
 
@@ -572,13 +381,12 @@
                     fileInput.value = "";
                     tampilkanDaftarSoalFirebase();
                 } catch (err) {
-                    alert("Gagal memproses file backup: " + err.message);
+                    alert("Gagal memproses file: " + err.message);
                 } finally {
                     btn.disabled = false;
                     btn.innerText = "📤 Upload & Restor Soal ke Firebase";
                 }
             };
-
             reader.readAsText(file);
         }
 
@@ -597,29 +405,25 @@
             } else {
                 groupPertanyaan.style.display = "block";
                 containerPuzzle.style.display = "none";
-
                 if (jenis === "Merangkum Materi") {
                     labelPertanyaan.innerHTML = "✍️ Judul / Instruksi Tugas Ringkasan:";
-                    inputSoal.placeholder = "Contoh: Buatlah ringkasan mengenai materi Bab 1...";
                     containerPG.style.display = "none";
                 } else if (jenis === "Essay") {
                     labelPertanyaan.innerHTML = "📝 Pertanyaan Essay / Uraian:";
-                    inputSoal.placeholder = "Tuliskan pertanyaan uraian di sini...";
                     containerPG.style.display = "none";
                 } else {
                     labelPertanyaan.innerHTML = "❓ Pertanyaan / Soal Pilihan Ganda:";
-                    inputSoal.placeholder = "Tuliskan pertanyaan soal di sini...";
                     containerPG.style.display = "block";
                 }
             }
         }
 
         function simpanSoalKeFirebase() {
-            let tahun = document.getElementById("input-tahun").value;
+            let tahun = document.getElementById("input-tahun").value.trim() || "2026/2027";
             let semester = document.getElementById("input-semester").value;
             let kelas = document.getElementById("input-kelas").value;
             let mapel = document.getElementById("input-mapel").value;
-            let bab = document.getElementById("input-bab").value;
+            let bab = document.getElementById("input-bab").value.trim() || "Bab Umum";
             let jenis = document.getElementById("input-jenis").value;
             
             let soal = "";
@@ -627,29 +431,18 @@
 
             if (jenis === "Puzzle Kata") {
                 let kataPuzzle = document.getElementById("input-puzzle-kata").value.trim();
-                if (!kataPuzzle) {
-                    alert("Kata untuk puzzle tidak boleh kosong!");
-                    return;
-                }
+                if (!kataPuzzle) { alert("Kata untuk puzzle tidak boleh kosong!"); return; }
                 soal = kataPuzzle;
                 kunciVal = kataPuzzle;
             } else {
                 soal = document.getElementById("input-soal").value.trim();
-                if (!soal) {
-                    alert("Pertanyaan / tugas tidak boleh kosong!");
-                    return;
-                }
+                if (!soal) { alert("Pertanyaan / tugas tidak boleh kosong!"); return; }
                 kunciVal = jenis === "Pilihan Ganda" ? document.getElementById("input-kunci").value.trim() : "";
             }
             
             let dataKirim = {
                 tanggal: new Date().toLocaleDateString("id-ID"),
-                tahun: tahun,
-                semester: semester,
-                kelas: kelas,
-                mapel: mapel,
-                bab: bab,
-                jenis: jenis,
+                tahun: tahun, semester: semester, kelas: kelas, mapel: mapel, bab: bab, jenis: jenis,
                 pertanyaan: soal,
                 opsiA: jenis === "Pilihan Ganda" ? document.getElementById("input-opsia").value.trim() : "",
                 opsiB: jenis === "Pilihan Ganda" ? document.getElementById("input-opsib").value.trim() : "",
@@ -662,133 +455,106 @@
             if (isDemoMode) {
                 dataKirim.firebaseKey = "demo_" + Date.now();
                 dataDemoSoal.unshift(dataKirim);
-                alert("🎉 [MODE DEMO] Simulasi simpan soal berhasil secara lokal!");
+                alert("🎉 [MODE DEMO] Simulasi simpan soal berhasil!");
                 renderTabelSoal(dataDemoSoal);
                 return;
             }
 
             let btn = event.target;
             btn.disabled = true;
-            btn.innerText = "Menyimpan ke Firebase...";
+            btn.innerText = "Menyimpan...";
 
-            db.ref('soal/').push(dataKirim)
-                .then(() => {
-                    alert("🎉 Soal/Tugas berhasil disimpan ke Firebase!");
-                    tampilkanDaftarSoalFirebase();
-                    btn.disabled = false;
-                    btn.innerText = "💾 Simpan Soal ke Firebase";
-                })
-                .catch(err => {
-                    alert("Gagal menyimpan: " + err.message);
-                    btn.disabled = false;
-                    btn.innerText = "💾 Simpan Soal ke Firebase";
-                });
+            db.ref('soal/').push(dataKirim).then(() => {
+                alert("🎉 Soal berhasil disimpan ke Firebase!");
+                tampilkanDaftarSoalFirebase();
+                btn.disabled = false;
+                btn.innerText = "💾 Simpan Soal ke Firebase";
+            }).catch(err => {
+                alert("Gagal menyimpan: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "💾 Simpan Soal ke Firebase";
+            });
         }
 
         function tampilkanDaftarSoalFirebase() {
-            db.ref('soal/').once('value')
-                .then((snapshot) => {
-                    const data = snapshot.val();
-                    if (!data) {
-                        if (isDemoMode) { renderTabelSoal(dataDemoSoal); }
-                        else { document.getElementById("tabel-soal-body").innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang ditemukan di Firebase.</td></tr>`; }
-                        return;
-                    }
-
-                    let dataSoalArr = [];
-                    Object.keys(data).forEach(key => {
-                        let item = data[key];
-                        item.firebaseKey = key;
-                        dataSoalArr.push(item);
-                    });
-
-                    renderTabelSoal(dataSoalArr);
-                })
-                .catch(e => {
+            db.ref('soal/').once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
                     if (isDemoMode) { renderTabelSoal(dataDemoSoal); }
-                    else { document.getElementById("tabel-soal-body").innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat daftar soal: ${e.message}</td></tr>`; }
-                });
+                    else { document.getElementById("tabel-soal-body").innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal ditemukan.</td></tr>`; }
+                    return;
+                }
+                let arr = [];
+                Object.keys(data).forEach(key => { data[key].firebaseKey = key; arr.push(data[key]); });
+                renderTabelSoal(arr);
+            }).catch(e => {
+                if (isDemoMode) { renderTabelSoal(dataDemoSoal); }
+            });
         }
 
         function renderTabelSoal(dataArr) {
-            let fTahun = document.getElementById("filter-tahun").value;
-            let fSemester = document.getElementById("filter-semester").value;
+            let fTahun = document.getElementById("filter-tahun").value.trim().toLowerCase();
             let fKelas = document.getElementById("filter-kelas").value;
             let fMapel = document.getElementById("filter-mapel").value;
-            let fBab = document.getElementById("filter-bab").value;
-            let fJenis = document.getElementById("filter-jenis").value;
-
             let tbody = document.getElementById("tabel-soal-body");
             tbody.innerHTML = "";
             globalSoalCache = {};
 
-            let dataFiltered = dataArr.filter(item => {
-                let matchTahun = fTahun ? (item.tahun || "2026/2027") === fTahun : true;
-                let matchSemester = fSemester ? (item.semester || "Semester 1") === fSemester : true;
-                let matchKelas = fKelas ? (item.kelas || "") === fKelas : true;
-                let matchMapel = fMapel ? (item.mapel || "") === fMapel : true;
-                let matchBab = fBab ? (item.bab || "") === fBab : true;
-                let matchJenis = fJenis ? (item.jenis || "") === fJenis : true;
-
-                return matchTahun && matchSemester && matchKelas && matchMapel && matchBab && matchJenis;
+            let filtered = dataArr.filter(item => {
+                let sTahun = String(item.tahun || "").toLowerCase();
+                let matchTahun = fTahun ? sTahun.includes(fTahun) : true;
+                let matchKelas = fKelas ? item.kelas === fKelas : true;
+                let matchMapel = fMapel ? item.mapel === fMapel : true;
+                return matchTahun && matchKelas && matchMapel;
             });
 
-            if (dataFiltered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal yang cocok dengan filter.</td></tr>`;
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada soal sesuai filter.</td></tr>`;
                 return;
             }
 
-            dataFiltered.forEach((item, index) => {
+            filtered.forEach((item, index) => {
                 let fKey = item.firebaseKey;
                 globalSoalCache[fKey] = item;
-
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="text-center">${index + 1}</td>
-                    <td class="text-center"><small>${item.tahun || '2026/2027'}</small><br><b>${item.semester || 'Semester 1'}</b></td>
-                    <td class="text-center"><b>${item.kelas || '-'}</b><br><span class="badge badge-secondary">${item.mapel || '-'}</span></td>
-                    <td class="text-center"><span class="badge badge-success">${item.bab || 'Umum'}</span><br><small class="text-muted">${item.jenis || 'PG'}</small></td>
-                    <td class="text-left font-weight-bold">${item.pertanyaan || '-'}</td>
-                    <td class="text-center">
-                        <button class="btn btn-warning btn-sm font-weight-bold px-2 py-1 mr-1" onclick="bukaModalEdit('${fKey}')">✏️ Edit</button>
-                        <button class="btn btn-danger btn-sm font-weight-bold px-2 py-1" onclick="hapusSoalSatu('${fKey}')">🗑️ Hapus</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td class="text-center"><small>${item.tahun || '-'}</small><br><b>${item.semester || '-'}</b></td>
+                        <td class="text-center"><b>${item.kelas || '-'}</b><br><span class="badge badge-secondary">${item.mapel || '-'}</span></td>
+                        <td class="text-center"><span class="badge badge-success">${item.bab || '-'}</span><br><small class="text-muted">${item.jenis || ''}</small></td>
+                        <td class="text-left font-weight-bold">${item.pertanyaan || '-'}</td>
+                        <td class="text-center">
+                            <button class="btn btn-warning btn-sm px-2 py-1 mr-1" onclick="bukaModalEdit('${fKey}')">✏️ Edit</button>
+                            <button class="btn btn-danger btn-sm px-2 py-1" onclick="hapusSoalSatu('${fKey}')">🗑️ Hapus</button>
+                        </td>
+                    </tr>`;
             });
         }
 
         function bukaModalEdit(firebaseKey) {
-            let soalObj = globalSoalCache[firebaseKey];
-            if (!soalObj) return;
+            let item = globalSoalCache[firebaseKey];
+            if (!item) return;
 
             document.getElementById("edit-firebase-key").value = firebaseKey;
-            document.getElementById("edit-tahun").value = soalObj.tahun || "2026/2027";
-            document.getElementById("edit-semester").value = soalObj.semester || "Semester 1";
-            document.getElementById("edit-kelas").value = soalObj.kelas || "Kelas 6";
-            document.getElementById("edit-mapel").value = soalObj.mapel || "PAIBP";
-            
-            // Muat daftar bab dinamis berdasarkan semester & mapel yang tersimpan, lalu pilih bab-nya
-            updateDaftarBabEdit(soalObj.bab || "");
-
-            document.getElementById("edit-jenis").value = soalObj.jenis || "Pilihan Ganda";
-            document.getElementById("edit-pertanyaan").value = soalObj.pertanyaan || "";
+            document.getElementById("edit-tahun").value = item.tahun || "2026/2027";
+            document.getElementById("edit-semester").value = item.semester || "Semester 1";
+            document.getElementById("edit-kelas").value = item.kelas || "Kelas 6";
+            document.getElementById("edit-mapel").value = item.mapel || "PAIBP";
+            document.getElementById("edit-bab").value = item.bab || "";
+            document.getElementById("edit-jenis").value = item.jenis || "Pilihan Ganda";
+            document.getElementById("edit-pertanyaan").value = item.pertanyaan || "";
 
             let containerPG = document.getElementById("edit-container-pg");
-            let labelPrt = document.getElementById("edit-label-pertanyaan");
-
-            if (soalObj.jenis === "Pilihan Ganda") {
+            if (item.jenis === "Pilihan Ganda") {
                 containerPG.style.display = "block";
-                labelPrt.innerHTML = "Pertanyaan / Soal Pilihan Ganda";
-                document.getElementById("edit-opsia").value = soalObj.opsiA || "";
-                document.getElementById("edit-opsib").value = soalObj.opsiB || "";
-                document.getElementById("edit-opsic").value = soalObj.opsiC || "";
-                document.getElementById("edit-opsid").value = soalObj.opsiD || "";
-                document.getElementById("edit-kunci").value = soalObj.kunci || "";
-                document.getElementById("edit-gambar").value = soalObj.gambar || "";
+                document.getElementById("edit-opsia").value = item.opsiA || "";
+                document.getElementById("edit-opsib").value = item.opsiB || "";
+                document.getElementById("edit-opsic").value = item.opsiC || "";
+                document.getElementById("edit-opsid").value = item.opsiD || "";
+                document.getElementById("edit-kunci").value = item.kunci || "";
+                document.getElementById("edit-gambar").value = item.gambar || "";
             } else {
                 containerPG.style.display = "none";
-                labelPrt.innerHTML = "Pertanyaan / Instruksi Tugas";
             }
 
             $('#modalEditSoal').modal('show');
@@ -798,15 +564,15 @@
             event.preventDefault();
             let key = document.getElementById("edit-firebase-key").value;
             let dataUpdate = {
-                tahun: document.getElementById("edit-tahun").value,
+                tahun: document.getElementById("edit-tahun").value.trim(),
                 semester: document.getElementById("edit-semester").value,
                 kelas: document.getElementById("edit-kelas").value,
                 mapel: document.getElementById("edit-mapel").value,
-                bab: document.getElementById("edit-bab").value,
+                bab: document.getElementById("edit-bab").value.trim(),
                 pertanyaan: document.getElementById("edit-pertanyaan").value.trim()
             };
-            let jenis = document.getElementById("edit-jenis").value;
 
+            let jenis = document.getElementById("edit-jenis").value;
             if (jenis === "Pilihan Ganda") {
                 dataUpdate.opsiA = document.getElementById("edit-opsia").value.trim();
                 dataUpdate.opsiB = document.getElementById("edit-opsib").value.trim();
@@ -820,94 +586,50 @@
                 let idx = dataDemoSoal.findIndex(x => x.firebaseKey === key);
                 if (idx !== -1) { Object.assign(dataDemoSoal[idx], dataUpdate); }
                 $('#modalEditSoal').modal('hide');
-                alert("🎉 [MODE DEMO] Soal berhasil diperbarui!");
+                alert("🎉 [MODE DEMO] Soal diperbarui!");
                 renderTabelSoal(dataDemoSoal);
                 return;
             }
 
-            db.ref('soal/' + key).update(dataUpdate)
-                .then(() => {
-                    alert("🎉 Soal berhasil diperbarui di Firebase!");
-                    $('#modalEditSoal').modal('hide');
-                    tampilkanDaftarSoalFirebase();
-                })
-                .catch(err => {
-                    alert("Gagal memperbarui soal: " + err.message);
-                });
+            db.ref('soal/' + key).update(dataUpdate).then(() => {
+                alert("🎉 Soal berhasil diperbarui di Firebase!");
+                $('#modalEditSoal').modal('hide');
+                tampilkanDaftarSoalFirebase();
+            }).catch(err => {
+                alert("Gagal memperbarui: " + err.message);
+            });
         }
 
         function hapusSoalSatu(firebaseKey) {
-            if (confirm("Apakah Anda yakin ingin menghapus soal ini?")) {
+            if (confirm("Hapus soal ini?")) {
                 if (isDemoMode || firebaseKey.startsWith("s_") || firebaseKey.startsWith("demo_")) {
                     dataDemoSoal = dataDemoSoal.filter(x => x.firebaseKey !== firebaseKey);
                     renderTabelSoal(dataDemoSoal);
                     return;
                 }
-
-                db.ref('soal/' + firebaseKey).remove()
-                    .then(() => {
-                        alert("Soal berhasil dihapus!");
-                        tampilkanDaftarSoalFirebase();
-                    })
-                    .catch(err => {
-                        alert("Gagal menghapus soal: " + err.message);
-                    });
+                db.ref('soal/' + firebaseKey).remove().then(() => tampilkanDaftarSoalFirebase());
             }
         }
 
         async function hapusSoalKelompok() {
-            let fTahun = document.getElementById("filter-tahun").value;
-            let fSemester = document.getElementById("filter-semester").value;
-            let filterKelas = document.getElementById("filter-kelas").value;
-            let filterMapel = document.getElementById("filter-mapel").value;
-            let fBab = document.getElementById("filter-bab").value;
-            let filterJenis = document.getElementById("filter-jenis").value;
-
-            let pesanKonfirmasi = "Apakah Anda yakin ingin menghapus SEMUA soal yang tampil berdasarkan filter saat ini?";
-            if (confirm(pesanKonfirmasi)) {
+            if (confirm("Hapus SEMUA soal yang tampil berdasarkan filter saat ini?")) {
                 if (isDemoMode) {
-                    dataDemoSoal = dataDemoSoal.filter(item => {
-                        let matchT = fTahun ? (item.tahun || "2026/2027") === fTahun : true;
-                        let matchS = fSemester ? (item.semester || "Semester 1") === fSemester : true;
-                        let matchK = filterKelas ? item.kelas === filterKelas : true;
-                        let matchM = filterMapel ? item.mapel === filterMapel : true;
-                        let matchB = fBab ? item.bab === fBab : true;
-                        let matchJ = filterJenis ? item.jenis === filterJenis : true;
-                        return !(matchT && matchS && matchK && matchM && matchB && matchJ);
-                    });
+                    dataDemoSoal = [];
                     renderTabelSoal(dataDemoSoal);
-                    alert("🎉 [MODE DEMO] Soal berhasil dihapus dari simulasi!");
+                    alert("🎉 [MODE DEMO] Dihapus!");
                     return;
                 }
-
                 try {
                     let snapshot = await db.ref('soal/').once('value');
                     let data = snapshot.val();
-                    if (!data) {
-                        alert("Tidak ada data soal untuk dihapus.");
-                        return;
-                    }
-
-                    let updatePromises = [];
-                    Object.keys(data).forEach(key => {
-                        let item = data[key];
-                        let matchT = fTahun ? (item.tahun || "2026/2027") === fTahun : true;
-                        let matchS = fSemester ? (item.semester || "Semester 1") === fSemester : true;
-                        let matchK = filterKelas ? (item.kelas || "") === filterKelas : true;
-                        let matchM = filterMapel ? (item.mapel || "") === filterMapel : true;
-                        let matchB = fBab ? (item.bab || "") === fBab : true;
-                        let matchJ = filterJenis ? (item.jenis || "") === filterJenis : true;
-
-                        if (matchT && matchS && matchK && matchM && matchB && matchJ) {
-                            updatePromises.push(db.ref('soal/' + key).remove());
-                        }
-                    });
-
-                    await Promise.init ? Promise.all(updatePromises) : await Promise.all(updatePromises);
-                    alert("🎉 Berhasil menghapus kelompok soal yang dipilih!");
+                    if (!data) return;
+                    let promises = [];
+                    Object.keys(data).forEach(k => promises.push(db.ref('soal/' + k).remove()));
+                    await Promise.all(promises);
+                    alert("🎉 Berhasil dihapus!");
                     tampilkanDaftarSoalFirebase();
                 } catch (err) {
-                    alert("Gagal menghapus kelompok soal: " + err.message);
+                    alert("Gagal menghapus: " + err.message);
                 }
             }
         }
